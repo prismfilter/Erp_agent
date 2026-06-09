@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useCallback, useMemo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { createClient } from '@/lib/supabase/client';
@@ -37,23 +38,29 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
   const { theme, setTheme } = useTheme();
   const { user } = useAuthStore();
 
-  const handleLogout = async () => {
+  // 메모이제이션: 로그아웃 핸들러
+  const handleLogout = useCallback(async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push('/login');
-  };
+  }, [router]);
 
-  const handleAdminAccounts = () => {
+  // 메모이제이션: 계정관리 이동
+  const handleAdminAccounts = useCallback(() => {
     router.push('/admin/accounts');
     onClose?.();
-  };
+  }, [router, onClose]);
 
-  const handleThemeChange = (newTheme: string) => {
+  // 메모이제이션: 테마 변경
+  const handleThemeChange = useCallback((newTheme: string) => {
     setTheme(newTheme);
-    document.cookie = `prism-theme=${newTheme}; path=/; max-age=31536000; SameSite=Lax`;
-  };
+    if (typeof document !== 'undefined') {
+      document.cookie = `prism-theme=${newTheme}; path=/; max-age=31536000; SameSite=Lax`;
+    }
+  }, [setTheme]);
 
-  const getRoleLabel = () => {
+  // 메모이제이션: 역할 라벨
+  const roleLabel = useMemo(() => {
     switch (user?.role) {
       case 'ADMIN':
         return '👑 관리자';
@@ -64,34 +71,55 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
       default:
         return '사용자';
     }
-  };
+  }, [user?.role]);
 
-  const visibleItems = NAV_ITEMS.filter(
-    (item) => !item.adminOnly || user?.role === 'ADMIN'
+  // 메모이제이션: 표시할 메뉴 아이템
+  const visibleItems = useMemo(
+    () => NAV_ITEMS.filter((item) => !item.adminOnly || user?.role === 'ADMIN'),
+    [user?.role]
   );
 
-  // isActive 수정: '/'는 exact match, 다른 경로는 하위포함
-  const isActive = (href: string) => {
-    if (href === '/') return pathname === '/';
-    return pathname === href || pathname.startsWith(href + '/');
-  };
+  // 메모이제이션: 활성 경로 확인
+  const isActive = useCallback(
+    (href: string) => {
+      if (href === '/') return pathname === '/';
+      return pathname === href || pathname.startsWith(href + '/');
+    },
+    [pathname]
+  );
+
+  // 메모이제이션: 아바타 이니셜
+  const avatarInitial = useMemo(
+    () => user?.email?.substring(0, 2).toUpperCase() || 'U',
+    [user?.email]
+  );
 
   return (
-    <aside className="w-full h-full flex flex-col bg-[var(--color-sidebar)] border-r border-[var(--color-border)]">
-      {/* ===== 헤더: PRISM FILTER 로고 + 텍스트 (Link) ===== */}
+    <aside
+      className="w-full h-full flex flex-col bg-[var(--color-sidebar)] border-r border-[var(--color-border)]"
+      role="navigation"
+      aria-label="사이드바 네비게이션"
+    >
+      {/* ===== 헤더: PRISM FILTER 로고 + 텍스트 ===== */}
       <div className="border-b border-[var(--color-border)] p-4">
         <Link
           href="/"
           onClick={onClose}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-600/10 transition"
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-600/10 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-[var(--color-sidebar)]"
+          aria-label="홈으로 돌아가기"
         >
-          {/* 프리즘 필터 로고 SVG (dark/classic-dark에서 흰색) */}
+          {/* 프리즘 필터 로고 SVG */}
           <svg
             className="prism-logo w-10 h-10 flex-shrink-0"
             viewBox="0 0 550 562"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
-            <g transform="translate(0,562) scale(0.1,-0.1)" fill="currentColor" stroke="none">
+            <g
+              transform="translate(0,562) scale(0.1,-0.1)"
+              fill="currentColor"
+              stroke="none"
+            >
               <path d="M2687 4958 c-30 -51 -81 -140 -114 -198 -34 -58 -144 -249 -245 -425 -302 -523 -505 -874 -670 -1160 -86 -148 -332 -576 -548 -950 -216 -374 -478 -828 -583 -1010 -104 -181 -230 -399 -279 -483 -50 -84 -88 -155 -86 -158 3 -2 1166 -3 2585 -2 l2581 3 -72 125 c-177 306 -477 826 -681 1180 -232 403 -384 666 -730 1265 -114 198 -260 450 -323 560 -63 110 -179 310 -257 445 -78 135 -213 369 -300 520 -87 151 -168 292 -181 312 -13 21 -24 42 -24 47 0 34 -26 9 -73 -71z m285 -983 c121 -209 272 -472 337 -585 65 -113 192 -333 283 -490 180 -311 531 -921 695 -1204 57 -99 103 -181 103 -183 0 -2 -741 -3 -1646 -3 -1512 0 -1646 1 -1640 16 3 9 73 132 155 273 82 141 201 348 266 461 65 113 183 318 263 455 139 242 344 596 637 1105 78 135 179 311 226 392 46 81 88 146 93 145 5 -2 108 -174 228 -382z m-1054 -2769 c38 -20 61 -47 68 -84 6 -31 6 -32 -29 -32 -28 0 -36 4 -41 24 -3 14 -18 29 -36 36 -25 10 -34 10 -55 -4 -30 -20 -33 -51 -6 -66 11 -5 43 -15 72 -21 94 -20 132 -85 94 -159 -21 -40 -69 -64 -130 -64 -64 0 -106 28 -129 84 -23 57 -21 62 22 58 30 -2 38 -7 40 -25 7 -50 85 -70 123 -32 39 39 20 57 -96 88 -60 16 -85 43 -85 94 0 23 7 53 16 66 33 46 119 65 172 37z m-964 -10 c44 -18 66 -52 66 -101 0 -49 -22 -83 -66 -101 -47 -20 -54 -18 -54 15 0 21 6 32 21 36 11 4 24 16 28 28 18 50 -14 77 -90 77 l-39 0 0 -150 0 -150 -35 0 -35 0 0 180 0 180 85 0 c51 0 99 -6 119 -14z" />
             </g>
           </svg>
@@ -107,27 +135,30 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
         </Link>
       </div>
 
-      {/* ===== 접속 상태 + 내 프로필 (테마 포함) ===== */}
+      {/* ===== 접속 상태 + 내 프로필 ===== */}
       <div className="border-b border-[var(--color-border)] p-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
-          <span className="text-xs text-[var(--color-muted-foreground)]">
-            로그인 중
-          </span>
+        <div className="flex items-center gap-2" role="status" aria-live="polite">
+          <span className="flex h-2 w-2 rounded-full bg-green-500" aria-hidden="true" />
+          <span className="text-xs text-[var(--color-muted-foreground)]">로그인 중</span>
         </div>
 
         <DropdownMenu>
-          <div className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-600/10 transition text-left">
-            <DropdownMenuTrigger className="w-full flex items-center gap-3 text-left">
+          <DropdownMenuTrigger>
+            <div className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-600/10 transition text-left cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-[var(--color-sidebar)]">
               <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                {user?.email?.substring(0, 2).toUpperCase() || 'U'}
+                {avatarInitial}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm text-[var(--color-foreground)]">내 프로필</div>
               </div>
-              <span className="text-[var(--color-muted-foreground)] flex-shrink-0">▾</span>
-            </DropdownMenuTrigger>
-          </div>
+              <span
+                className="text-[var(--color-muted-foreground)] flex-shrink-0"
+                aria-hidden="true"
+              >
+                ▾
+              </span>
+            </div>
+          </DropdownMenuTrigger>
 
           <DropdownMenuContent
             side="bottom"
@@ -140,7 +171,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
                 {user?.email}
               </p>
               <p className="text-xs font-medium text-[var(--color-foreground)]">
-                {getRoleLabel()}
+                {roleLabel}
               </p>
             </div>
             <DropdownMenuSeparator className="bg-[var(--color-border)]" />
@@ -166,14 +197,26 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
             <DropdownMenuLabel className="text-[var(--color-foreground)] text-xs font-semibold">
               🎨 테마
             </DropdownMenuLabel>
-            <DropdownMenuRadioGroup value={theme || 'dark'} onValueChange={handleThemeChange}>
-              <DropdownMenuRadioItem value="light" className="text-[var(--color-foreground)]">
+            <DropdownMenuRadioGroup
+              value={theme || 'dark'}
+              onValueChange={handleThemeChange}
+            >
+              <DropdownMenuRadioItem
+                value="light"
+                className="text-[var(--color-foreground)]"
+              >
                 ☀️ 라이트
               </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="dark" className="text-[var(--color-foreground)]">
+              <DropdownMenuRadioItem
+                value="dark"
+                className="text-[var(--color-foreground)]"
+              >
                 🌙 다크
               </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="classic-dark" className="text-[var(--color-foreground)]">
+              <DropdownMenuRadioItem
+                value="classic-dark"
+                className="text-[var(--color-foreground)]"
+              >
                 🖤 Classic 다크
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
@@ -192,8 +235,11 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
       </div>
 
       {/* ===== 메인 네비게이션 ===== */}
-      <nav className="flex-1 p-4 overflow-y-auto">
-        <div className="text-xs font-semibold uppercase text-[var(--color-muted-foreground)] mb-4 px-2">
+      <nav className="flex-1 p-4 overflow-y-auto" aria-label="주요 메뉴">
+        <div
+          className="text-xs font-semibold uppercase text-[var(--color-muted-foreground)] mb-4 px-2"
+          id="nav-label"
+        >
           메뉴
         </div>
         <div className="space-y-1">
@@ -202,13 +248,16 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
               key={item.href}
               href={item.href}
               onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition ${
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 isActive(item.href)
                   ? 'bg-blue-600 text-white'
                   : 'text-[var(--color-foreground)] hover:bg-blue-600/10'
               }`}
+              aria-current={isActive(item.href) ? 'page' : undefined}
             >
-              <span className="text-lg flex-shrink-0">{item.icon}</span>
+              <span className="text-lg flex-shrink-0" aria-hidden="true">
+                {item.icon}
+              </span>
               <span className="truncate">{item.label}</span>
             </a>
           ))}
@@ -225,7 +274,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
             {user?.email}
           </p>
           <p className="text-xs text-[var(--color-muted-foreground)] mt-2">
-            역할: {getRoleLabel()}
+            역할: {roleLabel}
           </p>
         </div>
       </div>
