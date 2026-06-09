@@ -6,8 +6,5 @@
 - Local:         http://localhost:3001
 - Network:       http://172.30.1.10:3001
 - Environments: .env.local
-✓ Ready in 639ms
+✓ Ready in 924ms
 
- GET /login 200 in 1104ms (next.js: 882ms, application-code: 223ms)
- GET /login 200 in 45ms (next.js: 4ms, application-code: 41ms)
-[?25h

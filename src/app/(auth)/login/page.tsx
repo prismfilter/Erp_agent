@@ -59,20 +59,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-slate-950 px-4">
-      <div className="w-full max-w-sm bg-slate-800 border border-slate-700 rounded-lg p-8 shadow-lg">
+    <div className="flex h-screen items-center justify-center bg-[var(--color-background)] px-4">
+      <div className="w-full max-w-sm bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg p-8 shadow-lg">
         {/* 헤더 */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center font-bold text-white text-4xl mx-auto mb-4">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center font-bold text-white text-4xl mx-auto mb-4">
             PF
           </div>
-          <h1 className="text-2xl font-bold text-gray-100 mb-2">PRISM FILTER</h1>
-          <p className="text-gray-400">정산 자동화 시스템</p>
+          <h1 className="text-2xl font-bold text-[var(--color-foreground)] mb-2">PRISM FILTER</h1>
+          <p className="text-[var(--color-muted-foreground)]">정산 자동화 시스템</p>
         </div>
 
         {/* 안내 */}
-        <div className="bg-indigo-500/10 border border-indigo-500 rounded-lg p-3 mb-4">
-          <p className="text-sm text-gray-100">
+        <div className="bg-blue-500/10 border border-blue-500 rounded-lg p-3 mb-4">
+          <p className="text-sm text-[var(--color-foreground)]">
             <strong>회사 계정(@prism-filter.com)</strong>만 접근 가능합니다.
           </p>
         </div>
@@ -90,7 +90,7 @@ export default function LoginPage() {
         <button
           onClick={handleGoogleLogin}
           disabled={isLoading}
-          className="w-full h-10 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg text-gray-100 font-medium flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+          className="w-full h-10 bg-blue-600 hover:bg-blue-700 border border-blue-700 rounded-lg text-white font-medium flex items-center justify-center gap-2 transition-all disabled:opacity-50"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -114,9 +114,9 @@ export default function LoginPage() {
         </button>
 
         {/* 주의사항 */}
-        <div className="text-center pt-6 border-t border-slate-700 mt-6">
-          <p className="text-xs text-gray-400 leading-relaxed">
-            <span className="block font-semibold text-gray-200 mb-1">프리즘필터 뮤직그룹</span>
+        <div className="text-center pt-6 border-t border-[var(--color-border)] mt-6">
+          <p className="text-xs text-[var(--color-muted-foreground)] leading-relaxed">
+            <span className="block font-semibold text-[var(--color-foreground)] mb-1">프리즘필터 뮤직그룹</span>
             직원만 로그인할 수 있습니다.
             <br />
             (@prism-filter.com 이메일 필수)

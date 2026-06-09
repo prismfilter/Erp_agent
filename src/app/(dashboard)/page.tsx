@@ -40,16 +40,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* 로그인 정보 */}
-      <div className="bg-slate-800 border border-slate-700 rounded-lg p-5 flex justify-between items-center">
-        <div>
-          <p className="text-xs text-gray-400 mb-1">계정</p>
-          <p className="text-sm font-semibold text-gray-100">{user?.email}</p>
-        </div>
-        <div className="bg-indigo-500 text-white px-3 py-1 rounded text-xs font-medium">
-          {user?.role === 'ADMIN' ? '👑 관리자' : user?.role === 'STAFF' ? '💼 직원' : '✍️ 작가'}
-        </div>
-      </div>
 
       {/* 분기별 정산 */}
       <div>
