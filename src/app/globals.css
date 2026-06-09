@@ -2,7 +2,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* CSS 변수 정의 - 라이트 모드 기본값 */
 :root,
 .light {
   color-scheme: light;
@@ -19,7 +18,6 @@
   --color-accent: #4f46e5;
 }
 
-/* 다크 모드 - next-themes class="dark" */
 .dark {
   color-scheme: dark;
   --color-background: #0c111d;
@@ -35,7 +33,6 @@
   --color-accent: #4f46e5;
 }
 
-/* Classic 다크 모드 */
 .classic-dark {
   color-scheme: dark;
   --color-background: #22272e;
@@ -72,7 +69,6 @@
   }
 }
 
-/* 로고 스타일 */
 .prism-logo {
   filter: none;
   object-fit: contain;
