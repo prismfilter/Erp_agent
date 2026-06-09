@@ -65,7 +65,7 @@ export default function StaffPage() {
         {isLoading ? (
           <div className="p-8">
             <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-border border-t-[var(--color-primary)] mr-3"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-border border-t-primary mr-3"></div>
               <p className="text-sm text-muted-foreground">데이터 로딩 중...</p>
             </div>
           </div>
@@ -93,9 +93,9 @@ export default function StaffPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[var(--color-border)]">
+              <tbody className="divide-y divide-border">
                 {staff.map((member) => (
-                  <tr key={member.id} className="hover:bg-[var(--color-border)]/30">
+                  <tr key={member.id} className="hover:bg-border/30">
                     <td className="px-6 py-4 text-foreground">
                       <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded text-xs font-medium">
                         {member.role === 'ADMIN' ? '👑 관리자' : '💼 직원'}

@@ -110,7 +110,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
 
   return (
     <aside
-      className="w-full h-full flex flex-col bg-[var(--color-sidebar)] border-r border-border"
+      className="w-full h-full flex flex-col bg-sidebar border-r border-border"
       role="navigation"
       aria-label="사이드바 네비게이션"
     >
@@ -119,7 +119,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
         <Link
           href="/"
           onClick={onClose}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-600/10 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-[var(--color-sidebar)]"
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-600/10 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-sidebar"
           aria-label="홈으로 돌아가기"
         >
           {/* 프리즘 필터 로고 */}
@@ -149,7 +149,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
 
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <div className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-600/10 transition text-left cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-[var(--color-sidebar)]">
+            <div className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-600/10 transition text-left cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-sidebar">
               <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                 {avatarInitial}
               </div>
@@ -179,7 +179,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
                 {roleLabel}
               </p>
             </div>
-            <DropdownMenuSeparator className="bg-[var(--color-border)]" />
+            <DropdownMenuSeparator className="bg-border" />
 
             {/* 프로필 설정 */}
             <DropdownMenuItem
@@ -202,7 +202,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
               </DropdownMenuItem>
             )}
 
-            <DropdownMenuSeparator className="bg-[var(--color-border)]" />
+            <DropdownMenuSeparator className="bg-border" />
 
             {/* 테마 섹션 */}
             <DropdownMenuRadioGroup
@@ -232,7 +232,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
 
-            <DropdownMenuSeparator className="bg-[var(--color-border)]" />
+            <DropdownMenuSeparator className="bg-border" />
 
             {/* 로그아웃 */}
             <DropdownMenuItem
@@ -283,7 +283,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
       {/* ===== 하단: 사용자 프로필 (Image #20 스타일) ===== */}
       <div className="border-t border-border p-4">
         <DropdownMenu>
-          <DropdownMenuTrigger className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-600/10 transition text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-[var(--color-sidebar)]">
+          <DropdownMenuTrigger className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-600/10 transition text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-sidebar">
             <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
               {avatarInitial}
             </div>
@@ -309,7 +309,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
                 {roleLabel}
               </p>
             </div>
-            <DropdownMenuSeparator className="bg-[var(--color-border)]" />
+            <DropdownMenuSeparator className="bg-border" />
 
             {/* 프로필 설정 */}
             <DropdownMenuItem
@@ -332,7 +332,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
               </DropdownMenuItem>
             )}
 
-            <DropdownMenuSeparator className="bg-[var(--color-border)]" />
+            <DropdownMenuSeparator className="bg-border" />
 
             {/* 테마 섹션 */}
             <DropdownMenuRadioGroup
@@ -362,7 +362,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
 
-            <DropdownMenuSeparator className="bg-[var(--color-border)]" />
+            <DropdownMenuSeparator className="bg-border" />
 
             {/* 로그아웃 */}
             <DropdownMenuItem
