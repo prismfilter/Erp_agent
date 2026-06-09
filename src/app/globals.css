@@ -2,51 +2,71 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* 기본값 (다크 모드) — Tailwind v4 @theme inline */
+/* ============================================================================
+   다크 모드 (기본값) - Dribbble 이미지 Image #2 기반
+   배경: #0c111d (짙은 네이비)
+   사이드바: #080e1a (더 짙은 네이비)
+   카드: #111827 (진한 회색-파랑)
+   ============================================================================ */
 @theme inline {
-  --color-background: #0a0f1e;
-  --color-foreground: #f8fafc;
-  --color-primary: #3b82f6;
+  --color-background: #0c111d;
+  --color-foreground: #e6edf3;
+  --color-primary: #1d6af5;
   --color-primary-foreground: #ffffff;
-  --color-sidebar: #060c18;
-  --color-sidebar-foreground: #e2e8f0;
+  --color-sidebar: #080e1a;
+  --color-sidebar-foreground: #c9d1d9;
   --color-card: #111827;
-  --color-border: #1e3a5f;
-  --color-muted: #1e293b;
-  --color-muted-foreground: #94a3b8;
-  --color-accent: #1d4ed8;
+  --color-border: #30363d;
+  --color-muted: #21262d;
+  --color-muted-foreground: #8b949e;
+  --color-accent: #316dca;
 }
 
-/* 라이트 모드 */
+/* ============================================================================
+   라이트 모드 - Dribbble 이미지 Image #1 기반
+   배경: #f8fafc (거의 흰색)
+   사이드바: #ffffff (순수 흰색)
+   카드: #ffffff
+   ============================================================================ */
 .light {
-  --color-background: #eef4ff;
-  --color-foreground: #0c1e35;
-  --color-primary: #2563eb;
+  --color-background: #f8fafc;
+  --color-foreground: #111827;
+  --color-primary: #1d6af5;
   --color-primary-foreground: #ffffff;
-  --color-sidebar: #dbeafe;
-  --color-sidebar-foreground: #1e3a5f;
+  --color-sidebar: #ffffff;
+  --color-sidebar-foreground: #24292f;
   --color-card: #ffffff;
-  --color-border: #bfdbfe;
-  --color-muted: #e0edff;
-  --color-muted-foreground: #3b5280;
-  --color-accent: #1d4ed8;
+  --color-border: #d0d7de;
+  --color-muted: #eaeef2;
+  --color-muted-foreground: #57606a;
+  --color-accent: #1d6af5;
 }
 
-/* Classic 다크 모드 */
+/* ============================================================================
+   Classic 다크 모드 - GitHub Dark Dimmed 스타일
+   배경: #22272e (회색 다크)
+   사이드바: #1c2128 (더 어두운 회색)
+   카드: #2d333b (중간 회색)
+   텍스트: #adbac7 (밝은 회색)
+   액센트: #316dca (다크 블루)
+   ============================================================================ */
 .classic-dark {
-  --color-background: #000510;
-  --color-foreground: #e2e8f0;
-  --color-primary: #60a5fa;
-  --color-primary-foreground: #000000;
-  --color-sidebar: #000000;
-  --color-sidebar-foreground: #cbd5e1;
-  --color-card: #0d1117;
-  --color-border: #0f2040;
-  --color-muted: #111827;
-  --color-muted-foreground: #6b7280;
-  --color-accent: #1e40af;
+  --color-background: #22272e;
+  --color-foreground: #adbac7;
+  --color-primary: #316dca;
+  --color-primary-foreground: #ffffff;
+  --color-sidebar: #1c2128;
+  --color-sidebar-foreground: #c9d1d9;
+  --color-card: #2d333b;
+  --color-border: #444c56;
+  --color-muted: #3d444d;
+  --color-muted-foreground: #768390;
+  --color-accent: #316dca;
 }
 
+/* ============================================================================
+   글로벌 기본 스타일
+   ============================================================================ */
 @layer base {
   * {
     box-sizing: border-box;
@@ -56,7 +76,7 @@
 
   html, body {
     height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
     background-color: var(--color-background);
     color: var(--color-foreground);
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -65,4 +85,16 @@
   body {
     overflow: hidden;
   }
+}
+
+/* ============================================================================
+   로고 스타일 - 다크/Classic 다크에서 흰색 표시
+   ============================================================================ */
+.dark .prism-logo,
+.classic-dark .prism-logo {
+  filter: brightness(0) invert(1);
+}
+
+.light .prism-logo {
+  filter: none;
 }

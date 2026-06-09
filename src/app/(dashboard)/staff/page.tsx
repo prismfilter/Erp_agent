@@ -44,13 +44,20 @@ export default function StaffPage() {
   return (
     <div className="space-y-6">
       {/* 헤더 */}
-      <div>
-        <h1 className="text-3xl font-bold text-[var(--color-foreground)] mb-2">
-          직원 관리
-        </h1>
-        <p className="text-[var(--color-muted-foreground)]">
-          2026년 06월 09일 • 회사 직원 목록
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-[var(--color-foreground)] mb-2">
+            직원 관리
+          </h1>
+          <p className="text-[var(--color-muted-foreground)]">
+            2026년 06월 09일 • 회사 직원 목록
+          </p>
+        </div>
+
+        {/* + 직원 등록 버튼 */}
+        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+          + 직원 등록
+        </button>
       </div>
 
       {/* 직원 목록 */}

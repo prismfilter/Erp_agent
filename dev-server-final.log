@@ -8,3 +8,652 @@
 - Environments: .env.local
 ✓ Ready in 924ms
 
+ GET / 200 in 410ms (next.js: 216ms, application-code: 194ms)
+ GET /login 200 in 66ms (next.js: 34ms, application-code: 32ms)
+ GET /login 200 in 96ms (next.js: 7ms, application-code: 89ms)
+ GET / 200 in 74ms (next.js: 7ms, application-code: 67ms)
+ GET /login 200 in 30ms (next.js: 8ms, application-code: 23ms)
+ GET /login 200 in 87ms (next.js: 8ms, application-code: 79ms)
+ GET /login 200 in 87ms (next.js: 7ms, application-code: 79ms)
+ GET / 200 in 32ms (next.js: 5ms, application-code: 26ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+[browser] Uncaught Error: Base UI: MenuGroupContext is missing. Menu group parts must be used within <Menu.Group> or <Menu.RadioGroup>.
+    at DropdownMenuLabel (src/components/ui/dropdown-menu.tsx:64:5)
+    at AppSidebar (src/components/layout/AppSidebar.tsx:97:13)
+    at DashboardLayout (src/components/layout/DashboardLayout.tsx:13:9)
+    at Layout (src/app/(dashboard)/layout.tsx:28:10)
+  62 | }) {
+  63 |   return (
+> 64 |     <MenuPrimitive.GroupLabel
+     |     ^
+  65 |       data-slot="dropdown-menu-label"
+  66 |       data-inset={inset}
+  67 |       className={cn(
+ GET /? 200 in 51ms (next.js: 9ms, application-code: 42ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+[browser] Uncaught Error: Base UI: MenuGroupContext is missing. Menu group parts must be used within <Menu.Group> or <Menu.RadioGroup>.
+    at DropdownMenuLabel (src/components/ui/dropdown-menu.tsx:64:5)
+    at AppSidebar (src/components/layout/AppSidebar.tsx:97:13)
+    at DashboardLayout (src/components/layout/DashboardLayout.tsx:13:9)
+    at Layout (src/app/(dashboard)/layout.tsx:28:10)
+  62 | }) {
+  63 |   return (
+> 64 |     <MenuPrimitive.GroupLabel
+     |     ^
+  65 |       data-slot="dropdown-menu-label"
+  66 |       data-inset={inset}
+  67 |       className={cn(
+ GET /login 200 in 100ms (next.js: 8ms, application-code: 92ms)
+ GET /login 200 in 79ms (next.js: 6ms, application-code: 73ms)
+ GET / 200 in 43ms (next.js: 8ms, application-code: 36ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+ GET /staff 200 in 716ms (next.js: 652ms, application-code: 64ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+ GET /revenue 200 in 513ms (next.js: 463ms, application-code: 50ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+ GET / 200 in 77ms (next.js: 6ms, application-code: 71ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+ GET /settlement 200 in 180ms (next.js: 71ms, application-code: 109ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+ GET / 200 in 62ms (next.js: 6ms, application-code: 56ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+ GET /staff 200 in 66ms (next.js: 8ms, application-code: 59ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+ GET /revenue 200 in 97ms (next.js: 7ms, application-code: 89ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+ GET /settlement 200 in 76ms (next.js: 6ms, application-code: 69ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+ GET / 200 in 59ms (next.js: 6ms, application-code: 53ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+ GET /staff 200 in 81ms (next.js: 8ms, application-code: 73ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+[browser] Uncaught Error: Base UI: MenuGroupContext is missing. Menu group parts must be used within <Menu.Group> or <Menu.RadioGroup>.
+    at DropdownMenuLabel (src/components/ui/dropdown-menu.tsx:64:5)
+    at AppSidebar (src/components/layout/AppSidebar.tsx:97:13)
+    at DashboardLayout (src/components/layout/DashboardLayout.tsx:13:9)
+    at Layout (src/app/(dashboard)/layout.tsx:28:10)
+  62 | }) {
+  63 |   return (
+> 64 |     <MenuPrimitive.GroupLabel
+     |     ^
+  65 |       data-slot="dropdown-menu-label"
+  66 |       data-inset={inset}
+  67 |       className={cn(
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <Layout params={Promise}>
+      <DashboardLayout>
+        <div className="flex h-scr...">
+          <div className="hidden md:...">
+            <AppSidebar>
+              <div className="w-full h-f...">
+                <div className="border-b b...">
+                  <DropdownMenu>
+                    <MenuRoot data-slot="dropdown-menu">
+                      <FloatingTree externalTree={{nodesRef:{...}, ...}}>
+                        <DropdownMenuTrigger asChild={true}>
+                          <MenuTrigger data-slot="dropdown-m..." asChild={true}>
+>                           <button
+>                             type="button"
+>                             onClick={function}
+>                             onMouseDown={function}
+>                             onKeyDown={function}
+>                             onKeyUp={function}
+>                             onPointerDown={function}
+>                             tabIndex={0}
+>                             disabled={false}
+>                             aria-haspopup="menu"
+>                             aria-controls={undefined}
+>                             id="base-ui-_r_3_"
+>                             data-slot="dropdown-menu-trigger"
+>                             asChild={true}
+>                             ref={function}
+>                           >
+>                             <button
+>                               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-900/30 tr..."
+>                             >
+                        ...
+                ...
+          ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element. 
+ GET / 200 in 59ms (next.js: 5ms, application-code: 54ms)
+ GET /login 200 in 30ms (next.js: 6ms, application-code: 25ms)
+✓ Compiled in 308ms

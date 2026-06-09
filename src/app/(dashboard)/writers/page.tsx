@@ -120,10 +120,8 @@ export default function WritersPage() {
 
         {/* + 등록 버튼 */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-              + 등록
-            </Button>
+          <SheetTrigger className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+            + 등록
           </SheetTrigger>
           <SheetContent
             className="bg-[var(--color-card)] border-l border-[var(--color-border)]"

@@ -60,7 +60,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex h-screen items-center justify-center bg-[var(--color-background)] px-4">
-      <div className="w-full max-w-sm bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg p-8 shadow-lg">
+      <div className="w-full max-w-md bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg p-8 shadow-lg">
         {/* 헤더 */}
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center font-bold text-white text-4xl mx-auto mb-4">
