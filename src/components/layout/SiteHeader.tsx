@@ -1,50 +1,102 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
+import { useTheme } from 'next-themes';
+import { useMemo, useState } from 'react';
 
 interface SiteHeaderProps {
   onMenuClick?: () => void;
 }
 
 const pageLabels: Record<string, string> = {
-  '/': '홈 피드',
-  '/settlement': '정산서',
-  '/writers': '전속작가',
-  '/staff': '직원',
-  '/revenue': '매출현황',
-  '/admin/accounts': '계정 관리',
-  '/writer-portal': '나의 정산서',
+  '/': 'Home',
+  '/settlement': 'Settlement',
+  '/writers': 'Writers',
+  '/staff': 'Staff',
+  '/revenue': 'Revenue',
+  '/admin/accounts': 'Accounts',
+  '/writer-portal': 'Writer Portal',
 };
 
 export function SiteHeader({ onMenuClick }: SiteHeaderProps) {
   const pathname = usePathname();
-  const { user } = useAuthStore();
+  const { theme, setTheme } = useTheme();
+  const [searchValue, setSearchValue] = useState('');
 
-  const pageTitle = pageLabels[pathname] || '페이지';
+  const pageTitle = useMemo(() => pageLabels[pathname] || 'Page', [pathname]);
 
-  const getInitials = (email?: string) => {
-    if (!email) return '?';
-    return email.split('@')[0].substring(0, 2).toUpperCase();
+  const nextTheme = useMemo(() => {
+    const themes = ['light', 'dark', 'classic-dark'];
+    const currentIndex = themes.indexOf(theme || 'dark');
+    return themes[(currentIndex + 1) % themes.length];
+  }, [theme]);
+
+  const getThemeIcon = (t?: string) => {
+    switch (t) {
+      case 'light':
+        return '☀️';
+      case 'classic-dark':
+        return '🖤';
+      default:
+        return '🌙';
+    }
   };
 
   return (
-    <>
-      <div className="flex items-center gap-4">
-        <button onClick={onMenuClick} className="md:hidden text-gray-300 text-2xl">
+    <header className="flex items-center justify-between gap-4 px-6 py-4 bg-[var(--color-background)] border-b border-[var(--color-border)] sticky top-0 z-10">
+      {/* 왼쪽: 메뉴 + 브레드크럼 */}
+      <div className="flex items-center gap-4 flex-1">
+        <button
+          onClick={onMenuClick}
+          className="md:hidden p-1 rounded hover:bg-blue-600/10 text-[var(--color-foreground)]"
+          aria-label="메뉴 열기"
+        >
           ☰
         </button>
-        <span className="text-sm font-medium text-gray-100">{pageTitle}</span>
+
+        {/* 브레드크럼 */}
+        <div className="hidden md:flex items-center gap-2 text-sm">
+          <span className="text-[var(--color-muted-foreground)]">Dashboard</span>
+          <span className="text-[var(--color-muted-foreground)]">/</span>
+          <span className="text-[var(--color-foreground)] font-medium">{pageTitle}</span>
+        </div>
       </div>
 
-      <div>
+      {/* 오른쪽: 검색 + 아이콘들 */}
+      <div className="flex items-center gap-3">
+        {/* 검색 입력창 */}
+        <div className="hidden lg:flex items-center gap-2 px-3 py-2 bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg">
+          <span className="text-[var(--color-muted-foreground)]">🔍</span>
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            className="bg-transparent text-[var(--color-foreground)] text-sm placeholder-[var(--color-muted-foreground)] outline-none w-48"
+          />
+          <span className="text-xs text-[var(--color-muted-foreground)]">⌘K</span>
+        </div>
+
+        {/* 테마 토글 */}
         <button
-          className="w-10 h-10 rounded-full bg-indigo-500 text-white font-semibold text-sm hover:bg-indigo-600 transition-all"
-          title={user?.email || '사용자'}
+          onClick={() => setTheme(nextTheme)}
+          className="p-2 rounded-lg hover:bg-blue-600/10 text-[var(--color-foreground)] transition"
+          title={`테마: ${theme}`}
         >
-          {getInitials(user?.email)}
+          {getThemeIcon(theme)}
+        </button>
+
+        {/* 설정 아이콘 */}
+        <button className="p-2 rounded-lg hover:bg-blue-600/10 text-[var(--color-foreground)] transition" title="설정">
+          ⚙️
+        </button>
+
+        {/* 알림 아이콘 */}
+        <button className="relative p-2 rounded-lg hover:bg-blue-600/10 text-[var(--color-foreground)] transition" title="알림">
+          🔔
+          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
       </div>
-    </>
+    </header>
   );
 }

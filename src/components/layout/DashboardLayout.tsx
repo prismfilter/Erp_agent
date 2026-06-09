@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { AppSidebar } from './AppSidebar';
+import { SiteHeader } from './SiteHeader';
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setOpen] = useState(false);
@@ -25,15 +26,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       {/* 메인 영역 */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* 모바일 전용 탑바 */}
-        <div className="md:hidden h-12 bg-[var(--color-sidebar)] border-b border-[var(--color-border)] flex items-center px-4">
-          <button
-            onClick={() => setOpen(true)}
-            className="text-[var(--color-foreground)] text-xl p-1 hover:bg-blue-900/30 rounded transition"
-          >
-            ☰
-          </button>
-        </div>
+        {/* 헤더 (데스크톱 + 모바일) */}
+        <SiteHeader onMenuClick={() => setOpen(true)} />
 
         {/* 콘텐츠 */}
         <main className="flex-1 overflow-y-auto p-6">
