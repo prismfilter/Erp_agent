@@ -90,11 +90,23 @@
 /* ============================================================================
    로고 스타일 - 다크/Classic 다크에서 흰색 표시
    ============================================================================ */
+
+/* 사이드바 로고 */
 .dark .prism-logo,
 .classic-dark .prism-logo {
   filter: brightness(0) invert(1);
 }
 
 .light .prism-logo {
+  filter: none;
+}
+
+/* 로그인 페이지 로고 */
+.dark .prism-logo-login,
+.classic-dark .prism-logo-login {
+  filter: brightness(0) invert(1);
+}
+
+.light .prism-logo-login {
   filter: none;
 }

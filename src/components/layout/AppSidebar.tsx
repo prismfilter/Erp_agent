@@ -194,13 +194,13 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
             <DropdownMenuSeparator className="bg-[var(--color-border)]" />
 
             {/* 테마 섹션 */}
-            <DropdownMenuLabel className="text-[var(--color-foreground)] text-xs font-semibold">
-              🎨 테마
-            </DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={theme || 'dark'}
               onValueChange={handleThemeChange}
             >
+              <DropdownMenuLabel className="text-[var(--color-foreground)] text-xs font-semibold">
+                🎨 테마
+              </DropdownMenuLabel>
               <DropdownMenuRadioItem
                 value="light"
                 className="text-[var(--color-foreground)]"

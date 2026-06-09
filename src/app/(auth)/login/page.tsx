@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -63,8 +64,15 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg p-8 shadow-lg">
         {/* 헤더 */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center font-bold text-white text-4xl mx-auto mb-4">
-            PF
+          <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+            <Image
+              src="/logo.webp"
+              alt="PRISM FILTER 로고"
+              width={80}
+              height={80}
+              priority
+              className="prism-logo-login"
+            />
           </div>
           <h1 className="text-2xl font-bold text-[var(--color-foreground)] mb-2">PRISM FILTER</h1>
           <p className="text-[var(--color-muted-foreground)]">정산 자동화 시스템</p>
