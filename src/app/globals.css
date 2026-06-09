@@ -2,12 +2,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ============================================================================
-   기본값 (라이트 모드) + next-themes 호환성
-   Tailwind CSS v4 + next-themes 통합: :root를 라이트로, .dark 클래스로 다크 모드 제어
-   ============================================================================ */
+/* CSS 변수 정의 - 라이트 모드 기본값 */
 :root,
 .light {
+  color-scheme: light;
   --color-background: #f8fafc;
   --color-foreground: #111827;
   --color-primary: #6366f1;
@@ -21,10 +19,9 @@
   --color-accent: #4f46e5;
 }
 
-/* ============================================================================
-   다크 모드 - next-themes가 <html class="dark">로 적용
-   ============================================================================ */
+/* 다크 모드 - next-themes class="dark" */
 .dark {
+  color-scheme: dark;
   --color-background: #0c111d;
   --color-foreground: #e6edf3;
   --color-primary: #6366f1;
@@ -38,10 +35,9 @@
   --color-accent: #4f46e5;
 }
 
-/* ============================================================================
-   Classic 다크 모드 - GitHub Dark Dimmed 스타일
-   ============================================================================ */
+/* Classic 다크 모드 */
 .classic-dark {
+  color-scheme: dark;
   --color-background: #22272e;
   --color-foreground: #adbac7;
   --color-primary: #6366f1;
@@ -55,9 +51,6 @@
   --color-accent: #4f46e5;
 }
 
-/* ============================================================================
-   글로벌 기본 스타일
-   ============================================================================ */
 @layer base {
   * {
     box-sizing: border-box;
@@ -65,7 +58,8 @@
     padding: 0;
   }
 
-  html, body {
+  html,
+  body {
     height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
     background-color: var(--color-background);
@@ -78,17 +72,12 @@
   }
 }
 
-/* ============================================================================
-   로고 스타일 - 다크/Classic 다크에서 흰색 표시
-   ============================================================================ */
-
-/* 기본 로고 (라이트 모드) - 검정색 로고 그대로 */
+/* 로고 스타일 */
 .prism-logo {
   filter: none;
   object-fit: contain;
 }
 
-/* 다크 모드 - 로고를 흰색으로 변환 */
 .dark .prism-logo,
 .classic-dark .prism-logo {
   filter: brightness(0) invert(1) !important;
