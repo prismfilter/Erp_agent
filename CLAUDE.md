@@ -190,4 +190,60 @@ ANTHROPIC_API_KEY=<API-KEY>
 
 ---
 
+## Context7 MCP 서버 사용 가이드
+
+### Context7이란?
+AI 코딩 어시스턴트(Claude Code, Gemini CLI 등)에게 **최신 공식 문서와 코드 예제를 실시간으로 주입**하는 MCP(Model Context Protocol) 서버입니다.
+
+학습 데이터가 과거 기준이라 발생하는 deprecated API 사용, 구식 문법 생성 등의 문제를 해결합니다.
+
+### 사용 방법
+
+#### 1️⃣ 프롬프트 끝에 "context7 사용" 추가
+```
+<원래 프롬프트>
+
+context7을 사용해줘
+```
+
+#### 2️⃣ 또는 특정 라이브러리 지정
+```
+Next.js 16+ 최신 App Router 패턴으로 작성해줘
+
+context7을 사용해줘
+```
+
+#### 3️⃣ 또는 특정 기능 요청
+```
+Tailwind CSS v4 CSS-first 방식으로 스타일링해줘. 공식 문서를 참고해줘
+
+context7을 사용해줘
+```
+
+### 지원하는 라이브러리 (자동 참고)
+- **Next.js** 16.2+ (App Router, Server Components)
+- **React** 19.2+ (Hooks, Concurrent Features)
+- **TypeScript** 5.0+
+- **Tailwind CSS** v4 (CSS-first)
+- **Supabase** (Auth, RLS, Realtime)
+- **React Hook Form** 7.78+
+- **Zod** 4.4+
+- **shadcn/ui** 4.10+
+- **Zustand** 5.0+
+- **Lucide React** 1.17+
+
+### 주요 이점
+✅ **최신 API 사용** — deprecated된 코드 생성 방지  
+✅ **최신 패턴 학습** — 현재 모범 사례 적용  
+✅ **타입 안정성** — 최신 TypeScript 정의 반영  
+✅ **성능 최적화** — 최신 성능 권장사항 적용  
+✅ **보안 개선** — 최신 보안 패턴 적용
+
+### MCP 설정 위치
+- **설정 파일:** `.claude/mcp.json`
+- **자동 초기화:** Claude Code 시작 시 자동 활성화
+- **캐시:** 3600초(1시간) TTL로 문서 캐시
+
+---
+
 **See PRD.md for detailed requirements**

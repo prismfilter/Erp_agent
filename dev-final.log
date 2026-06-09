@@ -6,28 +6,6 @@
 - Local:         http://localhost:3001
 - Network:       http://172.30.1.10:3001
 - Environments: .env.local
-✓ Ready in 704ms
+✓ Ready in 536ms
 
- GET /login 200 in 371ms (next.js: 204ms, application-code: 167ms)
- GET /login 200 in 75ms (next.js: 7ms, application-code: 68ms)
- GET /login 200 in 70ms (next.js: 7ms, application-code: 63ms)
- GET / 200 in 87ms (next.js: 57ms, application-code: 30ms)
- GET /staff 200 in 242ms (next.js: 82ms, application-code: 160ms)
- GET /revenue 200 in 101ms (next.js: 56ms, application-code: 45ms)
- GET /settlement 200 in 149ms (next.js: 76ms, application-code: 73ms)
- GET /revenue 200 in 77ms (next.js: 9ms, application-code: 69ms)
- GET /staff 200 in 85ms (next.js: 5ms, application-code: 81ms)
- GET / 200 in 56ms (next.js: 5ms, application-code: 51ms)
-✓ Compiled in 79ms
- GET /staff 200 in 88ms (next.js: 9ms, application-code: 79ms)
- GET /settlement 200 in 36ms (next.js: 5ms, application-code: 31ms)
- GET /revenue 200 in 53ms (next.js: 8ms, application-code: 45ms)
- GET /staff 200 in 67ms (next.js: 9ms, application-code: 59ms)
- GET /revenue 200 in 89ms (next.js: 7ms, application-code: 82ms)
- GET / 200 in 77ms (next.js: 8ms, application-code: 68ms)
- GET /staff 200 in 68ms (next.js: 8ms, application-code: 60ms)
- GET /settlement 200 in 71ms (next.js: 7ms, application-code: 64ms)
-✓ Compiled in 192ms
- GET /settlement 200 in 184ms (next.js: 110ms, application-code: 74ms)
-✓ Compiled in 179ms
- GET /settlement 200 in 163ms (next.js: 101ms, application-code: 62ms)
+ GET /settlement 200 in 504ms (next.js: 198ms, application-code: 306ms)
