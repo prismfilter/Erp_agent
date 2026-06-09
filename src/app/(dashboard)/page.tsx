@@ -10,7 +10,7 @@ export default function HomePage() {
       {/* 섹션 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">홈 피드</h1>
           <p className="text-muted-foreground text-sm">2026년 06월 09일 • 프리즘필터 뮤직그룹 정산 현황</p>
         </div>
         <div className="hidden lg:flex gap-2">

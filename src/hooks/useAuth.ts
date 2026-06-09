@@ -40,12 +40,12 @@ export function useAuth() {
 
           console.log('✅ 이메일 도메인 검증 성공');
 
-          // 역할 조회 (에러 무시)
+          // 역할 + 이름 조회 (에러 무시)
           let roleData = null;
           try {
             const result = await supabase
               .from('user_roles')
-              .select('role')
+              .select('role, name')
               .eq('user_id', session.user.id)
               .maybeSingle();
             roleData = result.data;
@@ -65,12 +65,13 @@ export function useAuth() {
             console.error('⚠️ 권한 조회 오류 (무시):', err);
           }
 
-          const role = roleData?.role || 'WRITER';
-          console.log('👤 사용자 역할:', role, '| 이메일:', session.user.email);
+          const role = roleData?.role ?? null;
+          console.log('👤 사용자 역할:', role ?? '미지정', '| 이메일:', session.user.email);
 
           const authUser: AuthUser = {
             id: session.user.id,
             email: session.user.email || '',
+            name: roleData?.name ?? null,
             role: role,
             permissions: permData?.map((p) => p.permission_code) || [],
           };
@@ -120,12 +121,12 @@ export function useAuth() {
             return;
           }
 
-          // 역할 조회
+          // 역할 + 이름 조회
           let roleData = null;
           try {
             const result = await supabase
               .from('user_roles')
-              .select('role')
+              .select('role, name')
               .eq('user_id', session.user.id)
               .maybeSingle();
             roleData = result.data;
@@ -148,7 +149,8 @@ export function useAuth() {
           const authUser: AuthUser = {
             id: session.user.id,
             email: session.user.email || '',
-            role: roleData?.role || 'WRITER',
+            name: roleData?.name ?? null,
+            role: roleData?.role ?? null,
             permissions: permData?.map((p) => p.permission_code) || [],
           };
 

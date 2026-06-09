@@ -1,7 +1,6 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useTheme } from 'next-themes';
 import { useMemo, useState } from 'react';
 
 interface SiteHeaderProps {
@@ -9,41 +8,24 @@ interface SiteHeaderProps {
 }
 
 const pageLabels: Record<string, string> = {
-  '/': 'Home',
-  '/settlement': 'Settlement',
-  '/writers': 'Writers',
-  '/staff': 'Staff',
-  '/revenue': 'Revenue',
-  '/admin/accounts': 'Accounts',
-  '/writer-portal': 'Writer Portal',
+  '/': '홈 피드',
+  '/settlement': '정산서',
+  '/writers': '전속작가',
+  '/staff': '직원',
+  '/revenue': '매출현황',
+  '/admin/accounts': '계정 관리',
+  '/writer-portal': '작가 포털',
+  '/profile': '내 프로필 설정',
 };
 
 export function SiteHeader({ onMenuClick }: SiteHeaderProps) {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
   const [searchValue, setSearchValue] = useState('');
 
-  const pageTitle = useMemo(() => pageLabels[pathname] || 'Page', [pathname]);
-
-  const nextTheme = useMemo(() => {
-    const themes = ['light', 'dark', 'classic-dark'];
-    const currentIndex = themes.indexOf(theme || 'dark');
-    return themes[(currentIndex + 1) % themes.length];
-  }, [theme]);
-
-  const getThemeIcon = (t?: string) => {
-    switch (t) {
-      case 'light':
-        return '☀️';
-      case 'classic-dark':
-        return '🖤';
-      default:
-        return '🌙';
-    }
-  };
+  const pageTitle = useMemo(() => pageLabels[pathname] || '페이지', [pathname]);
 
   return (
-    <header className="flex items-center justify-between gap-4 px-6 py-4 bg-background border-b border-border sticky top-0 z-10">
+    <header className="flex h-16 items-center justify-between gap-4 px-6 bg-background border-b border-border sticky top-0 z-10">
       {/* 왼쪽: 메뉴 + 브레드크럼 */}
       <div className="flex items-center gap-4 flex-1">
         <button
@@ -56,7 +38,7 @@ export function SiteHeader({ onMenuClick }: SiteHeaderProps) {
 
         {/* 브레드크럼 */}
         <div className="hidden md:flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Dashboard</span>
+          <span className="text-muted-foreground">PRISM FILTER</span>
           <span className="text-muted-foreground">/</span>
           <span className="text-foreground font-medium">{pageTitle}</span>
         </div>
@@ -69,7 +51,7 @@ export function SiteHeader({ onMenuClick }: SiteHeaderProps) {
           <span className="text-muted-foreground">🔍</span>
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="검색"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             className="bg-transparent text-foreground text-sm placeholder-muted-foreground outline-none w-48"
@@ -77,24 +59,15 @@ export function SiteHeader({ onMenuClick }: SiteHeaderProps) {
           <span className="text-xs text-muted-foreground">⌘K</span>
         </div>
 
-        {/* 테마 토글 */}
-        <button
-          onClick={() => setTheme(nextTheme)}
-          className="p-2 rounded-lg hover:bg-blue-600/10 text-foreground transition"
-          title={`테마: ${theme}`}
-        >
-          {getThemeIcon(theme)}
+        {/* 알림 아이콘 */}
+        <button className="relative p-2 rounded-lg hover:bg-blue-600/10 text-foreground transition" title="알림">
+          🔔
+          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
 
         {/* 설정 아이콘 */}
         <button className="p-2 rounded-lg hover:bg-blue-600/10 text-foreground transition" title="설정">
           ⚙️
-        </button>
-
-        {/* 알림 아이콘 */}
-        <button className="relative p-2 rounded-lg hover:bg-blue-600/10 text-foreground transition" title="알림">
-          🔔
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
       </div>
     </header>

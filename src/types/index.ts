@@ -93,7 +93,8 @@ export interface SettlementResult {
 export interface AuthUser {
   id: string;
   email: string;
-  role: UserRole;
+  name: string | null;   // null = 미등록 (최초 상태)
+  role: UserRole | null; // null = 미지정 (최초 로그인 상태)
   permissions?: Permission[];
   writerInfo?: Writer;
 }
