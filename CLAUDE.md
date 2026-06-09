@@ -190,59 +190,80 @@ ANTHROPIC_API_KEY=<API-KEY>
 
 ---
 
-## Context7 MCP 서버 사용 가이드
+## Context7 MCP 서버 설정 ✅ 완료
 
-### Context7이란?
-AI 코딩 어시스턴트(Claude Code, Gemini CLI 등)에게 **최신 공식 문서와 코드 예제를 실시간으로 주입**하는 MCP(Model Context Protocol) 서버입니다.
+### 📦 설치 상태
+- ✅ **Context7 MCP 서버:** 설치됨 (npx ctx7@latest setup)
+- ✅ **Claude Code Rule:** 자동 활성화됨
+- ✅ **API 키:** `ctx7sk-daa1b2e7-63ed-4583-95c3-82da85060062`
+- ✅ **프로젝트 설정:** `.claude/mcp.json` + `.env.local`
 
-학습 데이터가 과거 기준이라 발생하는 deprecated API 사용, 구식 문법 생성 등의 문제를 해결합니다.
+### 🚀 사용 방법
 
-### 사용 방법
-
-#### 1️⃣ 프롬프트 끝에 "context7 사용" 추가
+#### 방법 1️⃣: 프롬프트 끝에 추가 (권장)
 ```
-<원래 프롬프트>
+[원래 요청사항]
 
 context7을 사용해줘
 ```
 
-#### 2️⃣ 또는 특정 라이브러리 지정
+#### 방법 2️⃣: 자동 활성화 (Rule)
+다음을 감지하면 자동으로 Context7이 활성화됩니다:
+- 라이브러리/프레임워크 관련 질문
+- API 문서/설정 관련 질문
+- 버전 마이그레이션/업그레이드 질문
+
+#### 방법 3️⃣: Skill 직접 호출
 ```
-Next.js 16+ 최신 App Router 패턴으로 작성해줘
+/context7-mcp Next.js 최신 패턴 가이드
+```
+
+### 📚 지원하는 라이브러리 (프로젝트 기술 스택)
+✅ **Next.js** 16.2+ (최신 App Router)  
+✅ **React** 19.2+ (최신 Hooks API)  
+✅ **TypeScript** 5.0+  
+✅ **Tailwind CSS** v4 (CSS-first)  
+✅ **Supabase** (Auth, RLS, Realtime)  
+✅ **React Hook Form** 7.78+  
+✅ **Zod** 4.4+  
+✅ **shadcn/ui** 4.10+  
+✅ **Zustand** 5.0+  
+✅ **Lucide React** 1.17+  
+
+**추가로 1000+ 라이브러리 자동 검색 지원**
+
+### 💡 예시 프롬프트
+
+```
+Supabase의 최신 RLS 정책으로 
+사용자별 데이터 접근 제어를 구현해줘.
 
 context7을 사용해줘
 ```
 
-#### 3️⃣ 또는 특정 기능 요청
 ```
-Tailwind CSS v4 CSS-first 방식으로 스타일링해줘. 공식 문서를 참고해줘
+React 19의 useTransition과 Suspense를 
+활용한 성능 최적화 패턴을 적용해줘.
 
 context7을 사용해줘
 ```
 
-### 지원하는 라이브러리 (자동 참고)
-- **Next.js** 16.2+ (App Router, Server Components)
-- **React** 19.2+ (Hooks, Concurrent Features)
-- **TypeScript** 5.0+
-- **Tailwind CSS** v4 (CSS-first)
-- **Supabase** (Auth, RLS, Realtime)
-- **React Hook Form** 7.78+
-- **Zod** 4.4+
-- **shadcn/ui** 4.10+
-- **Zustand** 5.0+
-- **Lucide React** 1.17+
+### 📂 관련 파일
+- **설정 가이드:** `.claude/context7-setup.md`
+- **MCP 설정:** `.claude/mcp.json`
+- **프롬프트 템플릿:** `.claude/prompt-templates.md`
+- **Rule:** `C:\Users\USER\.claude\rules\context7.md` (자동)
+- **Skill:** `C:\Users\USER\.claude\skills\context7-mcp\` (자동)
 
-### 주요 이점
-✅ **최신 API 사용** — deprecated된 코드 생성 방지  
-✅ **최신 패턴 학습** — 현재 모범 사례 적용  
-✅ **타입 안정성** — 최신 TypeScript 정의 반영  
-✅ **성능 최적화** — 최신 성능 권장사항 적용  
-✅ **보안 개선** — 최신 보안 패턴 적용
+### ✨ 주요 이점
+✅ **최신 API** — deprecated된 코드 생성 방지  
+✅ **최신 패턴** — 현재 모범 사례 기반 코드  
+✅ **타입 안정성** — 최신 TypeScript 정의  
+✅ **성능** — 최신 성능 권장사항 적용  
+✅ **보안** — 최신 보안 패턴 적용  
+✅ **학습 데이터 극복** — 실시간 문서 반영
 
-### MCP 설정 위치
-- **설정 파일:** `.claude/mcp.json`
-- **자동 초기화:** Claude Code 시작 시 자동 활성화
-- **캐시:** 3600초(1시간) TTL로 문서 캐시
+더 자세한 정보는 `.claude/context7-setup.md` 참고
 
 ---
 

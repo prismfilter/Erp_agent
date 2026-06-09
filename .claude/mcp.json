@@ -6,6 +6,7 @@
       "disabled": false,
       "alwaysAllow": ["resources/list", "tools/call"],
       "env": {
+        "CONTEXT7_API_KEY": "ctx7sk-daa1b2e7-63ed-4583-95c3-82da85060062",
         "CONTEXT7_ENABLED": "true"
       },
       "description": "최신 공식 문서 및 API 예제를 실시간으로 제공하는 MCP 서버",
