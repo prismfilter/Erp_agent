@@ -52,8 +52,8 @@ export default function LoginPage() {
         setError('로그인 URL 생성 실패');
         setIsLoading(false);
       }
-    } catch (err: any) {
-      setError(err?.message || '로그인 중 오류 발생');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '로그인 중 오류 발생');
       setIsLoading(false);
     }
   };

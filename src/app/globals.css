@@ -1,4 +1,6 @@
-@unocss-reset;
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
 
 :root,
 .light {
