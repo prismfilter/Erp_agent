@@ -20,8 +20,8 @@ export default function LoginPage() {
 
   if (authLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[var(--color-background)]">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--color-border)] border-t-[var(--color-primary)]"></div>
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-border border-t-primary"></div>
       </div>
     );
   }
@@ -59,25 +59,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-[var(--color-background)] px-4">
-      <div className="w-full max-w-md bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg p-8 shadow-lg">
+    <div className="flex h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md bg-card border border-border rounded-lg p-8 shadow-lg">
         {/* 헤더 */}
         <div className="text-center mb-8">
           <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-            {/* 프리즘 필터 로고 - 실제 로고 파일 사용 */}
             <img
               src="/prism-filter-logo.svg"
               alt="PRISM FILTER"
               className="prism-logo w-20 h-20"
             />
           </div>
-          <h1 className="text-2xl font-bold text-[var(--color-foreground)] mb-2">PRISM FILTER</h1>
-          <p className="text-[var(--color-muted-foreground)]">정산 자동화 시스템</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">PRISM FILTER</h1>
+          <p className="text-muted-foreground">정산 자동화 시스템</p>
         </div>
 
         {/* 안내 */}
         <div className="bg-blue-500/10 border border-blue-500 rounded-lg p-3 mb-4">
-          <p className="text-sm text-[var(--color-foreground)]">
+          <p className="text-sm text-foreground">
             <strong>회사 계정(@prism-filter.com)</strong>만 접근 가능합니다.
           </p>
         </div>
@@ -119,9 +118,9 @@ export default function LoginPage() {
         </button>
 
         {/* 주의사항 */}
-        <div className="text-center pt-6 border-t border-[var(--color-border)] mt-6">
-          <p className="text-xs text-[var(--color-muted-foreground)] leading-relaxed">
-            <span className="block font-semibold text-[var(--color-foreground)] mb-1">프리즘필터 뮤직그룹</span>
+        <div className="text-center pt-6 border-t border-border mt-6">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <span className="block font-semibold text-foreground mb-1">프리즘필터 뮤직그룹</span>
             직원만 로그인할 수 있습니다.
             <br />
             (@prism-filter.com 이메일 필수)

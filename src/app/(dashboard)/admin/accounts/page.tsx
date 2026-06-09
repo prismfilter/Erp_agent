@@ -99,28 +99,28 @@ export default function AccountsPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[var(--color-foreground)] mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             계정 관리
           </h1>
-          <p className="text-[var(--color-muted-foreground)]">
+          <p className="text-muted-foreground">
             2026년 06월 09일 • 사용자 역할 관리
           </p>
         </div>
-        <button className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-primary-foreground)] rounded-lg text-sm font-medium hover:opacity-90 transition">
+        <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition">
           + 사용자 등록
         </button>
       </div>
 
       {/* 역할 탭 */}
-      <div className="flex gap-2 border-b border-[var(--color-border)]">
+      <div className="flex gap-2 border-b border-border">
         {(['전체', 'ADMIN', 'STAFF', 'WRITER'] as const).map((role) => (
           <button
             key={role}
             onClick={() => setSelectedRole(role)}
             className={`px-4 py-3 text-sm font-medium border-b-2 transition ${
               selectedRole === role
-                ? 'border-b-[var(--color-primary)] text-[var(--color-primary)]'
-                : 'border-b-transparent text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]'
+                ? 'border-b-primary text-primary'
+                : 'border-b-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             {role === '전체' ? '전체' : `${role} (${users.filter(u => u.role === role).length})`}
@@ -129,11 +129,11 @@ export default function AccountsPage() {
       </div>
 
       {/* 사용자 목록 테이블 */}
-      <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg overflow-hidden">
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-2 border-[var(--color-border)] border-t-[var(--color-primary)] mx-auto mb-3"></div>
-            <p className="text-sm text-[var(--color-muted-foreground)]">데이터 로딩 중...</p>
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-border border-t-primary mx-auto mb-3"></div>
+            <p className="text-sm text-muted-foreground">데이터 로딩 중...</p>
           </div>
         ) : error ? (
           <div className="p-8 text-center">
@@ -141,23 +141,23 @@ export default function AccountsPage() {
           </div>
         ) : filteredUsers.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-[var(--color-muted-foreground)]">등록된 사용자가 없습니다</p>
+            <p className="text-muted-foreground">등록된 사용자가 없습니다</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[var(--color-primary)]/10 border-b border-[var(--color-border)]">
+              <thead className="bg-primary/10 border-b border-border">
                 <tr>
-                  <th className="px-6 py-3 text-left font-semibold text-[var(--color-foreground)] text-xs uppercase">사용자 ID</th>
-                  <th className="px-6 py-3 text-left font-semibold text-[var(--color-foreground)] text-xs uppercase">현재 역할</th>
-                  <th className="px-6 py-3 text-left font-semibold text-[var(--color-foreground)] text-xs uppercase">등록일</th>
-                  <th className="px-6 py-3 text-left font-semibold text-[var(--color-foreground)] text-xs uppercase">역할 변경</th>
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">사용자 ID</th>
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">현재 역할</th>
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">등록일</th>
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">역할 변경</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[var(--color-border)]">
+              <tbody className="divide-y divide-border">
                 {filteredUsers.map((userRole) => (
-                  <tr key={userRole.id} className="hover:bg-[var(--color-primary)]/5">
-                    <td className="px-6 py-4 text-[var(--color-foreground)] font-mono text-xs">
+                  <tr key={userRole.id} className="hover:bg-primary/5">
+                    <td className="px-6 py-4 text-foreground font-mono text-xs">
                       {userRole.user_id.substring(0, 8)}...
                     </td>
                     <td className="px-6 py-4">
@@ -165,7 +165,7 @@ export default function AccountsPage() {
                         {roleLabel(userRole.role)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-[var(--color-muted-foreground)] text-xs">
+                    <td className="px-6 py-4 text-muted-foreground text-xs">
                       {new Date(userRole.created_at).toLocaleDateString('ko-KR')}
                     </td>
                     <td className="px-6 py-4">
@@ -177,8 +177,8 @@ export default function AccountsPage() {
                             disabled={changingUserId === userRole.user_id}
                             className={`px-2 py-1 rounded text-xs font-medium transition ${
                               userRole.role === role
-                                ? 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
-                                : 'bg-[var(--color-border)] text-[var(--color-muted-foreground)] hover:bg-[var(--color-primary)]/20'
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-border text-muted-foreground hover:bg-primary/20'
                             } disabled:opacity-50`}
                           >
                             {role}
