@@ -83,7 +83,7 @@ export default function ProfilePage() {
       <div className="flex gap-3">
         <Link
           href="/"
-          className="px-4 py-2 bg-[var(--app-border)] hover:bg-[var(--app-border)]/80 text-foreground rounded-lg text-sm font-medium transition"
+          className="px-4 py-2 bg-[var(--color-border)] hover:bg-[var(--color-border)]/80 text-foreground rounded-lg text-sm font-medium transition"
         >
           ← 뒤로가기
         </Link>

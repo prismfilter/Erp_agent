@@ -146,7 +146,7 @@ export default function WritersPage() {
                 <input
                   {...register('name')}
                   placeholder="작가명"
-                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder-[var(--app-muted-foreground)]"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder-[var(--color-muted-foreground)]"
                 />
                 {errors.name && (
                   <p className="text-xs text-red-400 mt-1">{errors.name.message}</p>
@@ -162,7 +162,7 @@ export default function WritersPage() {
                   {...register('email')}
                   type="email"
                   placeholder="example@prism-filter.com"
-                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder-[var(--app-muted-foreground)]"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder-[var(--color-muted-foreground)]"
                 />
                 {errors.email && (
                   <p className="text-xs text-red-400 mt-1">{errors.email.message}</p>
@@ -203,7 +203,7 @@ export default function WritersPage() {
                 <input
                   {...register('bank_account')}
                   placeholder="계좌번호"
-                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder-[var(--app-muted-foreground)]"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder-[var(--color-muted-foreground)]"
                 />
               </div>
 
@@ -225,7 +225,7 @@ export default function WritersPage() {
         {isLoading ? (
           <div className="p-8">
             <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-border border-t-[var(--app-primary)] mr-3"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-border border-t-[var(--color-primary)] mr-3"></div>
               <p className="text-sm text-muted-foreground">데이터 로딩 중...</p>
             </div>
           </div>
@@ -261,9 +261,9 @@ export default function WritersPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[var(--app-border)]">
+              <tbody className="divide-y divide-[var(--color-border)]">
                 {writers.map((writer) => (
-                  <tr key={writer.id} className="hover:bg-[var(--app-border)]/30">
+                  <tr key={writer.id} className="hover:bg-[var(--color-border)]/30">
                     <td className="px-6 py-4 font-semibold text-foreground">
                       {writer.name}
                     </td>

@@ -72,7 +72,7 @@ export function SiteHeader({ onMenuClick }: SiteHeaderProps) {
             placeholder="Search..."
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            className="bg-transparent text-foreground text-sm placeholder-[var(--app-muted-foreground)] outline-none w-48"
+            className="bg-transparent text-foreground text-sm placeholder-[var(--color-muted-foreground)] outline-none w-48"
           />
           <span className="text-xs text-muted-foreground">⌘K</span>
         </div>
