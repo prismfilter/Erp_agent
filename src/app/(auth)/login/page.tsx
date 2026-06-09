@@ -20,8 +20,8 @@ export default function LoginPage() {
 
   if (authLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-950">
-        <div className="text-gray-100">인증 확인 중...</div>
+      <div className="flex h-screen items-center justify-center bg-[var(--color-background)]">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--color-border)] border-t-[var(--color-primary)]"></div>
       </div>
     );
   }
