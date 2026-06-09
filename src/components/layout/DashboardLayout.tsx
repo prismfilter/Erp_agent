@@ -8,7 +8,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setOpen] = useState(false);
 
   return (
-    <div className="flex h-screen w-full bg-[var(--color-background)]">
+    <div className="flex h-screen w-full bg-background">
       {/* 데스크톱 사이드바 */}
       <div className="hidden md:flex md:w-64 flex-col">
         <AppSidebar />

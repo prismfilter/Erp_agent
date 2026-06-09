@@ -46,10 +46,10 @@ export default function StaffPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[var(--color-foreground)] mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             직원 관리
           </h1>
-          <p className="text-[var(--color-muted-foreground)]">
+          <p className="text-muted-foreground">
             2026년 06월 09일 • 회사 직원 목록
           </p>
         </div>
@@ -61,12 +61,12 @@ export default function StaffPage() {
       </div>
 
       {/* 직원 목록 */}
-      <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg overflow-hidden">
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
         {isLoading ? (
           <div className="p-8">
             <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-[var(--color-border)] border-t-[var(--color-primary)] mr-3"></div>
-              <p className="text-sm text-[var(--color-muted-foreground)]">데이터 로딩 중...</p>
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-border border-t-[var(--app-primary)] mr-3"></div>
+              <p className="text-sm text-muted-foreground">데이터 로딩 중...</p>
             </div>
           </div>
         ) : error ? (
@@ -75,36 +75,36 @@ export default function StaffPage() {
           </div>
         ) : staff.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-[var(--color-muted-foreground)]">등록된 직원이 없습니다</p>
+            <p className="text-muted-foreground">등록된 직원이 없습니다</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-blue-500/10 border-b border-[var(--color-border)]">
+              <thead className="bg-blue-500/10 border-b border-border">
                 <tr>
-                  <th className="px-6 py-3 text-left font-semibold text-[var(--color-foreground)] text-xs uppercase">
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">
                     역할
                   </th>
-                  <th className="px-6 py-3 text-left font-semibold text-[var(--color-foreground)] text-xs uppercase">
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">
                     사용자 ID
                   </th>
-                  <th className="px-6 py-3 text-left font-semibold text-[var(--color-foreground)] text-xs uppercase">
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">
                     등록일
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[var(--color-border)]">
+              <tbody className="divide-y divide-[var(--app-border)]">
                 {staff.map((member) => (
-                  <tr key={member.id} className="hover:bg-[var(--color-border)]/30">
-                    <td className="px-6 py-4 text-[var(--color-foreground)]">
+                  <tr key={member.id} className="hover:bg-[var(--app-border)]/30">
+                    <td className="px-6 py-4 text-foreground">
                       <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded text-xs font-medium">
                         {member.role === 'ADMIN' ? '👑 관리자' : '💼 직원'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-[var(--color-foreground)] font-mono text-xs truncate">
+                    <td className="px-6 py-4 text-foreground font-mono text-xs truncate">
                       {member.user_id}
                     </td>
-                    <td className="px-6 py-4 text-[var(--color-muted-foreground)]">
+                    <td className="px-6 py-4 text-muted-foreground">
                       {new Date(member.created_at).toLocaleDateString('ko-KR')}
                     </td>
                   </tr>

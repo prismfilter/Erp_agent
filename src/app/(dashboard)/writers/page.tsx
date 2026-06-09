@@ -110,10 +110,10 @@ export default function WritersPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[var(--color-foreground)] mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             전속작가 관리
           </h1>
-          <p className="text-[var(--color-muted-foreground)]">
+          <p className="text-muted-foreground">
             2026년 06월 09일 • 등록된 전속작가 목록
           </p>
         </div>
@@ -124,14 +124,14 @@ export default function WritersPage() {
             + 등록
           </SheetTrigger>
           <SheetContent
-            className="bg-[var(--color-card)] border-l border-[var(--color-border)]"
+            className="bg-card border-l border-border"
             side="right"
           >
             <SheetHeader>
-              <SheetTitle className="text-[var(--color-foreground)]">
+              <SheetTitle className="text-foreground">
                 전속작가 등록
               </SheetTitle>
-              <SheetDescription className="text-[var(--color-muted-foreground)]">
+              <SheetDescription className="text-muted-foreground">
                 새로운 전속작가 정보를 입력해주세요
               </SheetDescription>
             </SheetHeader>
@@ -140,13 +140,13 @@ export default function WritersPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-6">
               {/* 이름 */}
               <div>
-                <label className="text-sm font-medium text-[var(--color-foreground)]">
+                <label className="text-sm font-medium text-foreground">
                   이름 *
                 </label>
                 <input
                   {...register('name')}
                   placeholder="작가명"
-                  className="w-full mt-1 px-3 py-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg text-[var(--color-foreground)] placeholder-[var(--color-muted-foreground)]"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder-[var(--app-muted-foreground)]"
                 />
                 {errors.name && (
                   <p className="text-xs text-red-400 mt-1">{errors.name.message}</p>
@@ -155,14 +155,14 @@ export default function WritersPage() {
 
               {/* 이메일 */}
               <div>
-                <label className="text-sm font-medium text-[var(--color-foreground)]">
+                <label className="text-sm font-medium text-foreground">
                   이메일
                 </label>
                 <input
                   {...register('email')}
                   type="email"
                   placeholder="example@prism-filter.com"
-                  className="w-full mt-1 px-3 py-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg text-[var(--color-foreground)] placeholder-[var(--color-muted-foreground)]"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder-[var(--app-muted-foreground)]"
                 />
                 {errors.email && (
                   <p className="text-xs text-red-400 mt-1">{errors.email.message}</p>
@@ -171,12 +171,12 @@ export default function WritersPage() {
 
               {/* 작가 유형 */}
               <div>
-                <label className="text-sm font-medium text-[var(--color-foreground)]">
+                <label className="text-sm font-medium text-foreground">
                   작가 유형 *
                 </label>
                 <select
                   {...register('writer_type')}
-                  className="w-full mt-1 px-3 py-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg text-[var(--color-foreground)]"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground"
                 >
                   <option value="exclusive">전속작가</option>
                   <option value="general">일반작가</option>
@@ -185,25 +185,25 @@ export default function WritersPage() {
 
               {/* 생년월일 */}
               <div>
-                <label className="text-sm font-medium text-[var(--color-foreground)]">
+                <label className="text-sm font-medium text-foreground">
                   생년월일
                 </label>
                 <input
                   {...register('birth_date')}
                   type="date"
-                  className="w-full mt-1 px-3 py-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg text-[var(--color-foreground)]"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground"
                 />
               </div>
 
               {/* 은행 계좌 */}
               <div>
-                <label className="text-sm font-medium text-[var(--color-foreground)]">
+                <label className="text-sm font-medium text-foreground">
                   은행 계좌
                 </label>
                 <input
                   {...register('bank_account')}
                   placeholder="계좌번호"
-                  className="w-full mt-1 px-3 py-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg text-[var(--color-foreground)] placeholder-[var(--color-muted-foreground)]"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder-[var(--app-muted-foreground)]"
                 />
               </div>
 
@@ -221,12 +221,12 @@ export default function WritersPage() {
       </div>
 
       {/* 작가 목록 */}
-      <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg overflow-hidden">
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
         {isLoading ? (
           <div className="p-8">
             <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-[var(--color-border)] border-t-[var(--color-primary)] mr-3"></div>
-              <p className="text-sm text-[var(--color-muted-foreground)]">데이터 로딩 중...</p>
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-border border-t-[var(--app-primary)] mr-3"></div>
+              <p className="text-sm text-muted-foreground">데이터 로딩 중...</p>
             </div>
           </div>
         ) : error ? (
@@ -235,39 +235,39 @@ export default function WritersPage() {
           </div>
         ) : writers.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-[var(--color-muted-foreground)]">
+            <p className="text-muted-foreground">
               등록된 작가가 없습니다. "+ 등록" 버튼으로 첫 작가를 등록해주세요.
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-blue-500/10 border-b border-[var(--color-border)]">
+              <thead className="bg-blue-500/10 border-b border-border">
                 <tr>
-                  <th className="px-6 py-3 text-left font-semibold text-[var(--color-foreground)] text-xs uppercase">
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">
                     이름
                   </th>
-                  <th className="px-6 py-3 text-left font-semibold text-[var(--color-foreground)] text-xs uppercase">
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">
                     이메일
                   </th>
-                  <th className="px-6 py-3 text-left font-semibold text-[var(--color-foreground)] text-xs uppercase">
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">
                     유형
                   </th>
-                  <th className="px-6 py-3 text-left font-semibold text-[var(--color-foreground)] text-xs uppercase">
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">
                     상태
                   </th>
-                  <th className="px-6 py-3 text-left font-semibold text-[var(--color-foreground)] text-xs uppercase">
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">
                     등록일
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[var(--color-border)]">
+              <tbody className="divide-y divide-[var(--app-border)]">
                 {writers.map((writer) => (
-                  <tr key={writer.id} className="hover:bg-[var(--color-border)]/30">
-                    <td className="px-6 py-4 font-semibold text-[var(--color-foreground)]">
+                  <tr key={writer.id} className="hover:bg-[var(--app-border)]/30">
+                    <td className="px-6 py-4 font-semibold text-foreground">
                       {writer.name}
                     </td>
-                    <td className="px-6 py-4 text-[var(--color-muted-foreground)] text-sm">
+                    <td className="px-6 py-4 text-muted-foreground text-sm">
                       {writer.email || '-'}
                     </td>
                     <td className="px-6 py-4">
@@ -280,7 +280,7 @@ export default function WritersPage() {
                         {writer.status === 'active' ? '활성' : '비활성'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-[var(--color-muted-foreground)] text-sm">
+                    <td className="px-6 py-4 text-muted-foreground text-sm">
                       {new Date(writer.created_at).toLocaleDateString('ko-KR')}
                     </td>
                   </tr>

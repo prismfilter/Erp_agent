@@ -110,16 +110,16 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
 
   return (
     <aside
-      className="w-full h-full flex flex-col bg-[var(--color-sidebar)] border-r border-[var(--color-border)]"
+      className="w-full h-full flex flex-col bg-[var(--app-sidebar)] border-r border-border"
       role="navigation"
       aria-label="사이드바 네비게이션"
     >
       {/* ===== 헤더: PRISM FILTER 로고 + 텍스트 ===== */}
-      <div className="border-b border-[var(--color-border)] p-4">
+      <div className="border-b border-border p-4">
         <Link
           href="/"
           onClick={onClose}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-600/10 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-[var(--color-sidebar)]"
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-600/10 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-[var(--app-sidebar)]"
           aria-label="홈으로 돌아가기"
         >
           {/* 프리즘 필터 로고 */}
@@ -130,10 +130,10 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
           />
 
           <div className="flex-1">
-            <div className="text-sm font-bold text-[var(--color-foreground)]">
+            <div className="text-sm font-bold text-foreground">
               PRISM FILTER
             </div>
-            <div className="text-xs text-[var(--color-muted-foreground)]">
+            <div className="text-xs text-muted-foreground">
               정산 자동화
             </div>
           </div>
@@ -141,23 +141,23 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
       </div>
 
       {/* ===== 접속 상태 + 내 프로필 ===== */}
-      <div className="border-b border-[var(--color-border)] p-4 space-y-3">
+      <div className="border-b border-border p-4 space-y-3">
         <div className="flex items-center gap-2" role="status" aria-live="polite">
           <span className="flex h-2 w-2 rounded-full bg-green-500" aria-hidden="true" />
-          <span className="text-xs text-[var(--color-muted-foreground)]">로그인 중</span>
+          <span className="text-xs text-muted-foreground">로그인 중</span>
         </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <div className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-600/10 transition text-left cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-[var(--color-sidebar)]">
+            <div className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-600/10 transition text-left cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-[var(--app-sidebar)]">
               <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                 {avatarInitial}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm text-[var(--color-foreground)]">내 프로필</div>
+                <div className="text-sm text-foreground">내 프로필</div>
               </div>
               <span
-                className="text-[var(--color-muted-foreground)] flex-shrink-0"
+                className="text-muted-foreground flex-shrink-0"
                 aria-hidden="true"
               >
                 ▾
@@ -168,18 +168,18 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
           <DropdownMenuContent
             side="bottom"
             align="start"
-            className="w-56 bg-[var(--color-card)] border-[var(--color-border)]"
+            className="w-56 bg-card border-border"
           >
             {/* 사용자 정보 */}
             <div className="px-3 py-2">
-              <p className="text-xs text-[var(--color-muted-foreground)] truncate">
+              <p className="text-xs text-muted-foreground truncate">
                 {user?.email}
               </p>
-              <p className="text-xs font-medium text-[var(--color-foreground)]">
+              <p className="text-xs font-medium text-foreground">
                 {roleLabel}
               </p>
             </div>
-            <DropdownMenuSeparator className="bg-[var(--color-border)]" />
+            <DropdownMenuSeparator className="bg-[var(--app-border)]" />
 
             {/* 프로필 설정 */}
             <DropdownMenuItem
@@ -187,7 +187,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
                 router.push('/profile');
                 onClose?.();
               }}
-              className="text-[var(--color-foreground)] cursor-pointer"
+              className="text-foreground cursor-pointer"
             >
               👤 내 프로필 설정
             </DropdownMenuItem>
@@ -196,43 +196,43 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
             {user?.role === 'ADMIN' && (
               <DropdownMenuItem
                 onClick={handleAdminAccounts}
-                className="text-[var(--color-foreground)] cursor-pointer"
+                className="text-foreground cursor-pointer"
               >
                 ⚙️ 계정 관리
               </DropdownMenuItem>
             )}
 
-            <DropdownMenuSeparator className="bg-[var(--color-border)]" />
+            <DropdownMenuSeparator className="bg-[var(--app-border)]" />
 
             {/* 테마 섹션 */}
             <DropdownMenuRadioGroup
               value={theme || 'dark'}
               onValueChange={handleThemeChange}
             >
-              <DropdownMenuLabel className="text-[var(--color-foreground)] text-xs font-semibold">
+              <DropdownMenuLabel className="text-foreground text-xs font-semibold">
                 🎨 테마
               </DropdownMenuLabel>
               <DropdownMenuRadioItem
                 value="light"
-                className="text-[var(--color-foreground)]"
+                className="text-foreground"
               >
                 ☀️ 라이트
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem
                 value="dark"
-                className="text-[var(--color-foreground)]"
+                className="text-foreground"
               >
                 🌙 다크
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem
                 value="classic-dark"
-                className="text-[var(--color-foreground)]"
+                className="text-foreground"
               >
                 🖤 Classic 다크
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
 
-            <DropdownMenuSeparator className="bg-[var(--color-border)]" />
+            <DropdownMenuSeparator className="bg-[var(--app-border)]" />
 
             {/* 로그아웃 */}
             <DropdownMenuItem
@@ -251,7 +251,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
           {groupedItems.map(([section, items]) => (
             <div key={section}>
               {/* 섹션 레이블 */}
-              <div className="text-xs font-semibold text-[var(--color-muted-foreground)] mb-3 px-2 uppercase tracking-wider">
+              <div className="text-xs font-semibold text-muted-foreground mb-3 px-2 uppercase tracking-wider">
                 {section}
               </div>
               {/* 섹션 내 메뉴 아이템 */}
@@ -264,7 +264,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       isActive(item.href)
                         ? 'bg-blue-600 text-white'
-                        : 'text-[var(--color-foreground)] hover:bg-blue-600/10'
+                        : 'text-foreground hover:bg-blue-600/10'
                     }`}
                     aria-current={isActive(item.href) ? 'page' : undefined}
                   >
@@ -281,35 +281,35 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
       </nav>
 
       {/* ===== 하단: 사용자 프로필 (Image #20 스타일) ===== */}
-      <div className="border-t border-[var(--color-border)] p-4">
+      <div className="border-t border-border p-4">
         <DropdownMenu>
-          <DropdownMenuTrigger className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-600/10 transition text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-[var(--color-sidebar)]">
+          <DropdownMenuTrigger className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-600/10 transition text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-[var(--app-sidebar)]">
             <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
               {avatarInitial}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-[var(--color-foreground)] truncate">
+              <div className="text-sm font-semibold text-foreground truncate">
                 {user?.email?.split('@')[0]}
               </div>
-              <div className="text-xs text-[var(--color-muted-foreground)] truncate">
+              <div className="text-xs text-muted-foreground truncate">
                 {user?.email}
               </div>
             </div>
-            <span className="text-[var(--color-muted-foreground)] flex-shrink-0" aria-hidden="true">
+            <span className="text-muted-foreground flex-shrink-0" aria-hidden="true">
               ▾
             </span>
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start" className="w-56 bg-[var(--color-card)] border-[var(--color-border)]">
+          <DropdownMenuContent side="top" align="start" className="w-56 bg-card border-border">
             {/* 사용자 정보 */}
             <div className="px-3 py-2">
-              <p className="text-xs text-[var(--color-muted-foreground)] truncate">
+              <p className="text-xs text-muted-foreground truncate">
                 {user?.email}
               </p>
-              <p className="text-xs font-medium text-[var(--color-foreground)]">
+              <p className="text-xs font-medium text-foreground">
                 {roleLabel}
               </p>
             </div>
-            <DropdownMenuSeparator className="bg-[var(--color-border)]" />
+            <DropdownMenuSeparator className="bg-[var(--app-border)]" />
 
             {/* 프로필 설정 */}
             <DropdownMenuItem
@@ -317,7 +317,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
                 router.push('/profile');
                 onClose?.();
               }}
-              className="text-[var(--color-foreground)] cursor-pointer"
+              className="text-foreground cursor-pointer"
             >
               👤 내 프로필 설정
             </DropdownMenuItem>
@@ -326,43 +326,43 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
             {user?.role === 'ADMIN' && (
               <DropdownMenuItem
                 onClick={handleAdminAccounts}
-                className="text-[var(--color-foreground)] cursor-pointer"
+                className="text-foreground cursor-pointer"
               >
                 ⚙️ 계정 관리
               </DropdownMenuItem>
             )}
 
-            <DropdownMenuSeparator className="bg-[var(--color-border)]" />
+            <DropdownMenuSeparator className="bg-[var(--app-border)]" />
 
             {/* 테마 섹션 */}
             <DropdownMenuRadioGroup
               value={theme || 'dark'}
               onValueChange={handleThemeChange}
             >
-              <DropdownMenuLabel className="text-[var(--color-foreground)] text-xs font-semibold">
+              <DropdownMenuLabel className="text-foreground text-xs font-semibold">
                 🎨 테마
               </DropdownMenuLabel>
               <DropdownMenuRadioItem
                 value="light"
-                className="text-[var(--color-foreground)]"
+                className="text-foreground"
               >
                 ☀️ 라이트
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem
                 value="dark"
-                className="text-[var(--color-foreground)]"
+                className="text-foreground"
               >
                 🌙 다크
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem
                 value="classic-dark"
-                className="text-[var(--color-foreground)]"
+                className="text-foreground"
               >
                 🖤 Classic 다크
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
 
-            <DropdownMenuSeparator className="bg-[var(--color-border)]" />
+            <DropdownMenuSeparator className="bg-[var(--app-border)]" />
 
             {/* 로그아웃 */}
             <DropdownMenuItem

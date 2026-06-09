@@ -16,8 +16,8 @@ export default function SettlementPage() {
           </Button>
         </Link>
       </div>
-      <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg p-8 text-center">
-        <p className="text-[var(--color-muted-foreground)]">정산 목록이 표시됩니다.</p>
+      <div className="bg-card border border-border rounded-lg p-8 text-center">
+        <p className="text-muted-foreground">정산 목록이 표시됩니다.</p>
       </div>
     </div>
   );
