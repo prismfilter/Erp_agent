@@ -91,22 +91,14 @@
    로고 스타일 - 다크/Classic 다크에서 흰색 표시
    ============================================================================ */
 
-/* 사이드바 로고 */
+/* 기본 로고 (라이트 모드) - 검정색 로고 그대로 */
+.prism-logo {
+  filter: none;
+  object-fit: contain;
+}
+
+/* 다크 모드 - 로고를 흰색으로 변환 */
 .dark .prism-logo,
 .classic-dark .prism-logo {
-  filter: brightness(0) invert(1);
-}
-
-.light .prism-logo {
-  filter: none;
-}
-
-/* 로그인 페이지 로고 */
-.dark .prism-logo-login,
-.classic-dark .prism-logo-login {
-  filter: brightness(0) invert(1);
-}
-
-.light .prism-logo-login {
-  filter: none;
+  filter: brightness(0) invert(1) !important;
 }

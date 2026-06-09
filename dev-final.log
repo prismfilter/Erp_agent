@@ -6,25 +6,31 @@
 - Local:         http://localhost:3001
 - Network:       http://172.30.1.10:3001
 - Environments: .env.local
-✓ Ready in 475ms
+✓ Ready in 511ms
 
- GET /login 200 in 390ms (next.js: 208ms, application-code: 182ms)
-[browser] Image with src "/logo.webp" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
- GET /login 200 in 111ms (next.js: 9ms, application-code: 101ms)
- GET /login 200 in 103ms (next.js: 6ms, application-code: 97ms)
-[browser] Image with src "/logo.webp" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
- GET / 200 in 90ms (next.js: 54ms, application-code: 36ms)
- GET / 200 in 45ms (next.js: 12ms, application-code: 33ms)
- GET / 200 in 26ms (next.js: 6ms, application-code: 20ms)
- GET /staff 200 in 225ms (next.js: 77ms, application-code: 148ms)
- GET / 200 in 57ms (next.js: 8ms, application-code: 48ms)
- GET / 200 in 15ms (next.js: 5ms, application-code: 10ms)
- GET / 200 in 28ms (next.js: 4ms, application-code: 23ms)
- GET /login 200 in 65ms (next.js: 6ms, application-code: 59ms)
-[browser] Image with src "/logo.webp" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
- GET / 200 in 16ms (next.js: 6ms, application-code: 10ms)
- GET / 200 in 32ms (next.js: 7ms, application-code: 25ms)
- GET / 200 in 14ms (next.js: 4ms, application-code: 10ms)
- GET / 200 in 26ms (next.js: 5ms, application-code: 22ms)
-✓ Compiled in 593ms
-✓ Compiled in 161ms
+ GET /login 200 in 427ms (next.js: 243ms, application-code: 184ms)
+ GET /login 200 in 106ms (next.js: 8ms, application-code: 98ms)
+ GET /login 200 in 73ms (next.js: 8ms, application-code: 65ms)
+ GET / 200 in 92ms (next.js: 60ms, application-code: 32ms)
+ GET / 200 in 28ms (next.js: 5ms, application-code: 23ms)
+ GET /settlement 200 in 205ms (next.js: 64ms, application-code: 140ms)
+ GET /staff 200 in 122ms (next.js: 60ms, application-code: 62ms)
+ GET /revenue 200 in 160ms (next.js: 71ms, application-code: 89ms)
+ GET / 200 in 89ms (next.js: 11ms, application-code: 79ms)
+✓ Compiled in 691ms
+ GET / 200 in 188ms (next.js: 114ms, application-code: 74ms)
+ GET /staff 200 in 351ms (next.js: 106ms, application-code: 245ms)
+ GET /revenue 200 in 309ms (next.js: 102ms, application-code: 207ms)
+ GET /revenue 200 in 141ms (next.js: 87ms, application-code: 54ms)
+ GET /settlement 200 in 352ms (next.js: 119ms, application-code: 233ms)
+ GET / 200 in 91ms (next.js: 17ms, application-code: 73ms)
+ GET /staff 200 in 94ms (next.js: 17ms, application-code: 77ms)
+ GET /revenue 200 in 89ms (next.js: 8ms, application-code: 82ms)
+ GET /revenue 200 in 77ms (next.js: 7ms, application-code: 70ms)
+ GET /settlement 200 in 75ms (next.js: 7ms, application-code: 69ms)
+ GET / 200 in 73ms (next.js: 5ms, application-code: 67ms)
+ GET / 200 in 17ms (next.js: 5ms, application-code: 12ms)
+ GET / 200 in 40ms (next.js: 6ms, application-code: 34ms)
+ GET /revenue 200 in 186ms (next.js: 6ms, application-code: 179ms)
+ GET / 200 in 40ms (next.js: 7ms, application-code: 33ms)
+ GET /settlement 200 in 234ms (next.js: 8ms, application-code: 226ms)
