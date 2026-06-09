@@ -70,7 +70,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
     (item) => !item.adminOnly || user?.role === 'ADMIN'
   );
 
-  // isActive 버그 수정: '/'는 exact match만, 다른 경로는 하위포함
+  // isActive 수정: '/'는 exact match, 다른 경로는 하위포함
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname === href || pathname.startsWith(href + '/');
@@ -78,14 +78,14 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
 
   return (
     <aside className="w-full h-full flex flex-col bg-[var(--color-sidebar)] border-r border-[var(--color-border)]">
-      {/* 헤더: PRISM FILTER 로고 + 텍스트 (Link, ▾ 없음) */}
+      {/* ===== 헤더: PRISM FILTER 로고 + 텍스트 (Link) ===== */}
       <div className="border-b border-[var(--color-border)] p-4">
         <Link
           href="/"
           onClick={onClose}
           className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-600/10 transition"
         >
-          {/* 프리즘 필터 로고 SVG */}
+          {/* 프리즘 필터 로고 SVG (dark/classic-dark에서 흰색) */}
           <svg
             className="prism-logo w-10 h-10 flex-shrink-0"
             viewBox="0 0 550 562"
@@ -107,7 +107,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
         </Link>
       </div>
 
-      {/* 접속 상태 + 내 프로필 (테마 포함) */}
+      {/* ===== 접속 상태 + 내 프로필 (테마 포함) ===== */}
       <div className="border-b border-[var(--color-border)] p-4 space-y-3">
         <div className="flex items-center gap-2">
           <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
@@ -117,15 +117,17 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
         </div>
 
         <DropdownMenu>
-          <DropdownMenuTrigger className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-600/10 transition text-left">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-              {user?.email?.substring(0, 2).toUpperCase() || 'U'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm text-[var(--color-foreground)]">내 프로필</div>
-            </div>
-            <span className="text-[var(--color-muted-foreground)] flex-shrink-0">▾</span>
-          </DropdownMenuTrigger>
+          <div className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-600/10 transition text-left">
+            <DropdownMenuTrigger className="w-full flex items-center gap-3 text-left">
+              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                {user?.email?.substring(0, 2).toUpperCase() || 'U'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm text-[var(--color-foreground)]">내 프로필</div>
+              </div>
+              <span className="text-[var(--color-muted-foreground)] flex-shrink-0">▾</span>
+            </DropdownMenuTrigger>
+          </div>
 
           <DropdownMenuContent
             side="bottom"
@@ -189,7 +191,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
         </DropdownMenu>
       </div>
 
-      {/* 메인 네비게이션 */}
+      {/* ===== 메인 네비게이션 ===== */}
       <nav className="flex-1 p-4 overflow-y-auto">
         <div className="text-xs font-semibold uppercase text-[var(--color-muted-foreground)] mb-4 px-2">
           메뉴
@@ -213,7 +215,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
         </div>
       </nav>
 
-      {/* 하단: 사용자 정보 */}
+      {/* ===== 하단: 사용자 정보 ===== */}
       <div className="border-t border-[var(--color-border)] p-4">
         <div className="bg-[var(--color-card)]/50 p-3 rounded-lg">
           <p className="text-xs text-[var(--color-muted-foreground)] uppercase mb-1">

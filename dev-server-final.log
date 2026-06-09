@@ -657,3 +657,4 @@ See this log for the ancestor stack trace.
  GET / 200 in 59ms (next.js: 5ms, application-code: 54ms)
  GET /login 200 in 30ms (next.js: 6ms, application-code: 25ms)
 ✓ Compiled in 308ms
+[?25h
