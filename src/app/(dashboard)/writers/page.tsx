@@ -223,8 +223,11 @@ export default function WritersPage() {
       {/* 작가 목록 */}
       <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg overflow-hidden">
         {isLoading ? (
-          <div className="p-8 text-center">
-            <p className="text-[var(--color-muted-foreground)]">로딩 중...</p>
+          <div className="p-8">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-[var(--color-border)] border-t-[var(--color-primary)] mr-3"></div>
+              <p className="text-sm text-[var(--color-muted-foreground)]">데이터 로딩 중...</p>
+            </div>
           </div>
         ) : error ? (
           <div className="p-8 text-center">
