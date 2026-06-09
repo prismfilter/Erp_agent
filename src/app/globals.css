@@ -1,6 +1,4 @@
-@import "tailwindcss";
-
-@custom-variant dark (&:is(.dark *));
+@unocss-reset;
 
 :root,
 .light {
@@ -55,21 +53,10 @@ body {
   background-color: var(--color-background);
   color: var(--color-foreground);
   transition: background-color 0.3s ease, color 0.3s ease;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
 }
 
 body {
   overflow: hidden;
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 .prism-logo {
