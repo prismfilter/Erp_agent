@@ -51,12 +51,9 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
     onClose?.();
   }, [router, onClose]);
 
-  // 메모이제이션: 테마 변경
+  // 메모이제이션: 테마 변경 (next-themes가 자동으로 쿠키 저장)
   const handleThemeChange = useCallback((newTheme: string) => {
     setTheme(newTheme);
-    if (typeof document !== 'undefined') {
-      document.cookie = `prism-theme=${newTheme}; path=/; max-age=31536000; SameSite=Lax`;
-    }
   }, [setTheme]);
 
   // 메모이제이션: 역할 라벨
@@ -177,7 +174,13 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
             <DropdownMenuSeparator className="bg-[var(--color-border)]" />
 
             {/* 프로필 설정 */}
-            <DropdownMenuItem className="text-[var(--color-foreground)] cursor-pointer">
+            <DropdownMenuItem
+              onClick={() => {
+                router.push('/profile');
+                onClose?.();
+              }}
+              className="text-[var(--color-foreground)] cursor-pointer"
+            >
               👤 내 프로필 설정
             </DropdownMenuItem>
 

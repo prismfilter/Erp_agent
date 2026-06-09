@@ -6,80 +6,25 @@
 - Local:         http://localhost:3001
 - Network:       http://172.30.1.10:3001
 - Environments: .env.local
-✓ Ready in 517ms
+✓ Ready in 475ms
 
- GET / 200 in 533ms (next.js: 271ms, application-code: 262ms)
- GET /login 200 in 125ms (next.js: 68ms, application-code: 57ms)
- GET /login 200 in 116ms (next.js: 8ms, application-code: 109ms)
- GET /login 200 in 94ms (next.js: 7ms, application-code: 86ms)
- GET / 200 in 38ms (next.js: 6ms, application-code: 32ms)
- GET / 200 in 31ms (next.js: 6ms, application-code: 25ms)
-[browser] Uncaught Error: Base UI: MenuGroupContext is missing. Menu group parts must be used within <Menu.Group> or <Menu.RadioGroup>.
-    at DropdownMenuLabel (src/components/ui/dropdown-menu.tsx:64:5)
-    at AppSidebar (src/components/layout/AppSidebar.tsx:197:13)
-    at DashboardLayout (src/components/layout/DashboardLayout.tsx:13:9)
-    at Layout (src/app/(dashboard)/layout.tsx:28:10)
-  62 | }) {
-  63 |   return (
-> 64 |     <MenuPrimitive.GroupLabel
-     |     ^
-  65 |       data-slot="dropdown-menu-label"
-  66 |       data-inset={inset}
-  67 |       className={cn(
- GET / 200 in 118ms (next.js: 12ms, application-code: 106ms)
-[browser] Uncaught Error: Base UI: MenuGroupContext is missing. Menu group parts must be used within <Menu.Group> or <Menu.RadioGroup>.
-    at DropdownMenuLabel (src/components/ui/dropdown-menu.tsx:64:5)
-    at AppSidebar (src/components/layout/AppSidebar.tsx:197:13)
-    at DashboardLayout (src/components/layout/DashboardLayout.tsx:13:9)
-    at Layout (src/app/(dashboard)/layout.tsx:28:10)
-  62 | }) {
-  63 |   return (
-> 64 |     <MenuPrimitive.GroupLabel
-     |     ^
-  65 |       data-slot="dropdown-menu-label"
-  66 |       data-inset={inset}
-  67 |       className={cn(
- GET /login 200 in 57ms (next.js: 11ms, application-code: 47ms)
- GET / 200 in 52ms (next.js: 8ms, application-code: 44ms)
- GET /settlement 200 in 174ms (next.js: 83ms, application-code: 91ms)
- GET /revenue 200 in 141ms (next.js: 62ms, application-code: 78ms)
- GET /staff 200 in 164ms (next.js: 69ms, application-code: 95ms)
- GET / 200 in 79ms (next.js: 7ms, application-code: 72ms)
-[browser] Uncaught Error: Base UI: MenuGroupContext is missing. Menu group parts must be used within <Menu.Group> or <Menu.RadioGroup>.
-    at DropdownMenuLabel (src/components/ui/dropdown-menu.tsx:64:5)
-    at AppSidebar (src/components/layout/AppSidebar.tsx:197:13)
-    at DashboardLayout (src/components/layout/DashboardLayout.tsx:13:9)
-    at Layout (src/app/(dashboard)/layout.tsx:28:10)
-  62 | }) {
-  63 |   return (
-> 64 |     <MenuPrimitive.GroupLabel
-     |     ^
-  65 |       data-slot="dropdown-menu-label"
-  66 |       data-inset={inset}
-  67 |       className={cn(
-[browser] Uncaught Error: Base UI: MenuGroupContext is missing. Menu group parts must be used within <Menu.Group> or <Menu.RadioGroup>.
-    at DropdownMenuLabel (src/components/ui/dropdown-menu.tsx:64:5)
-    at AppSidebar (src/components/layout/AppSidebar.tsx:197:13)
-    at DashboardLayout (src/components/layout/DashboardLayout.tsx:13:9)
-    at Layout (src/app/(dashboard)/layout.tsx:28:10)
-  62 | }) {
-  63 |   return (
-> 64 |     <MenuPrimitive.GroupLabel
-     |     ^
-  65 |       data-slot="dropdown-menu-label"
-  66 |       data-inset={inset}
-  67 |       className={cn(
- GET / 200 in 34ms (next.js: 5ms, application-code: 29ms)
-[browser] Uncaught Error: Base UI: MenuGroupContext is missing. Menu group parts must be used within <Menu.Group> or <Menu.RadioGroup>.
-    at DropdownMenuLabel (src/components/ui/dropdown-menu.tsx:64:5)
-    at AppSidebar (src/components/layout/AppSidebar.tsx:197:13)
-    at DashboardLayout (src/components/layout/DashboardLayout.tsx:13:9)
-    at Layout (src/app/(dashboard)/layout.tsx:28:10)
-  62 | }) {
-  63 |   return (
-> 64 |     <MenuPrimitive.GroupLabel
-     |     ^
-  65 |       data-slot="dropdown-menu-label"
-  66 |       data-inset={inset}
-  67 |       className={cn(
-✓ Compiled in 309ms
+ GET /login 200 in 390ms (next.js: 208ms, application-code: 182ms)
+[browser] Image with src "/logo.webp" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+ GET /login 200 in 111ms (next.js: 9ms, application-code: 101ms)
+ GET /login 200 in 103ms (next.js: 6ms, application-code: 97ms)
+[browser] Image with src "/logo.webp" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+ GET / 200 in 90ms (next.js: 54ms, application-code: 36ms)
+ GET / 200 in 45ms (next.js: 12ms, application-code: 33ms)
+ GET / 200 in 26ms (next.js: 6ms, application-code: 20ms)
+ GET /staff 200 in 225ms (next.js: 77ms, application-code: 148ms)
+ GET / 200 in 57ms (next.js: 8ms, application-code: 48ms)
+ GET / 200 in 15ms (next.js: 5ms, application-code: 10ms)
+ GET / 200 in 28ms (next.js: 4ms, application-code: 23ms)
+ GET /login 200 in 65ms (next.js: 6ms, application-code: 59ms)
+[browser] Image with src "/logo.webp" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+ GET / 200 in 16ms (next.js: 6ms, application-code: 10ms)
+ GET / 200 in 32ms (next.js: 7ms, application-code: 25ms)
+ GET / 200 in 14ms (next.js: 4ms, application-code: 10ms)
+ GET / 200 in 26ms (next.js: 5ms, application-code: 22ms)
+✓ Compiled in 593ms
+✓ Compiled in 161ms
