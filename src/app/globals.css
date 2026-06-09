@@ -3,65 +3,56 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================================================
-   기본값 (다크 모드) - Dribbble 이미지 Image #2 기반
-   배경: #0c111d (짙은 네이비)
-   사이드바: #080e1a (더 짙은 네이비)
-   카드: #111827 (진한 회색-파랑)
+   기본값 (라이트 모드) + next-themes 호환성
+   Tailwind CSS v4 + next-themes 통합: :root를 라이트로, .dark 클래스로 다크 모드 제어
    ============================================================================ */
-:root {
-  --color-background: #0c111d;
-  --color-foreground: #e6edf3;
-  --color-primary: #1d6af5;
-  --color-primary-foreground: #ffffff;
-  --color-sidebar: #080e1a;
-  --color-sidebar-foreground: #c9d1d9;
-  --color-card: #111827;
-  --color-border: #30363d;
-  --color-muted: #21262d;
-  --color-muted-foreground: #8b949e;
-  --color-accent: #316dca;
-}
-
-/* ============================================================================
-   라이트 모드 - Dribbble 이미지 Image #1 기반
-   배경: #f8fafc (거의 흰색)
-   사이드바: #ffffff (순수 흰색)
-   카드: #ffffff
-   ============================================================================ */
+:root,
 .light {
   --color-background: #f8fafc;
   --color-foreground: #111827;
-  --color-primary: #1d6af5;
+  --color-primary: #6366f1;
   --color-primary-foreground: #ffffff;
   --color-sidebar: #ffffff;
-  --color-sidebar-foreground: #24292f;
+  --color-sidebar-foreground: #374151;
   --color-card: #ffffff;
-  --color-border: #d0d7de;
-  --color-muted: #eaeef2;
-  --color-muted-foreground: #57606a;
-  --color-accent: #1d6af5;
+  --color-border: #e5e7eb;
+  --color-muted: #f3f4f6;
+  --color-muted-foreground: #6b7280;
+  --color-accent: #4f46e5;
+}
+
+/* ============================================================================
+   다크 모드 - next-themes가 <html class="dark">로 적용
+   ============================================================================ */
+.dark {
+  --color-background: #0c111d;
+  --color-foreground: #e6edf3;
+  --color-primary: #6366f1;
+  --color-primary-foreground: #ffffff;
+  --color-sidebar: #080e1a;
+  --color-sidebar-foreground: #d1d5db;
+  --color-card: #111827;
+  --color-border: #30363d;
+  --color-muted: #1f2937;
+  --color-muted-foreground: #9ca3af;
+  --color-accent: #4f46e5;
 }
 
 /* ============================================================================
    Classic 다크 모드 - GitHub Dark Dimmed 스타일
-   배경: #22272e (회색 다크)
-   사이드바: #1c2128 (더 어두운 회색)
-   카드: #2d333b (중간 회색)
-   텍스트: #adbac7 (밝은 회색)
-   액센트: #316dca (다크 블루)
    ============================================================================ */
 .classic-dark {
   --color-background: #22272e;
   --color-foreground: #adbac7;
-  --color-primary: #316dca;
+  --color-primary: #6366f1;
   --color-primary-foreground: #ffffff;
   --color-sidebar: #1c2128;
-  --color-sidebar-foreground: #c9d1d9;
+  --color-sidebar-foreground: #cdd9e5;
   --color-card: #2d333b;
   --color-border: #444c56;
   --color-muted: #3d444d;
-  --color-muted-foreground: #768390;
-  --color-accent: #316dca;
+  --color-muted-foreground: #8b949e;
+  --color-accent: #4f46e5;
 }
 
 /* ============================================================================

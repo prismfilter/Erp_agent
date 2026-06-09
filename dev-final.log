@@ -100,3 +100,775 @@ Import trace:
     at <unknown> (./src/app/globals.css:815:35)
     at <unknown> (Error: (./src/app/globals.css:815:35)
     at <unknown> (./src/app/globals.css:815:35)
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+⨯ ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  [90m813 |[0m   }
+  [90m814 |[0m   .bg-\[[36mvar[0m\(--color-\*\)\] {
+[31m[1m>[0m [90m815 |[0m     background-color: [36mvar[0m(--color-*);
+  [90m    |[0m                                   [31m[1m^[0m
+  [90m816 |[0m   }
+  [90m817 |[0m   .bg-\[[36mvar[0m\(--color-background\)\] {
+  [90m818 |[0m     background-color: [36mvar[0m(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  [90m813 |[0m   }
+  [90m814 |[0m   .bg-\[[36mvar[0m\(--color-\*\)\] {
+[31m[1m>[0m [90m815 |[0m     background-color: [36mvar[0m(--color-*);
+  [90m    |[0m                                   [31m[1m^[0m
+  [90m816 |[0m   }
+  [90m817 |[0m   .bg-\[[36mvar[0m\(--color-background\)\] {
+  [90m818 |[0m     background-color: [36mvar[0m(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+ GET /settlement 500 in 41ms (next.js: 18ms, application-code: 23ms)
+[browser] Uncaught Error: ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+    at <unknown> (Error: ./src/app/globals.css:815:35)
+    at <unknown> (./src/app/globals.css:815:35)
+    at <unknown> (Error: (./src/app/globals.css:815:35)
+    at <unknown> (./src/app/globals.css:815:35)
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+⨯ ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  [90m813 |[0m   }
+  [90m814 |[0m   .bg-\[[36mvar[0m\(--color-\*\)\] {
+[31m[1m>[0m [90m815 |[0m     background-color: [36mvar[0m(--color-*);
+  [90m    |[0m                                   [31m[1m^[0m
+  [90m816 |[0m   }
+  [90m817 |[0m   .bg-\[[36mvar[0m\(--color-background\)\] {
+  [90m818 |[0m     background-color: [36mvar[0m(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  [90m813 |[0m   }
+  [90m814 |[0m   .bg-\[[36mvar[0m\(--color-\*\)\] {
+[31m[1m>[0m [90m815 |[0m     background-color: [36mvar[0m(--color-*);
+  [90m    |[0m                                   [31m[1m^[0m
+  [90m816 |[0m   }
+  [90m817 |[0m   .bg-\[[36mvar[0m\(--color-background\)\] {
+  [90m818 |[0m     background-color: [36mvar[0m(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+ GET / 500 in 94ms (next.js: 75ms, application-code: 19ms)
+[browser] Uncaught Error: ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+    at <unknown> (Error: ./src/app/globals.css:815:35)
+    at <unknown> (./src/app/globals.css:815:35)
+    at <unknown> (Error: (./src/app/globals.css:815:35)
+    at <unknown> (./src/app/globals.css:815:35)
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css:815:35
+Parsing CSS source code failed
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Unexpected token Delim('*')
+
+Generated code of PostCSS transform of file content of src/app/globals.css:
+./src/app/globals.css:815:35
+  813 |   }
+  814 |   .bg-\[var\(--color-\*\)\] {
+> 815 |     background-color: var(--color-*);
+      |                                   ^
+  816 |   }
+  817 |   .bg-\[var\(--color-background\)\] {
+  818 |     background-color: var(--color-background);
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
