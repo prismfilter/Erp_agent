@@ -18,6 +18,23 @@
 }
 
 .dark {
+  /* 트렌디 미드나이트 네이비 — 딥 블루 계열 */
+  color-scheme: dark;
+  --background: #0b0f1e;
+  --foreground: #e8edf5;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --sidebar: #080c17;
+  --sidebar-foreground: #d8dff0;
+  --card: #111829;
+  --border: #1e2844;
+  --muted: #19203a;
+  --muted-foreground: #8892b0;
+  --accent: #4f46e5;
+}
+
+.classic-dark {
+  /* 이전 다크 모드 색상 */
   color-scheme: dark;
   --background: #0c111d;
   --foreground: #e6edf3;
@@ -29,21 +46,6 @@
   --border: #30363d;
   --muted: #1f2937;
   --muted-foreground: #9ca3af;
-  --accent: #4f46e5;
-}
-
-.classic-dark {
-  color-scheme: dark;
-  --background: #22272e;
-  --foreground: #adbac7;
-  --primary: #6366f1;
-  --primary-foreground: #ffffff;
-  --sidebar: #1c2128;
-  --sidebar-foreground: #cdd9e5;
-  --card: #2d333b;
-  --border: #444c56;
-  --muted: #3d444d;
-  --muted-foreground: #8b949e;
   --accent: #4f46e5;
 }
 
