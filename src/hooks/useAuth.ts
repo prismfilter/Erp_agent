@@ -40,15 +40,25 @@ export function useAuth() {
 
           console.log('✅ 이메일 도메인 검증 성공');
 
-          // 역할 + 이름 조회 (에러 무시)
-          let roleData = null;
+          // 역할 + 이름 조회 (name 컬럼 없을 경우 role만 재시도)
+          let roleData: { role?: string; name?: string } | null = null;
           try {
             const result = await supabase
               .from('user_roles')
               .select('role, name')
               .eq('user_id', session.user.id)
               .maybeSingle();
-            roleData = result.data;
+            if (result.error) {
+              console.warn('⚠️ role+name 조회 실패, role만 재시도:', result.error.message);
+              const fallback = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+              roleData = fallback.data;
+            } else {
+              roleData = result.data;
+            }
           } catch (err) {
             console.error('⚠️ 역할 조회 오류 (무시):', err);
           }
@@ -121,15 +131,25 @@ export function useAuth() {
             return;
           }
 
-          // 역할 + 이름 조회
-          let roleData = null;
+          // 역할 + 이름 조회 (name 컬럼 없을 경우 role만 재시도)
+          let roleData: { role?: string; name?: string } | null = null;
           try {
             const result = await supabase
               .from('user_roles')
               .select('role, name')
               .eq('user_id', session.user.id)
               .maybeSingle();
-            roleData = result.data;
+            if (result.error) {
+              console.warn('⚠️ role+name 조회 실패, role만 재시도:', result.error.message);
+              const fallback = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+              roleData = fallback.data;
+            } else {
+              roleData = result.data;
+            }
           } catch (err) {
             console.error('⚠️ 역할 조회 오류:', err);
           }

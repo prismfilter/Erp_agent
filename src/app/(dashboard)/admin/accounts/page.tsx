@@ -195,7 +195,7 @@ export default function AccountsPage() {
           <button
             key={role}
             onClick={() => setSelectedRole(role)}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition ${
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition cursor-pointer ${
               selectedRole === role
                 ? 'border-b-primary text-primary'
                 : 'border-b-transparent text-muted-foreground hover:text-foreground'
