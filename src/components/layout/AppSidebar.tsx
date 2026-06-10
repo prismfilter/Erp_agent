@@ -157,10 +157,10 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
                     key={item.href}
                     href={item.href}
                     onClick={onClose}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
                       isActive(item.href)
-                        ? 'bg-blue-600 text-white'
-                        : 'text-foreground hover:bg-blue-600/10'
+                        ? 'bg-primary text-primary-foreground shadow-md'
+                        : 'text-sidebar-foreground hover:bg-primary/15'
                     }`}
                     aria-current={isActive(item.href) ? 'page' : undefined}
                   >

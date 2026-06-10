@@ -18,19 +18,19 @@
 }
 
 .dark {
-  /* 트렌디 미드나이트 네이비 — 딥 블루 계열 */
+  /* Cosmic Indigo — 딥 인디고-바이올렛, 입체적 트렌디 다크 */
   color-scheme: dark;
-  --background: #0b0f1e;
-  --foreground: #e8edf5;
-  --primary: #6366f1;
+  --background: #131527;
+  --foreground: #eeeeff;
+  --primary: #5c6cff;
   --primary-foreground: #ffffff;
-  --sidebar: #080c17;
-  --sidebar-foreground: #d8dff0;
-  --card: #111829;
-  --border: #1e2844;
-  --muted: #19203a;
-  --muted-foreground: #8892b0;
-  --accent: #4f46e5;
+  --sidebar: #0e1020;
+  --sidebar-foreground: #ccd2f5;
+  --card: #1b2040;
+  --border: #2a3060;
+  --muted: #191d38;
+  --muted-foreground: #8896cc;
+  --accent: #4a54e8;
 }
 
 .classic-dark {
