@@ -1,5 +1,5 @@
 // 사용자 역할
-export type UserRole = 'ADMIN' | 'STAFF' | 'WRITER';
+export type UserRole = 'ADMIN' | 'STAFF' | 'EXCLUSIVE_WRITER' | 'GENERAL_WRITER';
 
 // 사용자 권한
 export type Permission =

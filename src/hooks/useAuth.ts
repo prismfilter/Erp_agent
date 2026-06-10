@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/store/authStore';
-import { AuthUser } from '@/types';
+import { AuthUser, UserRole } from '@/types';
 import { validatePrismFilterEmail } from '@/lib/auth/emailValidator';
 
 export function useAuth() {
@@ -75,14 +75,14 @@ export function useAuth() {
             console.error('⚠️ 권한 조회 오류 (무시):', err);
           }
 
-          const role = roleData?.role ?? null;
+          const role = (roleData?.role ?? null) as UserRole | null;
           console.log('👤 사용자 역할:', role ?? '미지정', '| 이메일:', session.user.email);
 
           const authUser: AuthUser = {
             id: session.user.id,
             email: session.user.email || '',
             name: roleData?.name ?? null,
-            role: role,
+            role,
             permissions: permData?.map((p) => p.permission_code) || [],
           };
 
@@ -170,7 +170,7 @@ export function useAuth() {
             id: session.user.id,
             email: session.user.email || '',
             name: roleData?.name ?? null,
-            role: roleData?.role ?? null,
+            role: (roleData?.role ?? null) as UserRole | null,
             permissions: permData?.map((p) => p.permission_code) || [],
           };
 

@@ -27,11 +27,11 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   // 정산 관리 섹션
-  { label: '홈 피드', href: '/', icon: '🏠', section: '정산 관리' },
-  { label: '직원', href: '/staff', icon: '👥', section: '정산 관리' },
-  { label: '전속작가', href: '/writers', icon: '✍️', adminOnly: true, section: '정산 관리' },
-  { label: '매출현황', href: '/revenue', icon: '📈', section: '정산 관리' },
-  { label: '정산서', href: '/settlement', icon: '📄', section: '정산 관리' },
+  { label: '홈 피드', href: '/', icon: '🏠', section: '메뉴' },
+  { label: '직원', href: '/staff', icon: '👥', section: '메뉴' },
+  { label: '작가 목록', href: '/writers', icon: '✍️', adminOnly: true, section: '메뉴' },
+  { label: '매출현황', href: '/revenue', icon: '📈', section: '메뉴' },
+  { label: '정산서', href: '/settlement', icon: '📄', section: '메뉴' },
   // 관리 섹션
   { label: '계정 관리', href: '/admin/accounts', icon: '⚙️', adminOnly: true, section: '관리' },
 ];
@@ -63,14 +63,11 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
   // 메모이제이션: 역할 라벨
   const roleLabel = useMemo(() => {
     switch (user?.role) {
-      case 'ADMIN':
-        return '👑 관리자';
-      case 'STAFF':
-        return '💼 직원';
-      case 'WRITER':
-        return '✍️ 작가';
-      default:
-        return '미지정';
+      case 'ADMIN':            return '👑 관리자';
+      case 'STAFF':            return '💼 직원';
+      case 'EXCLUSIVE_WRITER': return '✍️ 전속 작가';
+      case 'GENERAL_WRITER':   return '📝 일반 작가';
+      default:                 return '미지정';
     }
   }, [user?.role]);
 
@@ -146,8 +143,9 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
       {/* ===== 메인 네비게이션 (섹션 그룹) ===== */}
       <nav className="flex-1 p-4 overflow-y-auto" aria-label="주요 메뉴">
         <div className="space-y-6">
-          {groupedItems.map(([section, items]) => (
+          {groupedItems.map(([section, items], idx) => (
             <div key={section}>
+              {idx > 0 && <hr className="border-border mb-4 -mt-2" />}
               {/* 섹션 레이블 */}
               <div className="text-xs font-semibold text-muted-foreground mb-3 px-2 uppercase tracking-wider">
                 {section}

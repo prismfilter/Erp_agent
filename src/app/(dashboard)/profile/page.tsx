@@ -6,16 +6,17 @@ import { UserRole } from '@/types';
 import Link from 'next/link';
 
 const ROLE_OPTIONS: { value: UserRole; label: string; icon: string }[] = [
-  { value: 'WRITER', label: '작가', icon: '✍️' },
-  { value: 'STAFF', label: '직원', icon: '💼' },
-  { value: 'ADMIN', label: '관리자', icon: '👑' },
+  { value: 'EXCLUSIVE_WRITER', label: '전속 작가', icon: '✍️' },
+  { value: 'GENERAL_WRITER',   label: '일반 작가', icon: '📝' },
+  { value: 'STAFF',            label: '직원',      icon: '💼' },
 ];
 
 function getRoleLabel(role: UserRole | null | undefined) {
   switch (role) {
-    case 'ADMIN': return '👑 관리자';
-    case 'STAFF': return '💼 직원';
-    case 'WRITER': return '✍️ 작가';
+    case 'ADMIN':            return '👑 관리자';
+    case 'STAFF':            return '💼 직원';
+    case 'EXCLUSIVE_WRITER': return '✍️ 전속 작가';
+    case 'GENERAL_WRITER':   return '📝 일반 작가';
     default: return '미지정';
   }
 }
@@ -26,7 +27,7 @@ export default function ProfilePage() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
-  const [selectedRole, setSelectedRole] = useState<UserRole>('WRITER');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('EXCLUSIVE_WRITER');
   const [showUserId, setShowUserId] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -34,7 +35,7 @@ export default function ProfilePage() {
 
   const handleEditStart = useCallback(() => {
     setEditName(user?.name ?? '');
-    setSelectedRole(user?.role ?? 'WRITER');
+    setSelectedRole(user?.role ?? 'EXCLUSIVE_WRITER');
     setSaveError('');
     setSaveSuccess(false);
     setIsEditing(true);

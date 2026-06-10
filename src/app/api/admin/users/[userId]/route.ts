@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { UserRole } from '@/types';
 
-const VALID_ROLES: UserRole[] = ['ADMIN', 'STAFF', 'WRITER'];
+const VALID_ROLES: UserRole[] = ['ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'];
 
 export async function PATCH(
   req: NextRequest,
@@ -13,7 +13,7 @@ export async function PATCH(
   try {
     const { userId } = await params;
     const body = await req.json();
-    const { name, role } = body as { name?: string; role?: UserRole };
+    const { name, role, contract_date } = body as { name?: string; role?: UserRole; contract_date?: string | null };
 
     // 세션 확인
     const cookieStore = await cookies();
@@ -45,14 +45,15 @@ export async function PATCH(
     }
 
     // 업데이트 필드 구성
-    const updates: Record<string, string> = {};
-    if (name !== undefined) updates.name = name.trim();
+    const updates: Record<string, string | null> = {};
+    if (name !== undefined) updates.name = name?.trim() ?? null;
     if (role !== undefined) {
       if (!VALID_ROLES.includes(role)) {
         return NextResponse.json({ error: '유효하지 않은 역할입니다.' }, { status: 400 });
       }
       updates.role = role;
     }
+    if (contract_date !== undefined) updates.contract_date = contract_date ?? null;
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: '변경할 내용이 없습니다.' }, { status: 400 });

@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { UserRole } from '@/types';
 
-const VALID_ROLES: UserRole[] = ['ADMIN', 'STAFF', 'WRITER'];
+const VALID_ROLES: UserRole[] = ['ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'];
 
 export async function PATCH(req: NextRequest) {
   try {

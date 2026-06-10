@@ -1,287 +1,350 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { createClient } from '@/lib/supabase/client';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/authStore';
 
-interface Writer {
+interface WriterUser {
   id: string;
-  name: string;
-  email?: string;
-  writer_type?: string;
-  status?: string;
+  user_id: string;
+  name: string | null;
+  role: 'EXCLUSIVE_WRITER' | 'GENERAL_WRITER';
+  contract_date: string | null;
   created_at: string;
 }
 
-const writerSchema = z.object({
-  name: z.string().min(1, '이름을 입력해주세요'),
-  email: z.string().email().optional().or(z.literal('')),
-  writer_type: z.enum(['exclusive', 'general']),
-  birth_date: z.string().optional().or(z.literal('')),
-  bank_account: z.string().optional().or(z.literal('')),
-});
+type WriterTab = '전체' | 'EXCLUSIVE_WRITER' | 'GENERAL_WRITER';
 
-type WriterForm = z.infer<typeof writerSchema>;
+function roleLabel(role: string) {
+  switch (role) {
+    case 'EXCLUSIVE_WRITER': return '✍️ 전속 작가';
+    case 'GENERAL_WRITER':   return '📝 일반 작가';
+    default:                 return role;
+  }
+}
+
+// 이름 인라인 편집 셀
+function NameCell({
+  userId,
+  currentName,
+  onSaved,
+}: {
+  userId: string;
+  currentName: string | null;
+  onSaved: (userId: string, name: string | null) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [value, setValue] = useState(currentName ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: value.trim() || null }),
+      });
+      if (!res.ok) throw new Error();
+      onSaved(userId, value.trim() || null);
+      setIsEditing(false);
+    } catch {
+      // 저장 실패 시 입력값 유지
+    } finally {
+      setSaving(false);
+    }
+  }, [userId, value, onSaved]);
+
+  const handleCancel = useCallback(() => {
+    setValue(currentName ?? '');
+    setIsEditing(false);
+  }, [currentName]);
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-1">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSave();
+            if (e.key === 'Escape') handleCancel();
+          }}
+          autoFocus
+          className="w-24 px-2 py-1 text-xs bg-background border border-primary rounded outline-none text-foreground"
+          placeholder="이름 입력"
+        />
+        <button onClick={handleSave} disabled={saving} className="p-1 text-green-400 hover:text-green-300 transition disabled:opacity-50" title="저장">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </button>
+        <button onClick={handleCancel} className="p-1 text-red-400 hover:text-red-300 transition" title="취소">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 group">
+      <span className={currentName ? 'text-foreground' : 'text-muted-foreground italic text-xs'}>
+        {currentName ?? '미등록'}
+      </span>
+      <button
+        onClick={() => { setValue(currentName ?? ''); setIsEditing(true); }}
+        className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-blue-600/10"
+        title="이름 수정"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+// 사용자 ID 셀
+function UserIdCell({ userId, onCopy }: { userId: string; onCopy: (id: string) => void }) {
+  return (
+    <div className="flex items-center gap-1.5 group">
+      <span className="text-foreground font-mono text-xs cursor-default" title={userId}>
+        {userId.substring(0, 8)}...
+      </span>
+      <button
+        onClick={() => onCopy(userId)}
+        className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-blue-600/10"
+        title="ID 복사"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+// 계약일 인라인 편집 셀
+function ContractDateCell({
+  userId,
+  currentDate,
+  onSaved,
+}: {
+  userId: string;
+  currentDate: string | null;
+  onSaved: (userId: string, date: string | null) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [value, setValue] = useState(currentDate ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contract_date: value || null }),
+      });
+      if (!res.ok) throw new Error();
+      onSaved(userId, value || null);
+      setIsEditing(false);
+    } catch {
+      // 저장 실패 시 입력값 유지
+    } finally {
+      setSaving(false);
+    }
+  }, [userId, value, onSaved]);
+
+  const handleCancel = useCallback(() => {
+    setValue(currentDate ?? '');
+    setIsEditing(false);
+  }, [currentDate]);
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-1">
+        <input
+          type="date"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSave();
+            if (e.key === 'Escape') handleCancel();
+          }}
+          autoFocus
+          className="px-2 py-1 text-xs bg-background border border-primary rounded outline-none text-foreground"
+        />
+        <button onClick={handleSave} disabled={saving} className="p-1 text-green-400 hover:text-green-300 transition disabled:opacity-50" title="저장">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </button>
+        <button onClick={handleCancel} className="p-1 text-red-400 hover:text-red-300 transition" title="취소">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 group">
+      <span className={currentDate ? 'text-foreground text-xs' : 'text-muted-foreground italic text-xs'}>
+        {currentDate
+          ? new Date(currentDate).toLocaleDateString('ko-KR')
+          : '미등록'}
+      </span>
+      <button
+        onClick={() => { setValue(currentDate ?? ''); setIsEditing(true); }}
+        className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-blue-600/10"
+        title="계약일 수정"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+        </svg>
+      </button>
+    </div>
+  );
+}
 
 export default function WritersPage() {
-  const [writers, setWriters] = useState<Writer[]>([]);
+  const router = useRouter();
+  const { isAdmin } = useAuthStore();
+  const [writers, setWriters] = useState<WriterUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<WriterTab>('전체');
+  const [copyToast, setCopyToast] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<WriterForm>({
-    resolver: zodResolver(writerSchema),
-    defaultValues: {
-      writer_type: 'exclusive',
-    },
-  });
+  useEffect(() => {
+    if (!isAdmin()) router.push('/');
+  }, [isAdmin, router]);
 
-  const fetchWriters = async () => {
+  const fetchWriters = useCallback(async () => {
     try {
-      const supabase = createClient();
-      const { data, error: fetchError } = await supabase
-        .from('writers')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (fetchError) throw fetchError;
-      setWriters(data || []);
+      const res = await fetch('/api/admin/users');
+      if (!res.ok) throw new Error('목록을 불러올 수 없습니다.');
+      const data = await res.json();
+      const allUsers = data.users || [];
+      setWriters(
+        allUsers.filter((u: { role: string }) =>
+          u.role === 'EXCLUSIVE_WRITER' || u.role === 'GENERAL_WRITER'
+        )
+      );
     } catch (err) {
-      console.error('작가 목록 조회 오류:', err);
-      setError(err instanceof Error ? err.message : '작가 목록을 불러올 수 없습니다');
+      setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchWriters();
   }, []);
 
-  const onSubmit = async (formData: WriterForm) => {
-    setIsSubmitting(true);
-    try {
-      const supabase = createClient();
+  useEffect(() => { fetchWriters(); }, [fetchWriters]);
 
-      const { error: insertError } = await supabase.from('writers').insert([
-        {
-          name: formData.name,
-          email: formData.email || null,
-          writer_type: formData.writer_type,
-          birth_date: formData.birth_date || null,
-          bank_account: formData.bank_account || null,
-          status: 'active',
-        },
-      ]);
+  const handleNameSaved = useCallback((userId: string, name: string | null) => {
+    setWriters((prev) => prev.map((w) => w.user_id === userId ? { ...w, name } : w));
+  }, []);
 
-      if (insertError) throw insertError;
+  const handleContractDateSaved = useCallback((userId: string, date: string | null) => {
+    setWriters((prev) => prev.map((w) => w.user_id === userId ? { ...w, contract_date: date } : w));
+  }, []);
 
-      // 목록 리프레시
-      await fetchWriters();
-      reset();
-      setIsOpen(false);
-    } catch (err) {
-      console.error('작가 등록 오류:', err);
-      setError(err instanceof Error ? err.message : '작가 등록에 실패했습니다');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const handleCopy = useCallback((id: string) => {
+    navigator.clipboard.writeText(id);
+    setCopyToast(true);
+    setTimeout(() => setCopyToast(false), 2000);
+  }, []);
+
+  const filtered = selectedTab === '전체'
+    ? writers
+    : writers.filter((w) => w.role === selectedTab);
+
+  const tabCount = (tab: WriterTab) =>
+    tab === '전체' ? writers.length : writers.filter((w) => w.role === tab).length;
 
   return (
     <div className="space-y-6">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            전속작가 관리
-          </h1>
-          <p className="text-muted-foreground">
-            2026년 06월 09일 • 등록된 전속작가 목록
-          </p>
-        </div>
-
-        {/* + 등록 버튼 */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-            + 등록
-          </SheetTrigger>
-          <SheetContent
-            className="bg-card border-l border-border"
-            side="right"
-          >
-            <SheetHeader>
-              <SheetTitle className="text-foreground">
-                전속작가 등록
-              </SheetTitle>
-              <SheetDescription className="text-muted-foreground">
-                새로운 전속작가 정보를 입력해주세요
-              </SheetDescription>
-            </SheetHeader>
-
-            {/* 폼 */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-6">
-              {/* 이름 */}
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  이름 *
-                </label>
-                <input
-                  {...register('name')}
-                  placeholder="작가명"
-                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground"
-                />
-                {errors.name && (
-                  <p className="text-xs text-red-400 mt-1">{errors.name.message}</p>
-                )}
-              </div>
-
-              {/* 이메일 */}
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  이메일
-                </label>
-                <input
-                  {...register('email')}
-                  type="email"
-                  placeholder="example@prism-filter.com"
-                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground"
-                />
-                {errors.email && (
-                  <p className="text-xs text-red-400 mt-1">{errors.email.message}</p>
-                )}
-              </div>
-
-              {/* 작가 유형 */}
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  작가 유형 *
-                </label>
-                <select
-                  {...register('writer_type')}
-                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground"
-                >
-                  <option value="exclusive">전속작가</option>
-                  <option value="general">일반작가</option>
-                </select>
-              </div>
-
-              {/* 생년월일 */}
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  생년월일
-                </label>
-                <input
-                  {...register('birth_date')}
-                  type="date"
-                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground"
-                />
-              </div>
-
-              {/* 은행 계좌 */}
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  은행 계좌
-                </label>
-                <input
-                  {...register('bank_account')}
-                  placeholder="계좌번호"
-                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground"
-                />
-              </div>
-
-              {/* 저장 버튼 */}
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                {isSubmitting ? '등록 중...' : '저장'}
-              </Button>
-            </form>
-          </SheetContent>
-        </Sheet>
+      <div>
+        <h1 className="text-3xl font-bold text-foreground mb-2">작가 목록</h1>
+        <p className="text-muted-foreground text-sm">전속 작가 및 일반 작가 관리</p>
       </div>
 
-      {/* 작가 목록 */}
+      {/* 탭 */}
+      <div className="flex gap-2 border-b border-border">
+        {(['전체', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'] as WriterTab[]).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setSelectedTab(tab)}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition cursor-pointer whitespace-nowrap ${
+              selectedTab === tab
+                ? 'border-b-primary text-primary'
+                : 'border-b-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {tab === '전체'
+              ? `전체 (${tabCount(tab)})`
+              : tab === 'EXCLUSIVE_WRITER'
+              ? `전속 작가 (${tabCount(tab)})`
+              : `일반 작가 (${tabCount(tab)})`}
+          </button>
+        ))}
+      </div>
+
+      {/* 테이블 */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
         {isLoading ? (
-          <div className="p-8">
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-border border-t-primary mr-3"></div>
-              <p className="text-sm text-muted-foreground">데이터 로딩 중...</p>
-            </div>
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-border border-t-primary mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">데이터 로딩 중...</p>
           </div>
         ) : error ? (
           <div className="p-8 text-center">
             <p className="text-red-400">오류: {error}</p>
           </div>
-        ) : writers.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-muted-foreground">
-              등록된 작가가 없습니다. "+ 등록" 버튼으로 첫 작가를 등록해주세요.
-            </p>
+            <p className="text-muted-foreground">등록된 작가가 없습니다.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-blue-500/10 border-b border-border">
+              <thead className="bg-primary/10 border-b border-border">
                 <tr>
-                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">
-                    이름
-                  </th>
-                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">
-                    이메일
-                  </th>
-                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">
-                    유형
-                  </th>
-                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">
-                    상태
-                  </th>
-                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">
-                    등록일
-                  </th>
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">이름</th>
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">사용자 ID</th>
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">역할</th>
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">등록일</th>
+                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">계약일</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {writers.map((writer) => (
-                  <tr key={writer.id} className="hover:bg-border/30">
-                    <td className="px-6 py-4 font-semibold text-foreground">
-                      {writer.name}
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground text-sm">
-                      {writer.email || '-'}
+                {filtered.map((w) => (
+                  <tr key={w.id} className="hover:bg-primary/5">
+                    <td className="px-6 py-4">
+                      <NameCell userId={w.user_id} currentName={w.name} onSaved={handleNameSaved} />
                     </td>
                     <td className="px-6 py-4">
-                      <span className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded text-xs font-medium">
-                        {writer.writer_type === 'exclusive' ? '전속' : '일반'}
-                      </span>
+                      <UserIdCell userId={w.user_id} onCopy={handleCopy} />
                     </td>
                     <td className="px-6 py-4">
-                      <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs font-medium">
-                        {writer.status === 'active' ? '활성' : '비활성'}
+                      <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded text-xs font-medium">
+                        {roleLabel(w.role)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-muted-foreground text-sm">
-                      {new Date(writer.created_at).toLocaleDateString('ko-KR')}
+                    <td className="px-6 py-4 text-muted-foreground text-xs">
+                      {new Date(w.created_at).toLocaleDateString('ko-KR')}
+                    </td>
+                    <td className="px-6 py-4">
+                      <ContractDateCell
+                        userId={w.user_id}
+                        currentDate={w.contract_date}
+                        onSaved={handleContractDateSaved}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -290,6 +353,13 @@ export default function WritersPage() {
           </div>
         )}
       </div>
+
+      {/* 복사 완료 토스트 */}
+      {copyToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-foreground text-background text-sm px-4 py-2 rounded-full shadow-lg z-50 pointer-events-none">
+          복사 완료
+        </div>
+      )}
     </div>
   );
 }

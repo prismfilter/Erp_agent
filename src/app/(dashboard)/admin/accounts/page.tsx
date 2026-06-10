@@ -8,19 +8,38 @@ interface AccountUser {
   id: string;
   user_id: string;
   name: string | null;
-  role: 'ADMIN' | 'STAFF' | 'WRITER' | null;
+  role: 'ADMIN' | 'STAFF' | 'EXCLUSIVE_WRITER' | 'GENERAL_WRITER' | null;
   created_at: string;
 }
 
-const ROLE_OPTIONS = ['ADMIN', 'STAFF', 'WRITER'] as const;
+const ROLE_OPTIONS = ['ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'] as const;
+
+const TAB_OPTIONS = ['전체', 'ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'] as const;
+type TabOption = typeof TAB_OPTIONS[number];
 
 function roleLabel(role: string | null) {
   switch (role) {
-    case 'ADMIN': return '👑 관리자';
-    case 'STAFF': return '💼 직원';
-    case 'WRITER': return '✍️ 작가';
-    default: return '미지정';
+    case 'ADMIN':            return '👑 관리자';
+    case 'STAFF':            return '💼 직원';
+    case 'EXCLUSIVE_WRITER': return '✍️ 전속 작가';
+    case 'GENERAL_WRITER':   return '📝 일반 작가';
+    default:                 return '미지정';
   }
+}
+
+function roleButtonLabel(role: string) {
+  switch (role) {
+    case 'ADMIN':            return '관리자';
+    case 'STAFF':            return '직원';
+    case 'EXCLUSIVE_WRITER': return '전속 작가';
+    case 'GENERAL_WRITER':   return '일반 작가';
+    default:                 return role;
+  }
+}
+
+function tabLabel(tab: TabOption, count: number) {
+  if (tab === '전체') return `전체 (${count})`;
+  return `${roleButtonLabel(tab)} (${count})`;
 }
 
 // 이름 인라인 편집 셀
@@ -49,7 +68,7 @@ function NameCell({
       onSaved(userId, value.trim() || null);
       setIsEditing(false);
     } catch {
-      // 저장 실패 시 조용히 무시 (입력값 유지)
+      // 저장 실패 시 입력값 유지
     } finally {
       setSaving(false);
     }
@@ -75,7 +94,6 @@ function NameCell({
           className="w-24 px-2 py-1 text-xs bg-background border border-primary rounded outline-none text-foreground"
           placeholder="이름 입력"
         />
-        {/* 저장 (체크) */}
         <button
           onClick={handleSave}
           disabled={saving}
@@ -86,7 +104,6 @@ function NameCell({
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </button>
-        {/* 취소 (X) */}
         <button
           onClick={handleCancel}
           className="p-1 text-red-400 hover:text-red-300 transition"
@@ -106,7 +123,6 @@ function NameCell({
       <span className={currentName ? 'text-foreground' : 'text-muted-foreground italic text-xs'}>
         {currentName ?? '미등록'}
       </span>
-      {/* 연필 아이콘 */}
       <button
         onClick={() => { setValue(currentName ?? ''); setIsEditing(true); }}
         className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-blue-600/10"
@@ -120,14 +136,45 @@ function NameCell({
   );
 }
 
+// 사용자 ID 셀 (hover 전체 표시 + 클립보드 복사)
+function UserIdCell({
+  userId,
+  onCopy,
+}: {
+  userId: string;
+  onCopy: (id: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1.5 group">
+      <span
+        className="text-foreground font-mono text-xs cursor-default"
+        title={userId}
+      >
+        {userId.substring(0, 8)}...
+      </span>
+      <button
+        onClick={() => onCopy(userId)}
+        className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-blue-600/10"
+        title="ID 복사"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 export default function AccountsPage() {
   const router = useRouter();
   const { isAdmin } = useAuthStore();
   const [users, setUsers] = useState<AccountUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedRole, setSelectedRole] = useState<'전체' | 'ADMIN' | 'STAFF' | 'WRITER'>('전체');
+  const [selectedTab, setSelectedTab] = useState<TabOption>('전체');
   const [changingUserId, setChangingUserId] = useState<string | null>(null);
+  const [copyToast, setCopyToast] = useState(false);
 
   useEffect(() => {
     if (!isAdmin()) router.push('/');
@@ -150,7 +197,7 @@ export default function AccountsPage() {
 
   const handleChangeRole = useCallback(async (
     userId: string,
-    newRole: 'ADMIN' | 'STAFF' | 'WRITER'
+    newRole: 'ADMIN' | 'STAFF' | 'EXCLUSIVE_WRITER' | 'GENERAL_WRITER'
   ) => {
     setChangingUserId(userId);
     try {
@@ -176,9 +223,18 @@ export default function AccountsPage() {
     );
   }, []);
 
-  const filteredUsers = selectedRole === '전체'
+  const handleCopy = useCallback((id: string) => {
+    navigator.clipboard.writeText(id);
+    setCopyToast(true);
+    setTimeout(() => setCopyToast(false), 2000);
+  }, []);
+
+  const filteredUsers = selectedTab === '전체'
     ? users
-    : users.filter((u) => u.role === selectedRole);
+    : users.filter((u) => u.role === selectedTab);
+
+  const tabCount = (tab: TabOption) =>
+    tab === '전체' ? users.length : users.filter((u) => u.role === tab).length;
 
   return (
     <div className="space-y-6">
@@ -190,20 +246,18 @@ export default function AccountsPage() {
       </div>
 
       {/* 역할 탭 */}
-      <div className="flex gap-2 border-b border-border">
-        {(['전체', 'ADMIN', 'STAFF', 'WRITER'] as const).map((role) => (
+      <div className="flex gap-2 border-b border-border overflow-x-auto">
+        {TAB_OPTIONS.map((tab) => (
           <button
-            key={role}
-            onClick={() => setSelectedRole(role)}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition cursor-pointer ${
-              selectedRole === role
+            key={tab}
+            onClick={() => setSelectedTab(tab)}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition cursor-pointer whitespace-nowrap ${
+              selectedTab === tab
                 ? 'border-b-primary text-primary'
                 : 'border-b-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
-            {role === '전체'
-              ? `전체 (${users.length})`
-              : `${role} (${users.filter((u) => u.role === role).length})`}
+            {tabLabel(tab, tabCount(tab))}
           </button>
         ))}
       </div>
@@ -238,7 +292,6 @@ export default function AccountsPage() {
               <tbody className="divide-y divide-border">
                 {filteredUsers.map((u) => (
                   <tr key={u.id} className="hover:bg-primary/5">
-                    {/* 이름 (인라인 편집) */}
                     <td className="px-6 py-4">
                       <NameCell
                         userId={u.user_id}
@@ -246,35 +299,31 @@ export default function AccountsPage() {
                         onSaved={handleNameSaved}
                       />
                     </td>
-                    {/* 사용자 ID */}
-                    <td className="px-6 py-4 text-foreground font-mono text-xs">
-                      {u.user_id.substring(0, 8)}...
+                    <td className="px-6 py-4">
+                      <UserIdCell userId={u.user_id} onCopy={handleCopy} />
                     </td>
-                    {/* 현재 역할 */}
                     <td className="px-6 py-4">
                       <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded text-xs font-medium">
                         {roleLabel(u.role)}
                       </span>
                     </td>
-                    {/* 등록일 */}
                     <td className="px-6 py-4 text-muted-foreground text-xs">
                       {new Date(u.created_at).toLocaleDateString('ko-KR')}
                     </td>
-                    {/* 역할 변경 버튼 */}
                     <td className="px-6 py-4">
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 flex-wrap">
                         {ROLE_OPTIONS.map((role) => (
                           <button
                             key={role}
                             onClick={() => handleChangeRole(u.user_id, role)}
                             disabled={changingUserId === u.user_id}
-                            className={`px-2 py-1 rounded text-xs font-medium transition disabled:opacity-50 ${
+                            className={`px-2 py-1 rounded text-xs font-medium transition disabled:opacity-50 cursor-pointer ${
                               u.role === role
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-border text-muted-foreground hover:bg-primary/20'
                             }`}
                           >
-                            {role}
+                            {roleButtonLabel(role)}
                           </button>
                         ))}
                       </div>
@@ -286,6 +335,13 @@ export default function AccountsPage() {
           </div>
         )}
       </div>
+
+      {/* 복사 완료 토스트 */}
+      {copyToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-foreground text-background text-sm px-4 py-2 rounded-full shadow-lg z-50 pointer-events-none">
+          복사 완료
+        </div>
+      )}
     </div>
   );
 }

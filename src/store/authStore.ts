@@ -61,6 +61,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   isWriter: () => {
-    return get().user?.role === 'WRITER';
+    const role = get().user?.role;
+    return role === 'EXCLUSIVE_WRITER' || role === 'GENERAL_WRITER';
   },
 }));
