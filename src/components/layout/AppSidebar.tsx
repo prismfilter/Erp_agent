@@ -31,8 +31,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: '매출현황', href: '/revenue', icon: '📈', section: '메뉴' },
   { label: '정산서', href: '/settlement', icon: '📄', section: '메뉴' },
   // 관리 섹션
-  { label: '구성원', href: '/staff', icon: '👥', adminOnly: true, section: '관리' },
-  { label: '작가 목록', href: '/writers', icon: '✍️', adminOnly: true, section: '관리' },
+  { label: '구성원', href: '/staff', icon: '👥', section: '관리' },
+  { label: '작가 목록', href: '/writers', icon: '✍️', section: '관리' },
   { label: '관리자용', href: '/admin/accounts', icon: '⚙️', adminOnly: true, section: '관리' },
 ];
 

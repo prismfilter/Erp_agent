@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { LoadingScreen } from '@/components/ui/LoadingScreen';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,11 +20,7 @@ export default function LoginPage() {
   }, [authLoading, isAuthenticated, router]);
 
   if (authLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-border border-t-primary"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   const handleGoogleLogin = async () => {
@@ -31,7 +28,8 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'}/api/auth/callback`;
+      // 현재 접속 URL 기반으로 생성 — 터널(trycloudflare.com)·localhost 모두 지원
+      const redirectUrl = `${window.location.origin}/api/auth/callback`;
 
       const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',

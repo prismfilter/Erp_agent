@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
 
 interface StaffUser {
   id: string;
@@ -128,17 +126,13 @@ function UserIdCell({ userId, onCopy }: { userId: string; onCopy: (id: string) =
 }
 
 export default function StaffPage() {
-  const router = useRouter();
-  const { isAdmin } = useAuthStore();
   const [members, setMembers] = useState<StaffUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<StaffTab>('전체');
   const [copyToast, setCopyToast] = useState(false);
 
-  useEffect(() => {
-    if (!isAdmin()) router.push('/');
-  }, [isAdmin, router]);
+  // 모든 역할 접근 가능 — 어드민 가드 제거
 
   const fetchMembers = useCallback(async () => {
     try {

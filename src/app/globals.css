@@ -18,17 +18,17 @@
 }
 
 .dark {
-  /* Cosmic Indigo — 딥 인디고-바이올렛, 입체적 트렌디 다크 */
+  /* Cosmic Dark — 딥 네이비 기반, 카드·사이드바·활성메뉴는 그라데이션으로 처리 */
   color-scheme: dark;
-  --background: #131527;
+  --background: #0b0d1e;
   --foreground: #eeeeff;
   --primary: #5c6cff;
   --primary-foreground: #ffffff;
-  --sidebar: #0e1020;
+  --sidebar: #0d1028;
   --sidebar-foreground: #ccd2f5;
-  --card: #1b2040;
-  --border: #2a3060;
-  --muted: #191d38;
+  --card: #1a1f45;
+  --border: #242c56;
+  --muted: #181d3c;
   --muted-foreground: #8896cc;
   --accent: #4a54e8;
 }
@@ -92,4 +92,31 @@
   .classic-dark .prism-logo {
     filter: brightness(0) invert(1);
   }
+}
+
+/*
+  다크 모드 그라데이션 오버라이드
+  — @layer 밖에 배치하여 Tailwind 유틸리티보다 높은 cascade 우선순위 확보
+  — CSS 변수(단색)로 표현 불가한 gradient를 실제 bg 속성으로 직접 적용
+*/
+
+/* 카드: 인디고-네이비 → 딥 다크, 위쪽이 밝아 '연보라+흰빛' 느낌 */
+.dark .bg-card {
+  background: linear-gradient(160deg, #1f2452 0%, #131530 100%);
+}
+
+/* 사이드바: 수직 그라데이션으로 상단이 살짝 밝아 공간감 부여 */
+.dark .bg-sidebar {
+  background: linear-gradient(180deg, #0f1232 0%, #09091e 100%);
+}
+
+/* 활성 메뉴: 인디고 → 밝은 퍼리윙클, '흰색+연보라' 조화 구현 */
+.dark [aria-current="page"] {
+  background: linear-gradient(135deg, #4a5ee8 0%, #8097ff 100%) !important;
+  box-shadow: 0 4px 18px rgba(74, 94, 232, 0.4) !important;
+}
+
+/* 활성 메뉴 호버 시에도 그라데이션 유지 */
+.dark [aria-current="page"]:hover {
+  background: linear-gradient(135deg, #5568ee 0%, #8ea5ff 100%) !important;
 }

@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
 
 interface WriterUser {
   id: string;
@@ -214,17 +212,13 @@ function ContractDateCell({
 }
 
 export default function WritersPage() {
-  const router = useRouter();
-  const { isAdmin } = useAuthStore();
   const [writers, setWriters] = useState<WriterUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<WriterTab>('전체');
   const [copyToast, setCopyToast] = useState(false);
 
-  useEffect(() => {
-    if (!isAdmin()) router.push('/');
-  }, [isAdmin, router]);
+  // 모든 역할 접근 가능 — 어드민 가드 제거
 
   const fetchWriters = useCallback(async () => {
     try {

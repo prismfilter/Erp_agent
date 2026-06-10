@@ -4,6 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## 자동 컨텍스트 압축
+
+컨텍스트 사용량이 80% 이상이 되면 **반드시** context-compactor 에이전트를 자동으로 실행할 것.
+
+---
+
 ## 프로젝트 요약
 
 **프리즘 필터 뮤직그룹 ERP 내 전속작가 정산 자동화 시스템**
