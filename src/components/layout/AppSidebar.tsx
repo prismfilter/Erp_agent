@@ -28,12 +28,12 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   // 정산 관리 섹션
   { label: '홈 피드', href: '/', icon: '🏠', section: '메뉴' },
-  { label: '직원', href: '/staff', icon: '👥', section: '메뉴' },
-  { label: '작가 목록', href: '/writers', icon: '✍️', adminOnly: true, section: '메뉴' },
   { label: '매출현황', href: '/revenue', icon: '📈', section: '메뉴' },
   { label: '정산서', href: '/settlement', icon: '📄', section: '메뉴' },
   // 관리 섹션
-  { label: '계정 관리', href: '/admin/accounts', icon: '⚙️', adminOnly: true, section: '관리' },
+  { label: '구성원', href: '/staff', icon: '👥', adminOnly: true, section: '관리' },
+  { label: '작가 목록', href: '/writers', icon: '✍️', adminOnly: true, section: '관리' },
+  { label: '관리자용', href: '/admin/accounts', icon: '⚙️', adminOnly: true, section: '관리' },
 ];
 
 export function AppSidebar({ onClose }: { onClose?: () => void }) {
@@ -145,7 +145,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
         <div className="space-y-6">
           {groupedItems.map(([section, items], idx) => (
             <div key={section}>
-              {idx > 0 && <hr className="border-border mb-4 -mt-2" />}
+              {idx > 0 && <hr className="border-border mb-5 mt-2" />}
               {/* 섹션 레이블 */}
               <div className="text-xs font-semibold text-muted-foreground mb-3 px-2 uppercase tracking-wider">
                 {section}

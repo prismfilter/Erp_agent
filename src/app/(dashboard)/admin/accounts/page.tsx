@@ -240,7 +240,7 @@ export default function AccountsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">계정 관리</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">관리자용</h1>
           <p className="text-muted-foreground text-sm">사용자 역할 및 이름 관리</p>
         </div>
       </div>

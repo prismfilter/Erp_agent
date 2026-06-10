@@ -10,10 +10,10 @@ interface SiteHeaderProps {
 const pageLabels: Record<string, string> = {
   '/': '홈 피드',
   '/settlement': '정산서',
-  '/writers': '전속작가',
-  '/staff': '직원',
+  '/writers': '작가 목록',
+  '/staff': '구성원',
   '/revenue': '매출현황',
-  '/admin/accounts': '계정 관리',
+  '/admin/accounts': '관리자용',
   '/writer-portal': '작가 포털',
   '/profile': '내 프로필 설정',
 };
