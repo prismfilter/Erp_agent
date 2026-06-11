@@ -1,0 +1,2 @@
+- [프로젝트 상태 스냅샷](project_status_snapshot.md) — 프리즘 필터 ERP 기술 스택, 구조, 최근 완료 작업 현황 (2026-06-11)
+- [사용자 선호도](user_preferences.md) — 한국어 커뮤니케이션, 개발 스타일, 환경 설정

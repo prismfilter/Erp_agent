@@ -120,3 +120,41 @@
 .dark [aria-current="page"]:hover {
   background: linear-gradient(135deg, #5568ee 0%, #8ea5ff 100%) !important;
 }
+
+/*
+  청구서 인쇄 (PDF 저장 / 인쇄 버튼)
+  — 활성 탭의 .invoice-print-area만 A4 세로로 출력
+  — 항목이 많아 페이지가 나뉘면 테이블 헤더 반복
+*/
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .invoice-print-area,
+  .invoice-print-area * {
+    visibility: visible;
+  }
+
+  .invoice-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* 페이지 분할 시 테이블 헤더 반복 + 행 중간 절단 방지 */
+  .invoice-print-area thead {
+    display: table-header-group;
+  }
+  .invoice-print-area tr {
+    break-inside: avoid;
+  }
+}
