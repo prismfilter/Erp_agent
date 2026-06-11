@@ -261,21 +261,21 @@ export default function PriceTablePage() {
               <h2 className="text-sm font-bold text-foreground">{category}</h2>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-xs">
+              <table className="text-xs table-fixed">
                 <thead className="bg-primary/10 border-b border-border">
                   <tr>
-                    <SortableHeader label="작업내역" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-2.5" />
-                    <SortableHeader label="희망청구가" sortKey="billing_price" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-2.5 w-36" />
-                    <SortableHeader label="작가지급액 (방어선)" sortKey="writer_base_pay" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-2.5 w-44" />
-                    <SortableHeader label="관리 수수료 (20%)" sortKey="fee" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-2.5 w-40" />
-                    <SortableHeader label="작가 실수령액" sortKey="net" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-2.5 w-36" />
-                    {isAdmin && <th className="px-4 py-2.5 text-center font-semibold text-foreground w-20">상태</th>}
+                    <SortableHeader label="작업내역" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-3 py-2 w-[340px]" />
+                    <SortableHeader label="희망청구가" sortKey="billing_price" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-32" />
+                    <SortableHeader label="작가지급액 (방어선)" sortKey="writer_base_pay" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-36" />
+                    <SortableHeader label="관리 수수료 (20%)" sortKey="fee" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-36" />
+                    <SortableHeader label="작가 실수령액" sortKey="net" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-32" />
+                    {isAdmin && <th className="px-3 py-2 text-center font-semibold text-foreground w-24">상태</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {categoryItems.map((it) => (
                     <tr key={it.id} className={`hover:bg-primary/5 ${!it.is_active ? 'opacity-40' : ''}`}>
-                      <td className="px-4 py-2.5 text-foreground">
+                      <td className="px-3 py-2 text-foreground w-[340px] truncate" title={it.name}>
                         {it.name}
                         {it.is_formula && (
                           <span className="ml-2 text-amber-400 cursor-help" title={it.formula_note ?? '수식형 항목'}>
@@ -283,7 +283,7 @@ export default function PriceTablePage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-2.5 text-center text-foreground whitespace-nowrap">
+                      <td className="px-3 py-2 text-center text-foreground whitespace-nowrap">
                         {it.is_formula ? (
                           <span className="text-muted-foreground text-[11px]">{it.formula_note ?? '협의'}</span>
                         ) : (
@@ -294,7 +294,7 @@ export default function PriceTablePage() {
                           />
                         )}
                       </td>
-                      <td className="px-4 py-2.5 text-center text-foreground whitespace-nowrap">
+                      <td className="px-3 py-2 text-center text-foreground whitespace-nowrap">
                         {it.is_formula ? (
                           <span className="text-muted-foreground">-</span>
                         ) : (
@@ -305,17 +305,17 @@ export default function PriceTablePage() {
                           />
                         )}
                       </td>
-                      <td className="px-4 py-2.5 text-center text-muted-foreground tabular-nums whitespace-nowrap">
+                      <td className="px-3 py-2 text-center text-muted-foreground tabular-nums whitespace-nowrap">
                         {it.writer_base_pay != null ? formatWon(calcFee(it.writer_base_pay, it.fee_rate)) : '-'}
                       </td>
-                      <td className="px-4 py-2.5 text-center text-green-500 tabular-nums whitespace-nowrap">
+                      <td className="px-3 py-2 text-center text-green-500 tabular-nums whitespace-nowrap">
                         {it.writer_base_pay != null ? formatWon(calcWriterNet(it.writer_base_pay, it.fee_rate)) : '-'}
                       </td>
                       {isAdmin && (
-                        <td className="px-4 py-2.5 text-center">
+                        <td className="px-3 py-2 text-center">
                           <button
                             onClick={() => patchItem(it.id, { is_active: !it.is_active })}
-                            className={`px-2 py-1 rounded text-[11px] font-medium transition ${
+                            className={`px-2 py-1 rounded text-[11px] font-medium transition whitespace-nowrap ${
                               it.is_active
                                 ? 'bg-green-500/20 text-green-400 hover:bg-red-500/20 hover:text-red-400'
                                 : 'bg-gray-500/20 text-gray-400 hover:bg-green-500/20 hover:text-green-400'

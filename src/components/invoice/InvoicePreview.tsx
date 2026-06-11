@@ -1,7 +1,7 @@
 'use client';
 
 // 청구서 미리보기 — 거래처 청구서(외부) / 내부 지급서(내부) 2종
-// 실제 엑셀 양식을 충실히 재현. 외부 문서에는 실명·작가지급액·귀속금액·비고 절대 미노출
+// A4 세로 양식. 외부 문서에는 실명·작가지급액·귀속금액·비고 절대 미노출
 
 import { useMemo } from 'react';
 import type { Invoice } from '@/types/invoice';
@@ -21,6 +21,9 @@ const COMPANY = {
   address: '서울특별시 강남구 도산대로 26길 20, B2',
 };
 
+// A4 한 장을 채우기 위한 최소 표시 행 수
+const MIN_ROWS = 12;
+
 interface InvoicePreviewProps {
   invoice: Invoice;
   mode: 'external' | 'internal';
@@ -36,64 +39,80 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
     [items, mode]
   );
 
-  const hasNegotiated = displayItems.some((it) => it.is_negotiated);
+  // 외부=5열, 내부=7열
+  const colCount = mode === 'external' ? 5 : 7;
+  // 빈 행으로 A4 채우기
+  const emptyRowCount = Math.max(0, MIN_ROWS - displayItems.length);
 
   return (
-    <div className="invoice-print-area bg-white text-black rounded-lg border border-border p-8 md:p-10 print:border-0 print:rounded-none print:p-0">
-      {/* 제목 */}
+    <div className="invoice-print-area mx-auto w-full max-w-[794px] min-h-[1090px] bg-white text-black border border-gray-400 shadow-lg p-10 flex flex-col print:max-w-none print:min-h-0 print:shadow-none print:border print:p-0">
+      {/* ===== 제목 ===== */}
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold tracking-[0.5em] mb-1">청 구 서</h1>
+        <h1 className="text-3xl font-bold tracking-[0.5em] mb-2">청 구 서</h1>
         <p className="text-sm font-semibold">{COMPANY.name}</p>
         {mode === 'internal' && (
           <p className="text-xs text-gray-500 mt-1">— 내부 지급서 (대외비) —</p>
         )}
       </div>
 
-      {/* 기본 정보 */}
-      <table className="text-sm mb-6">
-        <tbody>
-          <tr>
-            <td className="pr-6 py-0.5 font-semibold w-20">날짜</td>
-            <td>{invoice.invoice_date}</td>
-          </tr>
-          <tr>
-            <td className="pr-6 py-0.5 font-semibold">거래처</td>
-            <td>{invoice.client?.name ?? '-'}</td>
-          </tr>
-          <tr>
-            <td className="pr-6 py-0.5 font-semibold">거래명</td>
-            <td>{invoice.title}</td>
-          </tr>
-        </tbody>
-      </table>
+      {/* ===== 거래 정보 박스 (우측 정렬) ===== */}
+      <div className="flex justify-end mb-4">
+        <table className="text-xs border border-gray-400 border-collapse">
+          <tbody>
+            <tr>
+              <td className="border border-gray-400 bg-gray-100 px-3 py-1.5 font-semibold whitespace-nowrap">날짜</td>
+              <td className="border border-gray-400 px-3 py-1.5 min-w-[160px]">{invoice.invoice_date}</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-400 bg-gray-100 px-3 py-1.5 font-semibold whitespace-nowrap">거래처</td>
+              <td className="border border-gray-400 px-3 py-1.5">{invoice.client?.name ?? '-'}</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-400 bg-gray-100 px-3 py-1.5 font-semibold whitespace-nowrap">입금계좌</td>
+              <td className="border border-gray-400 px-3 py-1.5">
+                {invoice.account ? `${invoice.account.bank_name} ${invoice.account.account_number}` : '-'}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      {/* 항목 테이블 */}
-      <table className="w-full text-xs border-collapse mb-6">
+      {/* ===== 거래명 + 안내문 ===== */}
+      <div className="mb-3">
+        <p className="text-sm">
+          <span className="font-semibold">거래명 : </span>
+          {invoice.title}
+        </p>
+        <p className="text-xs text-gray-600 mt-1">아래와 같이 청구합니다.</p>
+      </div>
+
+      {/* ===== 항목 테이블 ===== */}
+      <table className="w-full text-xs border-collapse">
         <thead>
-          <tr className="border-y-2 border-black">
-            <th className="px-2 py-2 text-center w-10 font-semibold">No.</th>
-            <th className="px-2 py-2 text-center w-28 font-semibold">작업자</th>
-            <th className="px-2 py-2 text-left font-semibold">상세내용</th>
-            <th className="px-2 py-2 text-right w-28 font-semibold">공급가액</th>
+          <tr className="bg-gray-100">
+            <th className="border border-gray-400 px-2 py-2 text-center w-10 font-semibold">No.</th>
+            <th className="border border-gray-400 px-2 py-2 text-center w-24 font-semibold">작업자</th>
+            <th className="border border-gray-400 px-2 py-2 text-center font-semibold">상세내용</th>
+            <th className="border border-gray-400 px-2 py-2 text-center w-28 font-semibold">공급가액</th>
             {mode === 'external' ? (
-              <th className="px-2 py-2 text-right w-24 font-semibold">세 액</th>
+              <th className="border border-gray-400 px-2 py-2 text-center w-24 font-semibold">세 액</th>
             ) : (
               <>
-                <th className="px-2 py-2 text-right w-28 font-semibold">작가 지급액</th>
-                <th className="px-2 py-2 text-right w-24 font-semibold">귀속 금액</th>
-                <th className="px-2 py-2 text-left w-32 font-semibold">비고</th>
+                <th className="border border-gray-400 px-2 py-2 text-center w-28 font-semibold">작가 지급액</th>
+                <th className="border border-gray-400 px-2 py-2 text-center w-24 font-semibold">귀속 금액</th>
+                <th className="border border-gray-400 px-2 py-2 text-center w-24 font-semibold">비고</th>
               </>
             )}
           </tr>
         </thead>
         <tbody>
           {displayItems.map((it, idx) => (
-            <tr key={it.id ?? idx} className="border-b border-gray-300">
-              <td className="px-2 py-1.5 text-center tabular-nums">{idx + 1}</td>
-              <td className="px-2 py-1.5 text-center">
+            <tr key={it.id ?? idx}>
+              <td className="border border-gray-400 px-2 py-1.5 text-center tabular-nums">{idx + 1}</td>
+              <td className="border border-gray-400 px-2 py-1.5 text-center">
                 {mode === 'external' ? '프리즘필터' : it.writer_names || '-'}
               </td>
-              <td className="px-2 py-1.5">
+              <td className="border border-gray-400 px-2 py-1.5 text-left">
                 {it.description}
                 {showNegotiatedNote && it.is_negotiated && (
                   <span className="block text-[10px] text-gray-500">
@@ -101,105 +120,115 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
                   </span>
                 )}
               </td>
-              <td className="px-2 py-1.5 text-right tabular-nums">
+              <td className="border border-gray-400 px-2 py-1.5 text-right tabular-nums whitespace-nowrap">
                 {formatWon(it.supply_amount)}
               </td>
               {mode === 'external' ? (
-                <td className="px-2 py-1.5 text-right tabular-nums">
+                <td className="border border-gray-400 px-2 py-1.5 text-right tabular-nums whitespace-nowrap">
                   {formatWon(calcLineTax(it.supply_amount))}
                 </td>
               ) : (
                 <>
-                  <td className="px-2 py-1.5 text-right tabular-nums">
+                  <td className="border border-gray-400 px-2 py-1.5 text-right tabular-nums whitespace-nowrap">
                     {formatWon(it.writer_pay)}
                   </td>
-                  <td className="px-2 py-1.5 text-right tabular-nums">
+                  <td className="border border-gray-400 px-2 py-1.5 text-right tabular-nums whitespace-nowrap">
                     {formatWon(calcAttribution(it.supply_amount, it.writer_pay))}
                   </td>
-                  <td className="px-2 py-1.5 text-[10px] text-gray-600">{it.note ?? ''}</td>
+                  <td className="border border-gray-400 px-2 py-1.5 text-[10px] text-gray-600">{it.note ?? ''}</td>
                 </>
               )}
+            </tr>
+          ))}
+          {/* 빈 행 — A4 한 장 채우기 */}
+          {Array.from({ length: emptyRowCount }).map((_, i) => (
+            <tr key={`empty-${i}`} className="h-7">
+              {Array.from({ length: colCount }).map((__, c) => (
+                <td key={c} className="border border-gray-400 px-2 py-1.5">&nbsp;</td>
+              ))}
             </tr>
           ))}
         </tbody>
       </table>
 
-      {/* 합계 블록 */}
+      {/* ===== 합계 블록 ===== */}
       {mode === 'external' ? (
-        <div className="flex justify-end mb-8">
-          <table className="text-sm">
-            <tbody>
-              <tr className="border-t-2 border-black">
-                <td className="pr-8 py-1.5 font-semibold">총 공급가액</td>
-                <td className="text-right tabular-nums w-32">{formatWon(totals.supplyTotal)}</td>
-              </tr>
-              <tr>
-                <td className="pr-8 py-1.5 font-semibold">총 세액</td>
-                <td className="text-right tabular-nums">{formatWon(totals.taxA)}</td>
-              </tr>
-              <tr className="border-t border-black">
-                <td className="pr-8 py-1.5 font-bold">총 합계</td>
-                <td className="text-right tabular-nums font-bold">{formatWon(totals.grandTotal)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <table className="w-full text-xs border-collapse mt-[-1px]">
+          <tbody>
+            <tr className="bg-gray-50">
+              <td className="border border-gray-400 px-2 py-2 text-right font-semibold" colSpan={3}>총 공급가액</td>
+              <td className="border border-gray-400 px-2 py-2 text-right tabular-nums whitespace-nowrap" colSpan={1}>{formatWon(totals.supplyTotal)}</td>
+            </tr>
+            <tr className="bg-gray-50">
+              <td className="border border-gray-400 px-2 py-2 text-right font-semibold" colSpan={3}>총 세액</td>
+              <td className="border border-gray-400 px-2 py-2 text-right tabular-nums whitespace-nowrap" colSpan={1}>{formatWon(totals.taxA)}</td>
+            </tr>
+            <tr className="bg-gray-100">
+              <td className="border border-gray-400 px-2 py-2.5 text-right font-bold text-sm" colSpan={3}>총 합계</td>
+              <td className="border border-gray-400 px-2 py-2.5 text-right tabular-nums font-bold text-sm whitespace-nowrap" colSpan={1}>{formatWon(totals.grandTotal)}</td>
+            </tr>
+          </tbody>
+        </table>
       ) : (
-        <div className="flex justify-end mb-8">
-          <table className="text-sm">
-            <tbody>
-              <tr className="border-t-2 border-black">
-                <td className="pr-8 py-1.5 font-semibold">총 공급가액 (A)</td>
-                <td className="text-right tabular-nums w-32">{formatWon(totals.supplyTotal)}</td>
-                <td className="pl-8 pr-4 text-gray-500 text-xs">세 액</td>
-                <td className="text-right tabular-nums w-24"></td>
-              </tr>
-              <tr>
-                <td className="pr-8 py-1.5 font-semibold">총 작가지급액 (B)</td>
-                <td className="text-right tabular-nums">{formatWon(totals.writerPayTotal)}</td>
-                <td></td>
-                <td className="text-right tabular-nums text-gray-600">{formatWon(totals.taxB)}</td>
-              </tr>
-              <tr>
-                <td className="pr-8 py-1.5 font-semibold">총 귀속금액 (C)</td>
-                <td className="text-right tabular-nums">{formatWon(totals.attributionTotal)}</td>
-                <td></td>
-                <td className="text-right tabular-nums text-gray-600">{formatWon(totals.taxC)}</td>
-              </tr>
-              <tr className="border-t border-black">
-                <td className="pr-8 py-1.5 font-bold">총 합계 (B+C)</td>
-                <td className="text-right tabular-nums font-bold">{formatWon(totals.grandTotal)}</td>
-                <td className="pl-8 pr-4 text-gray-500 text-[10px]">거래처 청구서 총 합계</td>
-                <td className="text-right tabular-nums text-gray-600">{formatWon(totals.grandTotal)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <table className="w-full text-xs border-collapse mt-[-1px]">
+          <tbody>
+            <tr className="bg-gray-50">
+              <td className="border border-gray-400 px-2 py-2 text-right font-semibold" colSpan={3}>총 공급가액 (A)</td>
+              <td className="border border-gray-400 px-2 py-2 text-right tabular-nums whitespace-nowrap">{formatWon(totals.supplyTotal)}</td>
+              <td className="border border-gray-400 px-2 py-2 text-center text-gray-500">세 액</td>
+              <td className="border border-gray-400 px-2 py-2" colSpan={2}></td>
+            </tr>
+            <tr className="bg-gray-50">
+              <td className="border border-gray-400 px-2 py-2 text-right font-semibold" colSpan={3}>총 작가지급액 (B)</td>
+              <td className="border border-gray-400 px-2 py-2 text-right tabular-nums whitespace-nowrap">{formatWon(totals.writerPayTotal)}</td>
+              <td className="border border-gray-400 px-2 py-2 text-right tabular-nums text-gray-600 whitespace-nowrap" colSpan={3}>{formatWon(totals.taxB)}</td>
+            </tr>
+            <tr className="bg-gray-50">
+              <td className="border border-gray-400 px-2 py-2 text-right font-semibold" colSpan={3}>총 귀속금액 (C)</td>
+              <td className="border border-gray-400 px-2 py-2 text-right tabular-nums whitespace-nowrap">{formatWon(totals.attributionTotal)}</td>
+              <td className="border border-gray-400 px-2 py-2 text-right tabular-nums text-gray-600 whitespace-nowrap" colSpan={3}>{formatWon(totals.taxC)}</td>
+            </tr>
+            <tr className="bg-gray-100">
+              <td className="border border-gray-400 px-2 py-2.5 text-right font-bold text-sm" colSpan={3}>총 합계 (B+C)</td>
+              <td className="border border-gray-400 px-2 py-2.5 text-right tabular-nums font-bold text-sm whitespace-nowrap">{formatWon(totals.grandTotal)}</td>
+              <td className="border border-gray-400 px-2 py-2.5 text-center text-[10px] text-gray-500" colSpan={3}>거래처 청구서 총 합계 {formatWon(totals.grandTotal)}</td>
+            </tr>
+          </tbody>
+        </table>
       )}
 
       {/* 검증 경고 (화면에서만, 인쇄 미포함) */}
       {!totals.isValid && (
-        <div className="print:hidden mb-6 bg-amber-50 border border-amber-300 rounded-lg p-3 space-y-1">
+        <div className="print:hidden mt-4 bg-amber-50 border border-amber-300 rounded-lg p-3 space-y-1">
           {totals.warnings.map((w, i) => (
             <p key={i} className="text-xs text-amber-700">⚠️ {w}</p>
           ))}
         </div>
       )}
 
-      {/* 푸터: 회사 정보 */}
-      <div className="border-t-2 border-black pt-4 flex justify-between text-xs">
-        <div>
-          <p className="font-semibold">{COMPANY.name}</p>
-          <p className="text-gray-600">{COMPANY.address}</p>
+      {/* ===== 푸터: 회사 정보 + 로고 ===== */}
+      <div className="mt-auto pt-8">
+        <div className="flex justify-between text-xs border-t-2 border-gray-700 pt-3">
+          <div>
+            <p className="font-semibold">{COMPANY.name}</p>
+            <p className="text-gray-600">{COMPANY.address}</p>
+          </div>
+          <div className="text-right text-gray-700">
+            <p>사업자등록번호 : {COMPANY.bizNumber}</p>
+            <p>
+              입금계좌 :{' '}
+              {invoice.account
+                ? `${invoice.account.bank_name} ${invoice.account.account_number}`
+                : '-'}
+            </p>
+          </div>
         </div>
-        <div className="text-right">
-          <p>사업자등록번호 : {COMPANY.bizNumber}</p>
-          <p>
-            입금계좌 :{' '}
-            {invoice.account
-              ? `${invoice.account.bank_name} ${invoice.account.account_number}`
-              : '-'}
-          </p>
+
+        {/* 하단 중앙 로고 + 회사명 */}
+        <div className="flex flex-col items-center gap-2 mt-8">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/prism-filter-logo.svg" alt="PRISM FILTER" className="w-14 h-14" />
+          <p className="text-sm font-bold tracking-wide">{COMPANY.name}</p>
         </div>
       </div>
     </div>
