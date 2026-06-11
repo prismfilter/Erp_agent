@@ -171,7 +171,12 @@
     min-height: 0 !important;
     box-shadow: none !important;
     background: #ffffff !important;
-    color: #000000 !important;
+  }
+
+  /* 표 헤더·합계 박스의 진한 배경색을 인쇄 시에도 유지 */
+  .invoice-print-area * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* 페이지 분할 시 테이블 헤더 반복 + 행 중간 절단 방지 */

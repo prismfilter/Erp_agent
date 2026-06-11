@@ -256,7 +256,7 @@ export default function PriceTablePage() {
         </div>
       ) : (
         grouped.map(([category, categoryItems]) => (
-          <div key={category} className="bg-card border border-border rounded-lg overflow-hidden">
+          <div key={category} className="bg-card border border-border rounded-lg overflow-hidden w-fit max-w-full mx-auto">
             <div className="px-4 py-3 border-b border-border bg-primary/5">
               <h2 className="text-sm font-bold text-foreground">{category}</h2>
             </div>
