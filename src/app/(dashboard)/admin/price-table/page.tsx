@@ -256,12 +256,12 @@ export default function PriceTablePage() {
         </div>
       ) : (
         grouped.map(([category, categoryItems]) => (
-          <div key={category} className="bg-card border border-border rounded-lg overflow-hidden w-full max-w-[980px] mx-auto">
+          <div key={category} className="bg-card border border-border rounded-lg overflow-hidden w-full max-w-[1060px] mx-auto">
             <div className="px-4 py-3 border-b border-border bg-primary/5">
               <h2 className="text-sm font-bold text-foreground">{category}</h2>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-xs table-fixed min-w-[860px]">
+              <table className="w-full text-xs table-fixed min-w-[980px]">
                 <thead className="bg-primary/10 border-b border-border">
                   <tr>
                     <SortableHeader label="작업내역" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-3 py-2 w-[340px]" />
