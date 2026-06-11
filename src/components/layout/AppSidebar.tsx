@@ -29,7 +29,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   // 메뉴 섹션
   { label: '홈 피드', href: '/', icon: '🏠', section: '메뉴' },
-  { label: '매출현황', href: '/revenue', icon: '📈', section: '메뉴' },
+  { label: '매출현황', href: '/revenue', icon: '📈', staffOnly: true, section: '메뉴' },
   { label: '정산서', href: '/settlement', icon: '📄', section: '메뉴' },
   // 인보이스 섹션
   { label: '거래처 청구서', href: '/invoices', icon: '🧾', staffOnly: true, section: '인보이스' },
