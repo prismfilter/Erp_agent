@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation';
 import type { Invoice, InvoiceStatus, Client } from '@/types/invoice';
 import { calcInvoiceTotals } from '@/lib/invoice/calculator';
 import { formatCurrency } from '@/lib/settlement/calculator';
+import { useTableSort } from '@/hooks/useTableSort';
+import { SortableHeader } from '@/components/ui/SortableHeader';
 
 type StatusTab = '전체' | InvoiceStatus;
 
@@ -83,15 +85,25 @@ export default function InvoicesPage() {
     }
   };
 
-  // 필터링
+  // 정렬: 날짜·거래처·거래명·총합계·상태
+  const { sortKey, dir, toggle, sortRows } = useTableSort<Invoice>({
+    date: (inv) => inv.invoice_date,
+    client: (inv) => inv.client?.name ?? '',
+    title: (inv) => inv.title,
+    total: (inv) => calcInvoiceTotals(inv.items ?? []).grandTotal,
+    status: (inv) => inv.status,
+  });
+
+  // 필터링 + 정렬
   const filtered = useMemo(() => {
-    return invoices.filter((inv) => {
+    const base = invoices.filter((inv) => {
       if (statusTab !== '전체' && inv.status !== statusTab) return false;
       if (clientFilter && inv.client_id !== clientFilter) return false;
       if (search && !inv.title.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [invoices, statusTab, clientFilter, search]);
+    return sortRows(base);
+  }, [invoices, statusTab, clientFilter, search, sortRows]);
 
   const tabCount = (tab: StatusTab) =>
     tab === '전체' ? invoices.length : invoices.filter((i) => i.status === tab).length;
@@ -169,11 +181,11 @@ export default function InvoicesPage() {
             <table className="w-full text-sm">
               <thead className="bg-primary/10 border-b border-border">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-foreground text-xs uppercase">날짜</th>
-                  <th className="px-4 py-3 text-left font-semibold text-foreground text-xs uppercase">거래처</th>
-                  <th className="px-4 py-3 text-left font-semibold text-foreground text-xs uppercase">거래명</th>
-                  <th className="px-4 py-3 text-right font-semibold text-foreground text-xs uppercase">총 합계</th>
-                  <th className="px-4 py-3 text-center font-semibold text-foreground text-xs uppercase">상태</th>
+                  <SortableHeader label="날짜" sortKey="date" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
+                  <SortableHeader label="거래처" sortKey="client" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
+                  <SortableHeader label="거래명" sortKey="title" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
+                  <SortableHeader label="총 합계" sortKey="total" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
+                  <SortableHeader label="상태" sortKey="status" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
                   <th className="px-4 py-3 text-center font-semibold text-foreground text-xs uppercase">액션</th>
                 </tr>
               </thead>

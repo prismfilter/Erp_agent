@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useTableSort } from '@/hooks/useTableSort';
+import { SortableHeader } from '@/components/ui/SortableHeader';
 
 interface StaffUser {
   id: string;
@@ -164,9 +166,19 @@ export default function StaffPage() {
     setTimeout(() => setCopyToast(false), 2000);
   }, []);
 
-  const filtered = selectedTab === '전체'
-    ? members
-    : members.filter((m) => m.role === selectedTab);
+  // 정렬: 이름·역할·등록일
+  const { sortKey, dir, toggle, sortRows } = useTableSort<StaffUser>({
+    name: (m) => m.name,
+    role: (m) => m.role,
+    created_at: (m) => m.created_at,
+  });
+
+  const filtered = useMemo(() => {
+    const base = selectedTab === '전체'
+      ? members
+      : members.filter((m) => m.role === selectedTab);
+    return sortRows(base);
+  }, [members, selectedTab, sortRows]);
 
   const tabCount = (tab: StaffTab) =>
     tab === '전체' ? members.length : members.filter((m) => m.role === tab).length;
@@ -219,10 +231,10 @@ export default function StaffPage() {
             <table className="w-full text-sm">
               <thead className="bg-primary/10 border-b border-border">
                 <tr>
-                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">이름</th>
+                  <SortableHeader label="이름" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
                   <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">사용자 ID</th>
-                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">역할</th>
-                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">등록일</th>
+                  <SortableHeader label="역할" sortKey="role" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
+                  <SortableHeader label="등록일" sortKey="created_at" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

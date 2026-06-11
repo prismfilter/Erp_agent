@@ -7,6 +7,8 @@ import Link from 'next/link';
 import type { Invoice } from '@/types/invoice';
 import { calcInvoiceTotals, getInternalItems } from '@/lib/invoice/calculator';
 import { formatCurrency } from '@/lib/settlement/calculator';
+import { useTableSort } from '@/hooks/useTableSort';
+import { SortableHeader } from '@/components/ui/SortableHeader';
 
 export default function PayoutsPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -40,10 +42,19 @@ export default function PayoutsPage() {
     return `${arr.slice(0, 3).join(', ')} 외 ${arr.length - 3}명`;
   };
 
-  const filtered = useMemo(
-    () => invoices.filter((inv) => !search || inv.title.toLowerCase().includes(search.toLowerCase())),
-    [invoices, search]
-  );
+  // 정렬: 날짜·거래처·거래명·총작가지급액·총귀속금액
+  const { sortKey, dir, toggle, sortRows } = useTableSort<Invoice>({
+    date: (inv) => inv.invoice_date,
+    client: (inv) => inv.client?.name ?? '',
+    title: (inv) => inv.title,
+    writerPay: (inv) => calcInvoiceTotals(inv.items ?? []).writerPayTotal,
+    attribution: (inv) => calcInvoiceTotals(inv.items ?? []).attributionTotal,
+  });
+
+  const filtered = useMemo(() => {
+    const base = invoices.filter((inv) => !search || inv.title.toLowerCase().includes(search.toLowerCase()));
+    return sortRows(base);
+  }, [invoices, search, sortRows]);
 
   return (
     <div className="space-y-6">
@@ -79,12 +90,12 @@ export default function PayoutsPage() {
             <table className="w-full text-sm">
               <thead className="bg-primary/10 border-b border-border">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-foreground text-xs uppercase">날짜</th>
-                  <th className="px-4 py-3 text-left font-semibold text-foreground text-xs uppercase">거래처</th>
-                  <th className="px-4 py-3 text-left font-semibold text-foreground text-xs uppercase">거래명</th>
+                  <SortableHeader label="날짜" sortKey="date" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
+                  <SortableHeader label="거래처" sortKey="client" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
+                  <SortableHeader label="거래명" sortKey="title" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
                   <th className="px-4 py-3 text-left font-semibold text-foreground text-xs uppercase">작업자</th>
-                  <th className="px-4 py-3 text-right font-semibold text-foreground text-xs uppercase">총 작가지급액 (B)</th>
-                  <th className="px-4 py-3 text-right font-semibold text-foreground text-xs uppercase">총 귀속금액 (C)</th>
+                  <SortableHeader label="총 작가지급액 (B)" sortKey="writerPay" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
+                  <SortableHeader label="총 귀속금액 (C)" sortKey="attribution" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

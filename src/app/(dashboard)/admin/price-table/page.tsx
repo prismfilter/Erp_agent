@@ -8,6 +8,8 @@ import { useAuthStore } from '@/store/authStore';
 import type { PriceItem } from '@/types/invoice';
 import { calcFee, calcWriterNet } from '@/lib/invoice/calculator';
 import { formatCurrency } from '@/lib/settlement/calculator';
+import { useTableSort } from '@/hooks/useTableSort';
+import { SortableHeader } from '@/components/ui/SortableHeader';
 
 const CATEGORIES = ['앨범', '방송·공연·시상식', '광고', '기타', '밴드(플레디스)', '밴드'];
 
@@ -140,7 +142,16 @@ export default function PriceTablePage() {
     }
   };
 
-  // 카테고리별 그룹핑
+  // 정렬: 작업내역·희망청구가·작가지급액·관리수수료·실수령액 (카테고리 그룹 내부 정렬)
+  const { sortKey, dir, toggle, sortRows } = useTableSort<PriceItem>({
+    name: (it) => it.name,
+    billing_price: (it) => it.billing_price,
+    writer_base_pay: (it) => it.writer_base_pay,
+    fee: (it) => (it.writer_base_pay != null ? calcFee(it.writer_base_pay, it.fee_rate) : null),
+    net: (it) => (it.writer_base_pay != null ? calcWriterNet(it.writer_base_pay, it.fee_rate) : null),
+  });
+
+  // 카테고리별 그룹핑 + 그룹 내부 정렬
   const grouped = useMemo(() => {
     const visible = showInactive ? items : items.filter((it) => it.is_active);
     const groups = new Map<string, PriceItem[]>();
@@ -148,8 +159,10 @@ export default function PriceTablePage() {
       if (!groups.has(it.category)) groups.set(it.category, []);
       groups.get(it.category)!.push(it);
     });
-    return Array.from(groups.entries());
-  }, [items, showInactive]);
+    return Array.from(groups.entries()).map(
+      ([cat, arr]) => [cat, sortRows(arr)] as [string, PriceItem[]]
+    );
+  }, [items, showInactive, sortRows]);
 
   return (
     <div className="space-y-6">
@@ -251,11 +264,11 @@ export default function PriceTablePage() {
               <table className="w-full text-xs">
                 <thead className="bg-primary/10 border-b border-border">
                   <tr>
-                    <th className="px-4 py-2.5 text-left font-semibold text-foreground">작업내역</th>
-                    <th className="px-4 py-2.5 text-right font-semibold text-foreground w-32">희망청구가</th>
-                    <th className="px-4 py-2.5 text-right font-semibold text-foreground w-32">작가지급액 (방어선)</th>
-                    <th className="px-4 py-2.5 text-right font-semibold text-foreground w-28">관리 수수료 (20%)</th>
-                    <th className="px-4 py-2.5 text-right font-semibold text-foreground w-28">작가 실수령액</th>
+                    <SortableHeader label="작업내역" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-2.5" />
+                    <SortableHeader label="희망청구가" sortKey="billing_price" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-2.5 w-36" />
+                    <SortableHeader label="작가지급액 (방어선)" sortKey="writer_base_pay" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-2.5 w-44" />
+                    <SortableHeader label="관리 수수료 (20%)" sortKey="fee" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-2.5 w-40" />
+                    <SortableHeader label="작가 실수령액" sortKey="net" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-2.5 w-36" />
                     {isAdmin && <th className="px-4 py-2.5 text-center font-semibold text-foreground w-20">상태</th>}
                   </tr>
                 </thead>
