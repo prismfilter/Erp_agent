@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import type { Invoice } from '@/types/invoice';
 import { calcInvoiceTotals, getInternalItems } from '@/lib/invoice/calculator';
-import { formatCurrency } from '@/lib/settlement/calculator';
+import { formatWon } from '@/lib/settlement/calculator';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 
@@ -120,11 +120,11 @@ export default function PayoutsPage() {
                       <td className="px-4 py-3 text-muted-foreground text-xs">
                         {writerSummary(inv)}
                       </td>
-                      <td className="px-4 py-3 text-right text-foreground font-medium tabular-nums whitespace-nowrap">
-                        {formatCurrency(totals.writerPayTotal)}원
+                      <td className="px-4 py-3 text-center text-foreground font-medium tabular-nums whitespace-nowrap">
+                        {formatWon(totals.writerPayTotal)}
                       </td>
-                      <td className="px-4 py-3 text-right text-muted-foreground tabular-nums whitespace-nowrap">
-                        {formatCurrency(totals.attributionTotal)}원
+                      <td className="px-4 py-3 text-center text-muted-foreground tabular-nums whitespace-nowrap">
+                        {formatWon(totals.attributionTotal)}
                       </td>
                     </tr>
                   );

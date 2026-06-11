@@ -122,6 +122,27 @@
 }
 
 /*
+  청구서 작성 폼 라인 항목 테이블 — 셀 구분 세로선
+  — 첫 셀 제외 각 셀 좌측에 연한 세로선
+  — top/bottom 여백을 둬 테이블 위·아래 테두리에 닿지 않게
+*/
+.invoice-line-table th:not(:first-child),
+.invoice-line-table td:not(:first-child) {
+  position: relative;
+}
+.invoice-line-table th:not(:first-child)::before,
+.invoice-line-table td:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--border);
+  opacity: 0.55;
+}
+
+/*
   청구서 인쇄 (PDF 저장 / 인쇄 버튼)
   — 활성 탭의 .invoice-print-area만 A4 세로로 출력
   — 항목이 많아 페이지가 나뉘면 테이블 헤더 반복

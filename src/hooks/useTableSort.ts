@@ -12,19 +12,25 @@ type Accessors<T> = Record<string, (row: T) => SortValue>;
 
 export function useTableSort<T>(accessors: Accessors<T>) {
   const [sortKey, setSortKey] = useState<string | null>(null);
-  const [dir, setDir] = useState<SortDir>('asc');
+  const [dir, setDir] = useState<SortDir>('desc');
 
-  // 같은 키 재클릭 → asc↔desc 토글 / 다른 키 → 해당 키로 교체 + asc
-  const toggle = useCallback((key: string) => {
-    setSortKey((prevKey) => {
-      if (prevKey === key) {
-        setDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-        return key;
+  // 3단계 순환: 해제 → 내림차순(desc) → 오름차순(asc) → 해제
+  // 다른 컬럼 클릭 시 → 그 컬럼의 내림차순부터 시작
+  const toggle = useCallback(
+    (key: string) => {
+      if (sortKey !== key) {
+        setSortKey(key);
+        setDir('desc');
+      } else if (dir === 'desc') {
+        setDir('asc');
+      } else {
+        // asc 상태에서 재클릭 → 정렬 해제(원래 순서)
+        setSortKey(null);
+        setDir('desc');
       }
-      setDir('asc');
-      return key;
-    });
-  }, []);
+    },
+    [sortKey, dir]
+  );
 
   // 필터링된 배열에 정렬 적용 (sortKey null이면 원본 순서 유지)
   const sortRows = useCallback(

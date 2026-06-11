@@ -7,7 +7,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import type { PriceItem } from '@/types/invoice';
 import { calcFee, calcWriterNet } from '@/lib/invoice/calculator';
-import { formatCurrency } from '@/lib/settlement/calculator';
+import { formatWon } from '@/lib/settlement/calculator';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 
@@ -38,7 +38,7 @@ function AmountCell({
   };
 
   if (!editable) {
-    return <span className="tabular-nums">{value != null ? formatCurrency(value) : '-'}</span>;
+    return <span className="tabular-nums">{value != null ? formatWon(value) : '-'}</span>;
   }
 
   if (isEditing) {
@@ -54,7 +54,7 @@ function AmountCell({
         onBlur={handleSave}
         autoFocus
         disabled={saving}
-        className="w-24 px-2 py-1 text-xs text-right bg-background border border-primary rounded outline-none text-foreground tabular-nums"
+        className="w-24 px-2 py-1 text-xs text-center bg-background border border-primary rounded outline-none text-foreground tabular-nums"
       />
     );
   }
@@ -65,7 +65,7 @@ function AmountCell({
       className="tabular-nums hover:text-primary transition cursor-pointer"
       title="클릭하여 수정"
     >
-      {value != null ? formatCurrency(value) : '-'}
+      {value != null ? formatWon(value) : '-'}
     </button>
   );
 }
@@ -283,7 +283,7 @@ export default function PriceTablePage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-2.5 text-right text-foreground">
+                      <td className="px-4 py-2.5 text-center text-foreground whitespace-nowrap">
                         {it.is_formula ? (
                           <span className="text-muted-foreground text-[11px]">{it.formula_note ?? '협의'}</span>
                         ) : (
@@ -294,7 +294,7 @@ export default function PriceTablePage() {
                           />
                         )}
                       </td>
-                      <td className="px-4 py-2.5 text-right text-foreground">
+                      <td className="px-4 py-2.5 text-center text-foreground whitespace-nowrap">
                         {it.is_formula ? (
                           <span className="text-muted-foreground">-</span>
                         ) : (
@@ -305,11 +305,11 @@ export default function PriceTablePage() {
                           />
                         )}
                       </td>
-                      <td className="px-4 py-2.5 text-right text-muted-foreground tabular-nums">
-                        {it.writer_base_pay != null ? formatCurrency(calcFee(it.writer_base_pay, it.fee_rate)) : '-'}
+                      <td className="px-4 py-2.5 text-center text-muted-foreground tabular-nums whitespace-nowrap">
+                        {it.writer_base_pay != null ? formatWon(calcFee(it.writer_base_pay, it.fee_rate)) : '-'}
                       </td>
-                      <td className="px-4 py-2.5 text-right text-green-500 tabular-nums">
-                        {it.writer_base_pay != null ? formatCurrency(calcWriterNet(it.writer_base_pay, it.fee_rate)) : '-'}
+                      <td className="px-4 py-2.5 text-center text-green-500 tabular-nums whitespace-nowrap">
+                        {it.writer_base_pay != null ? formatWon(calcWriterNet(it.writer_base_pay, it.fee_rate)) : '-'}
                       </td>
                       {isAdmin && (
                         <td className="px-4 py-2.5 text-center">

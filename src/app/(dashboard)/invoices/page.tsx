@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Invoice, InvoiceStatus, Client } from '@/types/invoice';
 import { calcInvoiceTotals } from '@/lib/invoice/calculator';
-import { formatCurrency } from '@/lib/settlement/calculator';
+import { formatWon } from '@/lib/settlement/calculator';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 
@@ -205,8 +205,8 @@ export default function InvoicesPage() {
                           {inv.title}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-right text-foreground font-medium tabular-nums whitespace-nowrap">
-                        {formatCurrency(totals.grandTotal)}원
+                      <td className="px-4 py-3 text-center text-foreground font-medium tabular-nums whitespace-nowrap">
+                        {formatWon(totals.grandTotal)}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className={`px-2.5 py-1 rounded text-xs font-medium ${STATUS_STYLE[inv.status]}`}>

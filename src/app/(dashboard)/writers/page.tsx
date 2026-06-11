@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableHeader } from '@/components/ui/SortableHeader';
+import { useAuthStore } from '@/store/authStore';
 
 interface WriterUser {
   id: string;
@@ -107,23 +108,25 @@ function NameCell({
   );
 }
 
-// 사용자 ID 셀
-function UserIdCell({ userId, onCopy }: { userId: string; onCopy: (id: string) => void }) {
+// 사용자 ID 셀 — 전체 ID 표시(title)와 복사는 관리자만
+function UserIdCell({ userId, onCopy, isAdmin }: { userId: string; onCopy: (id: string) => void; isAdmin: boolean }) {
   return (
     <div className="flex items-center gap-1.5 group">
-      <span className="text-foreground font-mono text-xs cursor-default" title={userId}>
+      <span className="text-foreground font-mono text-xs cursor-default" title={isAdmin ? userId : undefined}>
         {userId.substring(0, 8)}...
       </span>
-      <button
-        onClick={() => onCopy(userId)}
-        className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-blue-600/10"
-        title="ID 복사"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-        </svg>
-      </button>
+      {isAdmin && (
+        <button
+          onClick={() => onCopy(userId)}
+          className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-blue-600/10"
+          title="ID 복사"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
@@ -214,6 +217,8 @@ function ContractDateCell({
 }
 
 export default function WritersPage() {
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'ADMIN';
   const [writers, setWriters] = useState<WriterUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -336,7 +341,7 @@ export default function WritersPage() {
                       <NameCell userId={w.user_id} currentName={w.name} onSaved={handleNameSaved} />
                     </td>
                     <td className="px-6 py-4">
-                      <UserIdCell userId={w.user_id} onCopy={handleCopy} />
+                      <UserIdCell userId={w.user_id} onCopy={handleCopy} isAdmin={isAdmin} />
                     </td>
                     <td className="px-6 py-4">
                       <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded text-xs font-medium">

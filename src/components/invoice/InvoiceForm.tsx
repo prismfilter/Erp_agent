@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { PriceItem, Client, CompanyAccount, Invoice, InvoiceItem } from '@/types/invoice';
 import { calcInvoiceTotals, calcLineTax, calcAttribution } from '@/lib/invoice/calculator';
-import { formatCurrency } from '@/lib/settlement/calculator';
+import { formatWon } from '@/lib/settlement/calculator';
 import { PriceItemSelect } from './PriceItemSelect';
 
 interface InvoiceFormProps {
@@ -351,17 +351,17 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+          <table className="w-full text-xs invoice-line-table">
             <thead className="bg-primary/10 border-b border-border">
               <tr>
-                <th className="px-2 py-2.5 text-left font-semibold text-foreground w-10">No</th>
-                <th className="px-2 py-2.5 text-left font-semibold text-foreground min-w-[180px]">항목 (프라이스 테이블)</th>
-                <th className="px-2 py-2.5 text-left font-semibold text-foreground min-w-[220px]">상세내용</th>
-                <th className="px-2 py-2.5 text-left font-semibold text-foreground min-w-[110px]">작업자</th>
-                <th className="px-2 py-2.5 text-right font-semibold text-foreground w-28">공급가액</th>
-                <th className="px-2 py-2.5 text-right font-semibold text-foreground w-28">작가지급액</th>
-                <th className="px-2 py-2.5 text-right font-semibold text-foreground w-24">귀속금액</th>
-                <th className="px-2 py-2.5 text-left font-semibold text-foreground min-w-[100px]">비고(내부)</th>
+                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-10">No</th>
+                <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[180px]">항목 (프라이스 테이블)</th>
+                <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[220px]">상세내용</th>
+                <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[110px]">작업자</th>
+                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">공급가액</th>
+                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">작가지급액</th>
+                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">귀속금액</th>
+                <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[100px]">비고(내부)</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">액션</th>
               </tr>
             </thead>
@@ -376,14 +376,14 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                     key={it.id}
                     className={`hover:bg-primary/5 ${isChild ? 'bg-muted/40' : ''} ${isDiscount ? 'bg-red-500/5' : ''}`}
                   >
-                    <td className="px-2 py-2 text-muted-foreground tabular-nums">
-                      {isChild ? <span className="pl-2 text-primary">└</span> : it.no}
+                    <td className="px-2 py-2 text-center text-muted-foreground tabular-nums">
+                      {isChild ? <span className="text-primary">└</span> : it.no}
                     </td>
                     <td className="px-2 py-2">
                       {isDiscount ? (
-                        <span className="text-red-400 text-xs font-medium">할인 행</span>
+                        <span className="block text-center text-red-400 text-xs font-medium">할인 행</span>
                       ) : isChild ? (
-                        <span className="text-muted-foreground italic text-[11px]">내부 분리 행</span>
+                        <span className="block text-center text-muted-foreground italic text-[11px]">내부 분리 행</span>
                       ) : (
                         <div className="flex items-center gap-1">
                           <div className="flex-1">
@@ -410,7 +410,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                         value={it.description}
                         onChange={(e) => updateItem(it.id!, { description: e.target.value })}
                         placeholder="상세내용"
-                        className="w-full px-2 py-1.5 bg-background border border-border rounded outline-none focus:border-primary text-foreground"
+                        className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground"
                       />
                     </td>
                     <td className="px-2 py-2">
@@ -419,7 +419,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                         value={it.writer_names}
                         onChange={(e) => updateItem(it.id!, { writer_names: e.target.value })}
                         placeholder="실명 (콤마 구분)"
-                        className="w-full px-2 py-1.5 bg-background border border-border rounded outline-none focus:border-primary text-foreground"
+                        className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground"
                       />
                     </td>
                     <td className="px-2 py-2">
@@ -428,7 +428,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                           type="number"
                           value={it.supply_amount || ''}
                           onChange={(e) => handleAmountChange(it.id!, 'supply_amount', Number(e.target.value) || 0)}
-                          className="w-full px-2 py-1.5 text-right bg-background border border-border rounded outline-none focus:border-primary text-foreground tabular-nums"
+                          className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground tabular-nums"
                         />
                         {it.is_negotiated && (
                           <span
@@ -445,11 +445,11 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                         onChange={(e) => handleAmountChange(it.id!, 'writer_pay', Number(e.target.value) || 0)}
                         disabled={hasChildren}
                         title={hasChildren ? '분리된 내부 행에서 입력하세요' : undefined}
-                        className="w-full px-2 py-1.5 text-right bg-background border border-border rounded outline-none focus:border-primary text-foreground tabular-nums disabled:opacity-40"
+                        className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground tabular-nums disabled:opacity-40"
                       />
                     </td>
-                    <td className="px-2 py-2 text-right text-muted-foreground tabular-nums">
-                      {hasChildren ? '—' : formatCurrency(calcAttribution(it.supply_amount, it.writer_pay))}
+                    <td className="px-2 py-2 text-center text-muted-foreground tabular-nums whitespace-nowrap">
+                      {hasChildren ? '—' : formatWon(calcAttribution(it.supply_amount, it.writer_pay))}
                     </td>
                     <td className="px-2 py-2">
                       <input
@@ -457,7 +457,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                         value={it.note ?? ''}
                         onChange={(e) => updateItem(it.id!, { note: e.target.value || null })}
                         placeholder="내부 비고"
-                        className="w-full px-2 py-1.5 bg-background border border-border rounded outline-none focus:border-primary text-foreground"
+                        className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground"
                       />
                     </td>
                     <td className="px-2 py-2">
@@ -484,22 +484,22 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
             <div className="text-xs text-muted-foreground mb-1">총 공급가액 (A)</div>
-            <div className="font-bold text-foreground tabular-nums">{formatCurrency(totals.supplyTotal)}원</div>
-            <div className="text-[11px] text-muted-foreground tabular-nums">세액 {formatCurrency(totals.taxA)}</div>
+            <div className="font-bold text-foreground tabular-nums">{formatWon(totals.supplyTotal)}</div>
+            <div className="text-[11px] text-muted-foreground tabular-nums">세액 {formatWon(totals.taxA)}</div>
           </div>
           <div>
             <div className="text-xs text-muted-foreground mb-1">총 작가지급액 (B)</div>
-            <div className="font-bold text-foreground tabular-nums">{formatCurrency(totals.writerPayTotal)}원</div>
-            <div className="text-[11px] text-muted-foreground tabular-nums">세액 {formatCurrency(totals.taxB)}</div>
+            <div className="font-bold text-foreground tabular-nums">{formatWon(totals.writerPayTotal)}</div>
+            <div className="text-[11px] text-muted-foreground tabular-nums">세액 {formatWon(totals.taxB)}</div>
           </div>
           <div>
             <div className="text-xs text-muted-foreground mb-1">총 귀속금액 (C = A − B)</div>
-            <div className="font-bold text-foreground tabular-nums">{formatCurrency(totals.attributionTotal)}원</div>
-            <div className="text-[11px] text-muted-foreground tabular-nums">세액 {formatCurrency(totals.taxC)}</div>
+            <div className="font-bold text-foreground tabular-nums">{formatWon(totals.attributionTotal)}</div>
+            <div className="text-[11px] text-muted-foreground tabular-nums">세액 {formatWon(totals.taxC)}</div>
           </div>
           <div>
             <div className="text-xs text-muted-foreground mb-1">총 합계 (A + 세액)</div>
-            <div className="font-bold text-primary text-lg tabular-nums">{formatCurrency(totals.grandTotal)}원</div>
+            <div className="font-bold text-primary text-lg tabular-nums">{formatWon(totals.grandTotal)}</div>
           </div>
         </div>
 

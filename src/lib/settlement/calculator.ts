@@ -58,6 +58,15 @@ export function formatCurrency(amount: number): string {
 }
 
 /**
+ * 금액 표시 포맷: 천 단위 콤마 + 공백 + "원"
+ * 예: 1000000 → "1,000,000 원"
+ * 화면 표시 전용 — input 값·엑셀 셀에는 사용하지 않음
+ */
+export function formatWon(amount: number): string {
+  return `${formatCurrency(amount)} 원`;
+}
+
+/**
  * 백분율 포맷팅
  * 예: 0.20 → "20%"
  */

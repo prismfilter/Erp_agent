@@ -6,7 +6,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import type { PriceItem } from '@/types/invoice';
-import { formatCurrency } from '@/lib/settlement/calculator';
+import { formatWon } from '@/lib/settlement/calculator';
 
 interface PriceItemSelectProps {
   priceItems: PriceItem[];
@@ -179,7 +179,7 @@ export function PriceItemSelect({ priceItems, selectedId, onSelect, placeholder 
                   {item.is_formula
                     ? '수식'
                     : item.billing_price != null
-                    ? formatCurrency(item.billing_price)
+                    ? formatWon(item.billing_price)
                     : '-'}
                 </span>
               </button>

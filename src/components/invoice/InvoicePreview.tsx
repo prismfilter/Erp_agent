@@ -12,7 +12,7 @@ import {
   getExternalItems,
   getInternalItems,
 } from '@/lib/invoice/calculator';
-import { formatCurrency } from '@/lib/settlement/calculator';
+import { formatWon } from '@/lib/settlement/calculator';
 
 // 회사 고정 정보
 const COMPANY = {
@@ -102,19 +102,19 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
                 )}
               </td>
               <td className="px-2 py-1.5 text-right tabular-nums">
-                {formatCurrency(it.supply_amount)}
+                {formatWon(it.supply_amount)}
               </td>
               {mode === 'external' ? (
                 <td className="px-2 py-1.5 text-right tabular-nums">
-                  {formatCurrency(calcLineTax(it.supply_amount))}
+                  {formatWon(calcLineTax(it.supply_amount))}
                 </td>
               ) : (
                 <>
                   <td className="px-2 py-1.5 text-right tabular-nums">
-                    {formatCurrency(it.writer_pay)}
+                    {formatWon(it.writer_pay)}
                   </td>
                   <td className="px-2 py-1.5 text-right tabular-nums">
-                    {formatCurrency(calcAttribution(it.supply_amount, it.writer_pay))}
+                    {formatWon(calcAttribution(it.supply_amount, it.writer_pay))}
                   </td>
                   <td className="px-2 py-1.5 text-[10px] text-gray-600">{it.note ?? ''}</td>
                 </>
@@ -131,15 +131,15 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
             <tbody>
               <tr className="border-t-2 border-black">
                 <td className="pr-8 py-1.5 font-semibold">총 공급가액</td>
-                <td className="text-right tabular-nums w-32">{formatCurrency(totals.supplyTotal)}</td>
+                <td className="text-right tabular-nums w-32">{formatWon(totals.supplyTotal)}</td>
               </tr>
               <tr>
                 <td className="pr-8 py-1.5 font-semibold">총 세액</td>
-                <td className="text-right tabular-nums">{formatCurrency(totals.taxA)}</td>
+                <td className="text-right tabular-nums">{formatWon(totals.taxA)}</td>
               </tr>
               <tr className="border-t border-black">
                 <td className="pr-8 py-1.5 font-bold">총 합계</td>
-                <td className="text-right tabular-nums font-bold">{formatCurrency(totals.grandTotal)}</td>
+                <td className="text-right tabular-nums font-bold">{formatWon(totals.grandTotal)}</td>
               </tr>
             </tbody>
           </table>
@@ -150,27 +150,27 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
             <tbody>
               <tr className="border-t-2 border-black">
                 <td className="pr-8 py-1.5 font-semibold">총 공급가액 (A)</td>
-                <td className="text-right tabular-nums w-32">{formatCurrency(totals.supplyTotal)}</td>
+                <td className="text-right tabular-nums w-32">{formatWon(totals.supplyTotal)}</td>
                 <td className="pl-8 pr-4 text-gray-500 text-xs">세 액</td>
                 <td className="text-right tabular-nums w-24"></td>
               </tr>
               <tr>
                 <td className="pr-8 py-1.5 font-semibold">총 작가지급액 (B)</td>
-                <td className="text-right tabular-nums">{formatCurrency(totals.writerPayTotal)}</td>
+                <td className="text-right tabular-nums">{formatWon(totals.writerPayTotal)}</td>
                 <td></td>
-                <td className="text-right tabular-nums text-gray-600">{formatCurrency(totals.taxB)}</td>
+                <td className="text-right tabular-nums text-gray-600">{formatWon(totals.taxB)}</td>
               </tr>
               <tr>
                 <td className="pr-8 py-1.5 font-semibold">총 귀속금액 (C)</td>
-                <td className="text-right tabular-nums">{formatCurrency(totals.attributionTotal)}</td>
+                <td className="text-right tabular-nums">{formatWon(totals.attributionTotal)}</td>
                 <td></td>
-                <td className="text-right tabular-nums text-gray-600">{formatCurrency(totals.taxC)}</td>
+                <td className="text-right tabular-nums text-gray-600">{formatWon(totals.taxC)}</td>
               </tr>
               <tr className="border-t border-black">
                 <td className="pr-8 py-1.5 font-bold">총 합계 (B+C)</td>
-                <td className="text-right tabular-nums font-bold">{formatCurrency(totals.grandTotal)}</td>
+                <td className="text-right tabular-nums font-bold">{formatWon(totals.grandTotal)}</td>
                 <td className="pl-8 pr-4 text-gray-500 text-[10px]">거래처 청구서 총 합계</td>
-                <td className="text-right tabular-nums text-gray-600">{formatCurrency(totals.grandTotal)}</td>
+                <td className="text-right tabular-nums text-gray-600">{formatWon(totals.grandTotal)}</td>
               </tr>
             </tbody>
           </table>
