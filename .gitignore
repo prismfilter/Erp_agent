@@ -30,6 +30,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# 개발 로그
+*.log
+dev-*.log
+
+# Supabase 임시 파일
+supabase/.temp/
+
 # env files (can opt-in for committing if needed)
 .env*
 

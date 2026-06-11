@@ -1,7 +1,7 @@
 # PRD — 프리즘필터 전속작가 정산 시스템
 
-**Version**: 1.0  
-**Last Updated**: 2026-06-08
+**Version**: 1.1  
+**Last Updated**: 2026-06-11
 
 ---
 
@@ -80,8 +80,9 @@ C 용역  | 1,500,000 | 20%
 | 역할 | 설명 | 접근 권한 |
 |------|------|---------|
 | **ADMIN** | 관리자/대표이사 | 모든 기능 + 계정 관리 |
-| **STAFF** | 사내 정산 담당자 | 관리자가 부여한 권한만 |
-| **WRITER** | 전속작가 | 본인 정산서 조회 + PDF만 |
+| **STAFF** | 사내 정산 담당자 | 정산·작가·구성원 조회 |
+| **EXCLUSIVE_WRITER** | 전속 작가 | 본인 정산서 조회 + PDF만 |
+| **GENERAL_WRITER** | 일반 작가 | 본인 정산서 조회 + PDF만 |
 
 ---
 
@@ -94,10 +95,11 @@ C 용역  | 1,500,000 | 20%
 | 정산 목록 | `/settlement` | ADMIN, STAFF |
 | 새 정산 | `/settlement/new` | ADMIN, STAFF |
 | 정산 상세 | `/settlement/[id]` | ADMIN, STAFF |
-| 작가 관리 | `/writers` | ADMIN |
+| 작가 목록 | `/writers` | ADMIN, STAFF |
+| 구성원 | `/staff` | ADMIN, STAFF |
 | 곡 관리 | `/songs` | ADMIN, STAFF |
 | 계정 관리 | `/admin/accounts` | ADMIN |
-| 작가 포털 | `/writer-portal` | WRITER |
+| 작가 포털 | `/writer-portal` | EXCLUSIVE_WRITER, GENERAL_WRITER |
 
 ---
 
@@ -194,10 +196,12 @@ id | batch_id | writer_id | total_amount | total_fee | income_tax | net_amount
 
 ## 10. 프로젝트 일정
 
-- Phase 1: 기초 구축 (2주)
-- Phase 2: 정산서 핵심 (1주)
-- Phase 3: AI 챗봇 (1주)
-- 테스트/배포: 1주
+| Phase | 내용 | 상태 | 기간 |
+|-------|------|------|------|
+| **Phase 1** | 기반 인프라 (인증·레이아웃·사용자 역할·로딩 UI) | ✅ 완료 | 2026-06 |
+| **Phase 2** | 정산서 핵심 (입력 UI·계산·PDF·이력 조회) | 🚧 진행 예정 | 2026-07 |
+| **Phase 3** | AI 자동화 (엑셀 파싱·챗봇 Q&A) | 📅 계획 중 | 2026-07~08 |
+| **배포** | 테스트·프로덕션 배포 | 📅 계획 중 | 2026-08 |
 
 **예상 완료**: 2026-08-04
 
