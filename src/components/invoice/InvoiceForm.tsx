@@ -5,9 +5,10 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { PriceItem, Client, CompanyAccount, Invoice, InvoiceItem } from '@/types/invoice';
-import { calcInvoiceTotals, calcAttribution } from '@/lib/invoice/calculator';
+import { calcInvoiceTotals, calcItemBreakdown } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
 import { PriceItemSelect } from './PriceItemSelect';
+import { PercentCell } from './PercentCell';
 
 interface InvoiceFormProps {
   invoice?: Invoice; // 수정 모드일 때 전달
@@ -22,6 +23,8 @@ function newItem(no: number): InvoiceItem {
     description: '',
     writer_names: '',
     supply_amount: 0,
+    discount_amount: 0,
+    writer_pay_rate: 70, // 작가수수료율 기본 70%
     writer_pay: 0,
     item_type: 'custom',
     is_negotiated: false,
@@ -128,9 +131,8 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
             price_item_id: p.id,
             item_type: 'normal',
             is_negotiated: false,
-            // 수식형은 금액 자동입력 없음
+            // 수식형은 금액 자동입력 없음. 공급가액만 자동입력, 작가수수료율은 기존값 유지
             supply_amount: p.is_formula ? it.supply_amount : (p.billing_price ?? 0),
-            writer_pay: p.is_formula ? it.writer_pay : (p.writer_base_pay ?? 0),
             // 상세내용 자동 생성: {거래명}_{항목명} (이미 입력했으면 유지)
             description: it.description.trim() ? it.description : (title ? `${title}_${p.name}` : p.name),
           };
@@ -140,35 +142,26 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
     [title]
   );
 
-  // 금액 수정 → 협의가 플래그
-  const handleAmountChange = useCallback(
-    (itemId: string, field: 'supply_amount' | 'writer_pay', value: number) => {
+  // 공급가액 수정 → 프라이스 기본 단가와 다르면 협의가 플래그
+  const handleSupplyChange = useCallback(
+    (itemId: string, value: number) => {
       setItems((prev) =>
         prev.map((it) => {
           if (it.id !== itemId) return it;
           const p = priceItems.find((pp) => pp.id === it.price_item_id);
           let negotiated = it.is_negotiated;
-          if (p && !p.is_formula) {
-            const base = field === 'supply_amount' ? p.billing_price : p.writer_base_pay;
-            if (base != null && value !== base) negotiated = true;
+          if (p && !p.is_formula && p.billing_price != null && value !== p.billing_price) {
+            negotiated = true;
           }
-          return { ...it, [field]: value, is_negotiated: negotiated };
+          return { ...it, supply_amount: value, is_negotiated: negotiated };
         })
       );
     },
     [priceItems]
   );
 
-  // 행 추가/할인/삭제/복제/이동/분리
+  // 행 추가/삭제/복제/이동/분리
   const addRow = () => setItems((prev) => renumber([...prev, newItem(prev.length + 1)]));
-
-  const addDiscountRow = () =>
-    setItems((prev) =>
-      renumber([
-        ...prev,
-        { ...newItem(prev.length + 1), item_type: 'discount', description: '할인', supply_amount: 0, writer_pay: 0 },
-      ])
-    );
 
   const removeRow = (id: string) =>
     setItems((prev) => renumber(prev.filter((it) => it.id !== id && it.group_key !== id)));
@@ -340,13 +333,6 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
             >
               + 항목 추가
             </button>
-            <button
-              type="button"
-              onClick={addDiscountRow}
-              className="px-3 py-1.5 text-xs bg-muted text-foreground border border-border rounded-lg hover:bg-primary/10 transition"
-            >
-              − 할인 추가
-            </button>
           </div>
         </div>
 
@@ -355,13 +341,13 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
             <thead className="bg-primary/10 border-b border-border">
               <tr>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground w-10">No</th>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[180px]">항목 (프라이스 테이블)</th>
+                <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[180px]">항목</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[220px]">상세내용</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[110px]">작업자</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">공급가액</th>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">작가지급액</th>
+                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-28">할인</th>
+                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-24">작가지급(%)</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">귀속금액</th>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[100px]">비고(내부)</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">액션</th>
               </tr>
             </thead>
@@ -427,7 +413,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                         <input
                           type="number"
                           value={it.supply_amount || ''}
-                          onChange={(e) => handleAmountChange(it.id!, 'supply_amount', Number(e.target.value) || 0)}
+                          onChange={(e) => handleSupplyChange(it.id!, Number(e.target.value) || 0)}
                           className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground tabular-nums"
                         />
                         {it.is_negotiated && (
@@ -441,24 +427,21 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                     <td className="px-2 py-2">
                       <input
                         type="number"
-                        value={it.writer_pay || ''}
-                        onChange={(e) => handleAmountChange(it.id!, 'writer_pay', Number(e.target.value) || 0)}
+                        value={it.discount_amount || ''}
+                        onChange={(e) => updateItem(it.id!, { discount_amount: Number(e.target.value) || 0 })}
+                        placeholder="0"
+                        className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground tabular-nums"
+                      />
+                    </td>
+                    <td className="px-2 py-2">
+                      <PercentCell
+                        value={it.writer_pay_rate}
+                        onChange={(v) => updateItem(it.id!, { writer_pay_rate: v })}
                         disabled={hasChildren}
-                        title={hasChildren ? '분리된 내부 행에서 입력하세요' : undefined}
-                        className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground tabular-nums disabled:opacity-40"
                       />
                     </td>
                     <td className="px-2 py-2 text-center text-muted-foreground tabular-nums whitespace-nowrap">
-                      {hasChildren ? '—' : formatWon(calcAttribution(it.supply_amount, it.writer_pay))}
-                    </td>
-                    <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={it.note ?? ''}
-                        onChange={(e) => updateItem(it.id!, { note: e.target.value || null })}
-                        placeholder="내부 비고"
-                        className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground"
-                      />
+                      {hasChildren ? '—' : formatWon(calcItemBreakdown(it).attribution)}
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex items-center justify-center gap-0.5">

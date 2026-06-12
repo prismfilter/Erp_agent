@@ -9,6 +9,8 @@ function item(partial: Partial<InvoiceItem>): InvoiceItem {
     description: '',
     writer_names: '',
     supply_amount: 0,
+    discount_amount: 0,
+    writer_pay_rate: 70,
     writer_pay: 0,
     item_type: 'normal',
     is_negotiated: false,
@@ -52,45 +54,45 @@ const priceItems: PriceItem[] = [
 describe('aggregateRevenue', () => {
   it('귀속금액(C)을 분기·연도·카테고리별로 합산한다', () => {
     const data = aggregateRevenue(
-      [invoice('2026-05-10', [item({ price_item_id: 'pi-album', supply_amount: 1_000_000, writer_pay: 600_000 })])],
+      [invoice('2026-05-10', [item({ price_item_id: 'pi-album', supply_amount: 1_000_000 })])],
       priceItems
     );
-    // 2026-05 → Q2, 귀속 = 1,000,000 − 600,000 = 400,000
-    expect(getQuarter(data, 2026, 2).total).toBe(400_000);
+    // 2026-05 → Q2. 작가수수료 70% → 귀속 = 1,000,000 × 30% = 300,000
+    expect(getQuarter(data, 2026, 2).total).toBe(300_000);
     expect(getQuarter(data, 2026, 2).count).toBe(1);
-    expect(data.byYear[2026]).toBe(400_000);
-    expect(data.byCategory['앨범'][2026]).toBe(400_000);
+    expect(data.byYear[2026]).toBe(300_000);
+    expect(data.byCategory['앨범'][2026]).toBe(300_000);
     expect(data.years).toEqual([2026]);
   });
 
   it('price_item_id가 없는 행은 커스텀으로 분류한다', () => {
     const data = aggregateRevenue(
-      [invoice('2026-02-01', [item({ price_item_id: null, supply_amount: 500_000, writer_pay: 200_000 })])],
+      [invoice('2026-02-01', [item({ price_item_id: null, supply_amount: 500_000 })])],
       priceItems
     );
-    expect(data.byCategory['커스텀'][2026]).toBe(300_000);
-    expect(getQuarter(data, 2026, 1).total).toBe(300_000);
+    // 500,000 × 30% = 150,000
+    expect(data.byCategory['커스텀'][2026]).toBe(150_000);
+    expect(getQuarter(data, 2026, 1).total).toBe(150_000);
   });
 
-  it('할인(음수) 행이 매출에서 차감된다', () => {
+  it('할인금액이 순매출에서 차감되어 귀속이 줄어든다', () => {
     const data = aggregateRevenue(
       [
         invoice('2026-08-01', [
-          item({ price_item_id: 'pi-album', supply_amount: 1_000_000, writer_pay: 600_000 }),
-          item({ price_item_id: null, item_type: 'discount', supply_amount: -100_000, writer_pay: 0 }),
+          item({ price_item_id: 'pi-album', supply_amount: 1_000_000, discount_amount: 100_000 }),
         ]),
       ],
       priceItems
     );
-    // 400,000 + (−100,000) = 300,000 (Q3)
-    expect(getQuarter(data, 2026, 3).total).toBe(300_000);
+    // net 900,000 × 30% = 270,000 (Q3)
+    expect(getQuarter(data, 2026, 3).total).toBe(270_000);
   });
 
   it('여러 연도는 내림차순으로 정렬된다', () => {
     const data = aggregateRevenue(
       [
-        invoice('2025-03-01', [item({ supply_amount: 100, writer_pay: 0 })], 'a'),
-        invoice('2026-03-01', [item({ supply_amount: 200, writer_pay: 0 })], 'b'),
+        invoice('2025-03-01', [item({ supply_amount: 100 })], 'a'),
+        invoice('2026-03-01', [item({ supply_amount: 200 })], 'b'),
       ],
       priceItems
     );

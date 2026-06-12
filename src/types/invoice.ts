@@ -40,8 +40,10 @@ export interface InvoiceItem {
   price_item_id: string | null;   // 커스텀 항목은 null
   description: string;
   writer_names: string;           // 콤마 구분 복수 작업자
-  supply_amount: number;          // 공급가액 (할인 행은 음수)
-  writer_pay: number;             // 작가 지급액
+  supply_amount: number;          // 공급가액 (할인 전)
+  discount_amount: number;        // 할인금액(원) — 순매출 = 공급가액 − 할인금액
+  writer_pay_rate: number;        // 작가수수료율 % (0~100, 기본 70) — 작가지급액 = 순매출 × 율
+  writer_pay: number;             // 작가 지급액 (계산값: 순매출 × writer_pay_rate%)
   item_type: InvoiceItemType;
   is_negotiated: boolean;
   note: string | null;            // 내부 비고
@@ -68,14 +70,14 @@ export interface Invoice {
 
 // 청구서 합계 (실시간 계산 결과)
 export interface InvoiceTotals {
-  supplyTotal: number;       // 총 공급가액 (A) — 외부 표시 행 기준
+  supplyTotal: number;       // 총 공급가액 (A) — 외부 표시 행의 순매출(할인 반영) 합
   writerPayTotal: number;    // 총 작가지급액 (B) — 내부 표시 행 기준
   attributionTotal: number;  // 총 귀속금액 (C) = A − B
   taxA: number;              // A 세액 (10%)
   taxB: number;              // B 세액
   taxC: number;              // C 세액
   grandTotal: number;        // 총 합계 = A + taxA
-  internalSupplyTotal: number; // 내부 표시 행 공급가액 합 (검증용)
+  internalSupplyTotal: number; // 내부 표시 행 순매출 합 (검증용)
   isValid: boolean;          // 외부·내부 합계 일치 + 세액 정합 여부
   warnings: string[];        // 검증 경고 메시지
 }

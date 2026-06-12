@@ -3,6 +3,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { InvoiceItemInput } from '@/lib/validation/schemas';
+import { calcItemBreakdown } from '@/lib/invoice/calculator';
 
 export async function insertItems(
   adminClient: SupabaseClient,
@@ -39,14 +40,21 @@ export async function insertItems(
 }
 
 function buildItemRow(invoiceId: string, it: InvoiceItemInput, groupKey: string | null) {
+  const supply_amount = it.supply_amount || 0;
+  const discount_amount = it.discount_amount || 0;
+  const writer_pay_rate = it.writer_pay_rate ?? 70;
+  // 작가지급액은 비율로부터 재계산해 저장 (엑셀 SUM·매출 집계 호환)
+  const { writerPay } = calcItemBreakdown({ supply_amount, discount_amount, writer_pay_rate });
   return {
     invoice_id: invoiceId,
     no: it.no,
     price_item_id: it.price_item_id || null,
     description: it.description || '',
     writer_names: it.writer_names || '',
-    supply_amount: it.supply_amount || 0,
-    writer_pay: it.writer_pay || 0,
+    supply_amount,
+    discount_amount,
+    writer_pay_rate,
+    writer_pay: writerPay,
     item_type: it.item_type || 'normal',
     is_negotiated: it.is_negotiated || false,
     note: it.note || null,

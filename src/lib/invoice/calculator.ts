@@ -12,9 +12,19 @@ export function calcLineTax(supply: number): number {
   return Math.trunc(supply * 0.1);
 }
 
-// 귀속금액 = 공급가액 − 작가지급액
-export function calcAttribution(supply: number, writerPay: number): number {
-  return supply - writerPay;
+// 행 단위 금액 분해 (절사는 0 방향 trunc — 음수 안전)
+//   순매출   = 공급가액 − 할인금액
+//   작가지급 = trunc(순매출 × 작가수수료율% / 100)
+//   귀속금액 = 순매출 − 작가지급
+export function calcItemBreakdown(it: {
+  supply_amount: number;
+  discount_amount: number;
+  writer_pay_rate: number;
+}): { netSupply: number; writerPay: number; attribution: number } {
+  const netSupply = it.supply_amount - it.discount_amount;
+  const writerPay = Math.trunc((netSupply * it.writer_pay_rate) / 100);
+  const attribution = netSupply - writerPay;
+  return { netSupply, writerPay, attribution };
 }
 
 // 작가 실수령액 (프라이스 테이블 참고용) = 지급액 − 지급액×수수료율
@@ -52,10 +62,11 @@ export function calcInvoiceTotals(items: InvoiceItem[]): InvoiceTotals {
   const external = getExternalItems(items);
   const internal = getInternalItems(items);
 
-  const supplyTotal = external.reduce((s, it) => s + it.supply_amount, 0);
-  const internalSupplyTotal = internal.reduce((s, it) => s + it.supply_amount, 0);
-  const writerPayTotal = internal.reduce((s, it) => s + it.writer_pay, 0);
-  const attributionTotal = supplyTotal - writerPayTotal;
+  // 순매출(할인 반영) 기준 집계
+  const supplyTotal = external.reduce((s, it) => s + calcItemBreakdown(it).netSupply, 0);
+  const internalSupplyTotal = internal.reduce((s, it) => s + calcItemBreakdown(it).netSupply, 0);
+  const writerPayTotal = internal.reduce((s, it) => s + calcItemBreakdown(it).writerPay, 0);
+  const attributionTotal = internal.reduce((s, it) => s + calcItemBreakdown(it).attribution, 0);
 
   const taxA = calcLineTax(supplyTotal);
   const taxB = calcLineTax(writerPayTotal);
@@ -64,7 +75,7 @@ export function calcInvoiceTotals(items: InvoiceItem[]): InvoiceTotals {
 
   const warnings: string[] = [];
 
-  // 외부·내부 공급가액 합계 일치 검증 (분리 행 합이 부모와 다르면 어긋남)
+  // 외부·내부 순매출 합계 일치 검증 (분리 행 합이 부모와 다르면 어긋남)
   if (supplyTotal !== internalSupplyTotal) {
     warnings.push(
       `외부 합계(${supplyTotal.toLocaleString()})와 내부 합계(${internalSupplyTotal.toLocaleString()})가 일치하지 않습니다.`
@@ -76,11 +87,11 @@ export function calcInvoiceTotals(items: InvoiceItem[]): InvoiceTotals {
     warnings.push('세액 합계가 일치하지 않습니다 (반올림 차이 초과).');
   }
 
-  // 작가지급액 > 공급가액 행 경고 (저장은 허용 — 전략적 케이스)
+  // 할인금액 > 공급가액 행 경고 (저장은 허용 — 전략적 케이스)
   internal.forEach((it) => {
-    if (it.item_type !== 'discount' && it.writer_pay > it.supply_amount) {
+    if (it.discount_amount > it.supply_amount) {
       warnings.push(
-        `${it.no}번 행: 작가지급액(${it.writer_pay.toLocaleString()})이 공급가액(${it.supply_amount.toLocaleString()})보다 큽니다.`
+        `${it.no}번 행: 할인금액(${it.discount_amount.toLocaleString()})이 공급가액(${it.supply_amount.toLocaleString()})보다 큽니다.`
       );
     }
   });

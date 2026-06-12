@@ -8,7 +8,7 @@ import type { Invoice } from '@/types/invoice';
 import {
   calcInvoiceTotals,
   calcLineTax,
-  calcAttribution,
+  calcItemBreakdown,
   getExternalItems,
   getInternalItems,
 } from '@/lib/invoice/calculator';
@@ -100,15 +100,17 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
               <th className="px-3 py-2.5 text-right w-24 font-semibold last:rounded-tr-md">세 액</th>
             ) : (
               <>
+                <th className="px-3 py-2.5 text-right w-24 font-semibold">할인</th>
                 <th className="px-3 py-2.5 text-right w-28 font-semibold">작가 지급액</th>
-                <th className="px-3 py-2.5 text-right w-24 font-semibold">귀속 금액</th>
-                <th className="px-3 py-2.5 text-center w-24 font-semibold last:rounded-tr-md">비고</th>
+                <th className="px-3 py-2.5 text-right w-24 font-semibold last:rounded-tr-md">귀속 금액</th>
               </>
             )}
           </tr>
         </thead>
         <tbody>
-          {displayItems.map((it, idx) => (
+          {displayItems.map((it, idx) => {
+            const bd = calcItemBreakdown(it);
+            return (
             <tr key={it.id ?? idx} className="border-b border-gray-200">
               <td className="px-3 py-2 text-center tabular-nums text-slate-500">{idx + 1}</td>
               <td className="px-3 py-2 text-center text-slate-700">
@@ -122,26 +124,36 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
                   </span>
                 )}
               </td>
-              <td className="px-3 py-2 text-right tabular-nums text-slate-700 whitespace-nowrap">
-                {formatWon(it.supply_amount)}
-              </td>
               {mode === 'external' ? (
-                <td className="px-3 py-2 text-right tabular-nums text-slate-500 whitespace-nowrap">
-                  {formatWon(calcLineTax(it.supply_amount))}
-                </td>
-              ) : (
                 <>
+                  {/* 외부: 공급가액 = 할인 반영된 순매출 */}
                   <td className="px-3 py-2 text-right tabular-nums text-slate-700 whitespace-nowrap">
-                    {formatWon(it.writer_pay)}
+                    {formatWon(bd.netSupply)}
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums text-slate-500 whitespace-nowrap">
-                    {formatWon(calcAttribution(it.supply_amount, it.writer_pay))}
+                    {formatWon(calcLineTax(bd.netSupply))}
                   </td>
-                  <td className="px-3 py-2 text-[10px] text-slate-400">{it.note ?? ''}</td>
+                </>
+              ) : (
+                <>
+                  {/* 내부: 공급가액(할인 전) | 할인 | 작가지급액 | 귀속금액 */}
+                  <td className="px-3 py-2 text-right tabular-nums text-slate-700 whitespace-nowrap">
+                    {formatWon(it.supply_amount)}
+                  </td>
+                  <td className="px-3 py-2 text-right tabular-nums text-slate-500 whitespace-nowrap">
+                    {formatWon(it.discount_amount)}
+                  </td>
+                  <td className="px-3 py-2 text-right tabular-nums text-slate-700 whitespace-nowrap">
+                    {formatWon(bd.writerPay)}
+                  </td>
+                  <td className="px-3 py-2 text-right tabular-nums text-slate-500 whitespace-nowrap">
+                    {formatWon(bd.attribution)}
+                  </td>
                 </>
               )}
             </tr>
-          ))}
+            );
+          })}
           {/* 빈 행 — A4 한 장 채우기 (가로줄만) */}
           {Array.from({ length: emptyRowCount }).map((_, i) => (
             <tr key={`empty-${i}`} className="border-b border-gray-100 h-8">

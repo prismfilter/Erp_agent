@@ -16,6 +16,8 @@ export const invoiceItemInputSchema = z.object({
   description: z.string().optional(),
   writer_names: z.string().optional(),
   supply_amount: z.number().optional(),
+  discount_amount: z.number().optional(),
+  writer_pay_rate: z.number().min(0).max(100).optional(),
   writer_pay: z.number().optional(),
   item_type: ITEM_TYPE.optional(),
   is_negotiated: z.boolean().optional(),

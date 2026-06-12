@@ -6,6 +6,7 @@ import type { Invoice } from '@/types/invoice';
 import {
   getExternalItems,
   getInternalItems,
+  calcItemBreakdown,
   buildExportFilename,
 } from './calculator';
 
@@ -48,7 +49,7 @@ export function exportInvoiceExcel(invoice: Invoice): void {
       idx + 1,
       '프리즘필터',
       it.description + (it.is_negotiated ? ' *기존 단가와 무관하게 협의 후 책정된 금액' : ''),
-      it.supply_amount,
+      calcItemBreakdown(it).netSupply, // 공급가액 = 할인 반영된 순매출
       { f: `D${rowNum}*0.1` },
     ]);
   });
@@ -79,9 +80,10 @@ export function exportInvoiceExcel(invoice: Invoice): void {
     ['거래처', null, invoice.client?.name ?? ''],
     ['거래명', null, invoice.title],
     [],
-    ['No.', '작업자', '상세내용', '공급가액', '작가 지급액', '귀속 금액', '비고'],
+    ['No.', '작업자', '상세내용', '공급가액', '할인', '작가 지급액', '귀속 금액'],
   ];
 
+  // 컬럼: D=공급가액(할인 전), E=할인, F=작가지급액, G=귀속금액
   const intStart = intRows.length + 1;
   internal.forEach((it, idx) => {
     const rowNum = intStart + idx;
@@ -89,26 +91,26 @@ export function exportInvoiceExcel(invoice: Invoice): void {
       idx + 1,
       it.writer_names,
       it.description,
-      it.supply_amount,
-      it.writer_pay,
-      { f: `D${rowNum}-E${rowNum}` },
-      it.note ?? '',
+      it.supply_amount,                              // D 공급가액(할인 전)
+      it.discount_amount,                            // E 할인
+      calcItemBreakdown(it).writerPay,               // F 작가지급액
+      { f: `(D${rowNum}-E${rowNum})-F${rowNum}` },    // G 귀속금액 = (공급−할인)−작가지급
     ]);
   });
   const intEnd = intStart + internal.length - 1;
 
   intRows.push([]);
-  const intTotalRow = intRows.length + 1;
-  intRows.push([null, null, '총 공급가액 (A)', { f: `SUM(D${intStart}:D${intEnd})` }, null, '세 액']);
-  intRows.push([null, null, '총 작가지급액 (B)', { f: `SUM(E${intStart}:E${intEnd})` }, null, { f: `D${intTotalRow + 1}*0.1` }]);
-  intRows.push([null, null, '총 귀속금액 (C)', { f: `D${intTotalRow}-D${intTotalRow + 1}` }, null, { f: `D${intTotalRow + 2}*0.1` }, '거래처 청구서 총 합계']);
-  intRows.push([null, null, '총 합계 (B+C)', { f: `D${intTotalRow}*1.1` }, null, null, { f: `D${intTotalRow}*1.1` }]);
+  const aRow = intRows.length + 1; // 총 순매출(A) 행
+  intRows.push([null, null, '총 공급가액 (A=공급−할인)', { f: `SUM(D${intStart}:D${intEnd})-SUM(E${intStart}:E${intEnd})` }]);
+  intRows.push([null, null, '총 작가지급액 (B)', { f: `SUM(F${intStart}:F${intEnd})` }]);
+  intRows.push([null, null, '총 귀속금액 (C)', { f: `SUM(G${intStart}:G${intEnd})` }]);
+  intRows.push([null, null, '총 합계 (A + 세액)', { f: `D${aRow}*1.1` }, null, null, '거래처 청구서 총 합계와 일치']);
   intRows.push([]);
   intRows.push([COMPANY.name, null, null, null, null, COMPANY.bizNumber]);
   intRows.push([COMPANY.address, null, null, null, null, accountLabel]);
 
   const wsInt = XLSX.utils.aoa_to_sheet(intRows);
-  wsInt['!cols'] = [{ wch: 5 }, { wch: 14 }, { wch: 55 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 30 }];
+  wsInt['!cols'] = [{ wch: 5 }, { wch: 14 }, { wch: 50 }, { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 14 }];
   XLSX.utils.book_append_sheet(wb, wsInt, '내부 지급서');
 
   // 다운로드

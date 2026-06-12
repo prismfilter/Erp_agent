@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { InvoiceItem } from '@/types/invoice';
 import {
   calcLineTax,
-  calcAttribution,
+  calcItemBreakdown,
   calcWriterNet,
   calcFee,
   getExternalItems,
@@ -19,6 +19,8 @@ function item(partial: Partial<InvoiceItem>): InvoiceItem {
     description: '',
     writer_names: '',
     supply_amount: 0,
+    discount_amount: 0,
+    writer_pay_rate: 70,
     writer_pay: 0,
     item_type: 'normal',
     is_negotiated: false,
@@ -33,11 +35,28 @@ describe('라인 단위 계산', () => {
   it('calcLineTax는 공급가액의 10%를 0 방향 절사한다', () => {
     expect(calcLineTax(100_000)).toBe(10_000);
     expect(calcLineTax(12_345)).toBe(1_234); // trunc(1234.5)
-    expect(calcLineTax(-5_000)).toBe(-500); // 할인 행 음수 안전 (trunc)
+    expect(calcLineTax(-5_000)).toBe(-500); // 음수 안전 (trunc)
   });
 
-  it('calcAttribution은 공급가액 − 작가지급액', () => {
-    expect(calcAttribution(100_000, 60_000)).toBe(40_000);
+  it('calcItemBreakdown: 공급 100만 / 할인 10만 / 작가수수료 70%', () => {
+    const bd = calcItemBreakdown({ supply_amount: 1_000_000, discount_amount: 100_000, writer_pay_rate: 70 });
+    expect(bd.netSupply).toBe(900_000); // 100만 − 10만
+    expect(bd.writerPay).toBe(630_000); // 90만 × 70%
+    expect(bd.attribution).toBe(270_000); // 90만 − 63만
+  });
+
+  it('calcItemBreakdown: 작가수수료 0%/100% 경계', () => {
+    expect(calcItemBreakdown({ supply_amount: 500_000, discount_amount: 0, writer_pay_rate: 0 }))
+      .toEqual({ netSupply: 500_000, writerPay: 0, attribution: 500_000 });
+    expect(calcItemBreakdown({ supply_amount: 500_000, discount_amount: 0, writer_pay_rate: 100 }))
+      .toEqual({ netSupply: 500_000, writerPay: 500_000, attribution: 0 });
+  });
+
+  it('calcItemBreakdown: 작가지급액은 0 방향 절사', () => {
+    // 순매출 333,333 × 70% = 233,333.1 → 233,333
+    const bd = calcItemBreakdown({ supply_amount: 333_333, discount_amount: 0, writer_pay_rate: 70 });
+    expect(bd.writerPay).toBe(233_333);
+    expect(bd.attribution).toBe(100_000);
   });
 
   it('calcWriterNet은 지급액에서 수수료를 뺀다 (기본 20%)', () => {
@@ -77,31 +96,38 @@ describe('외부/내부 행 분리', () => {
 });
 
 describe('calcInvoiceTotals', () => {
-  it('단순 1행 청구서 합계 (A=100만, B=60만, C=40만)', () => {
-    const items = [item({ id: 'a', supply_amount: 1_000_000, writer_pay: 600_000 })];
+  it('단순 1행 (공급 100만 / 할인 10만 / 작가수수료 70%)', () => {
+    const items = [item({ id: 'a', supply_amount: 1_000_000, discount_amount: 100_000, writer_pay_rate: 70 })];
     const t = calcInvoiceTotals(items);
-    expect(t.supplyTotal).toBe(1_000_000);
-    expect(t.writerPayTotal).toBe(600_000);
-    expect(t.attributionTotal).toBe(400_000);
-    expect(t.taxA).toBe(100_000);
-    expect(t.grandTotal).toBe(1_100_000);
+    expect(t.supplyTotal).toBe(900_000); // 순매출(할인 반영)
+    expect(t.writerPayTotal).toBe(630_000);
+    expect(t.attributionTotal).toBe(270_000);
+    expect(t.taxA).toBe(90_000);
+    expect(t.grandTotal).toBe(990_000);
     expect(t.isValid).toBe(true);
     expect(t.warnings).toHaveLength(0);
   });
 
-  it('내부 행 분리 시 외부·내부 공급가액 합이 일치하면 유효', () => {
+  it('내부 행 분리 시 외부·내부 순매출 합이 일치하면 유효', () => {
     const items = [
-      item({ id: 'p', supply_amount: 100_000, writer_pay: 0, show_in_external: true }),
-      item({ id: 'c1', group_key: 'p', supply_amount: 60_000, writer_pay: 30_000, show_in_external: false }),
-      item({ id: 'c2', group_key: 'p', supply_amount: 40_000, writer_pay: 20_000, show_in_external: false }),
+      item({ id: 'p', supply_amount: 100_000, show_in_external: true }),
+      item({ id: 'c1', group_key: 'p', supply_amount: 60_000, show_in_external: false }),
+      item({ id: 'c2', group_key: 'p', supply_amount: 40_000, show_in_external: false }),
     ];
     const t = calcInvoiceTotals(items);
-    expect(t.supplyTotal).toBe(100_000); // 외부 = 부모
-    expect(t.internalSupplyTotal).toBe(100_000); // 내부 = 자식 합
+    expect(t.supplyTotal).toBe(100_000); // 외부 = 부모 순매출
+    expect(t.internalSupplyTotal).toBe(100_000); // 내부 = 자식 순매출 합
     expect(t.isValid).toBe(true);
   });
 
-  it('외부·내부 공급가액이 어긋나면 경고를 남긴다', () => {
+  it('할인금액이 공급가액보다 크면 경고를 남긴다', () => {
+    const items = [item({ id: 'a', supply_amount: 100_000, discount_amount: 150_000 })];
+    const t = calcInvoiceTotals(items);
+    expect(t.isValid).toBe(false);
+    expect(t.warnings.length).toBeGreaterThan(0);
+  });
+
+  it('외부·내부 순매출이 어긋나면 경고를 남긴다', () => {
     const items = [
       item({ id: 'p', supply_amount: 100_000, show_in_external: true }),
       item({ id: 'c1', group_key: 'p', supply_amount: 50_000, show_in_external: false }),

@@ -5,7 +5,7 @@
 // - 카테고리: invoice_items.price_item_id → price_items.category (null이면 '커스텀')
 
 import type { Invoice, PriceItem } from '@/types/invoice';
-import { getInternalItems, calcAttribution } from '@/lib/invoice/calculator';
+import { getInternalItems, calcItemBreakdown } from '@/lib/invoice/calculator';
 
 // 차트 표시 순서 고정 (프라이스 테이블 카테고리 + 커스텀)
 export const REVENUE_CATEGORIES = [
@@ -56,7 +56,7 @@ export function aggregateRevenue(paidInvoices: Invoice[], priceItems: PriceItem[
     let invoiceTotal = 0;
 
     for (const it of internal) {
-      const attribution = calcAttribution(it.supply_amount, it.writer_pay);
+      const attribution = calcItemBreakdown(it).attribution;
       invoiceTotal += attribution;
 
       // 카테고리 분류 (커스텀·할인 행은 price_item_id가 null)
