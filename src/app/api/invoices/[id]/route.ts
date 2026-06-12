@@ -3,6 +3,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
 import { insertItems } from '@/lib/invoice/itemsRepo';
+import { parseBody } from '@/lib/validation/parse';
+import { invoiceUpdateSchema } from '@/lib/validation/schemas';
 
 // GET /api/invoices/[id]
 export async function GET(
@@ -49,8 +51,9 @@ export async function PATCH(
     if (isErrorResponse(auth)) return auth;
 
     const { id } = await params;
-    const body = await request.json();
-    const { invoice_date, client_id, title, account_id, status, memo, items } = body;
+    const parsed = parseBody(invoiceUpdateSchema, await request.json());
+    if (!parsed.success) return parsed.response;
+    const { invoice_date, client_id, title, account_id, status, memo, items } = parsed.data;
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (invoice_date !== undefined) updates.invoice_date = invoice_date;

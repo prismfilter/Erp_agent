@@ -52,6 +52,8 @@ export default function InvoicesPage() {
   }, []);
 
   useEffect(() => {
+    // async fetch라 setState는 마이크로태스크에서 실행 (동기 cascading render 아님)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchInvoices();
     fetch('/api/clients').then(async (r) => {
       if (r.ok) setClients((await r.json()).clients || []);

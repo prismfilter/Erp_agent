@@ -2,6 +2,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
+import { parseBody } from '@/lib/validation/parse';
+import { priceItemUpdateSchema } from '@/lib/validation/schemas';
 
 export async function PATCH(
   request: NextRequest,
@@ -12,12 +14,13 @@ export async function PATCH(
     if (isErrorResponse(auth)) return auth;
 
     const { id } = await params;
-    const body = await request.json();
+    const parsed = parseBody(priceItemUpdateSchema, await request.json());
+    if (!parsed.success) return parsed.response;
 
+    // 검증된 필드만 반영 (undefined 제외)
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
-    const allowed = ['category', 'name', 'billing_price', 'writer_base_pay', 'fee_rate', 'is_formula', 'formula_note', 'sort_order', 'is_active'];
-    for (const key of allowed) {
-      if (body[key] !== undefined) updates[key] = body[key];
+    for (const [key, value] of Object.entries(parsed.data)) {
+      if (value !== undefined) updates[key] = value;
     }
 
     const { data, error } = await auth.adminClient

@@ -2,6 +2,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
+import { parseBody } from '@/lib/validation/parse';
+import { clientCreateSchema } from '@/lib/validation/schemas';
 
 export async function GET() {
   try {
@@ -31,16 +33,15 @@ export async function POST(request: NextRequest) {
     const auth = await requireStaff();
     if (isErrorResponse(auth)) return auth;
 
-    const { name } = await request.json();
-    if (!name?.trim()) {
-      return NextResponse.json({ error: '거래처명은 필수입니다.' }, { status: 400 });
-    }
+    const parsed = parseBody(clientCreateSchema, await request.json());
+    if (!parsed.success) return parsed.response;
+    const name = parsed.data.name; // 스키마에서 trim 적용됨
 
     // 동일 이름 존재 시 기존 거래처 반환
     const { data: existing } = await auth.adminClient
       .from('clients')
       .select('*')
-      .eq('name', name.trim())
+      .eq('name', name)
       .maybeSingle();
 
     if (existing) {
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await auth.adminClient
       .from('clients')
-      .insert({ name: name.trim() })
+      .insert({ name })
       .select()
       .single();
 

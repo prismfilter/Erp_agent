@@ -3,6 +3,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
 import { insertItems } from '@/lib/invoice/itemsRepo';
+import { parseBody } from '@/lib/validation/parse';
+import { invoiceCreateSchema } from '@/lib/validation/schemas';
 
 // GET /api/invoices?client_id=&status=&from=&to=&q=
 export async function GET(request: NextRequest) {
@@ -47,12 +49,9 @@ export async function POST(request: NextRequest) {
     const auth = await requireStaff();
     if (isErrorResponse(auth)) return auth;
 
-    const body = await request.json();
-    const { invoice_date, client_id, title, account_id, status, memo, items } = body;
-
-    if (!title || !invoice_date) {
-      return NextResponse.json({ error: '날짜와 거래명은 필수입니다.' }, { status: 400 });
-    }
+    const parsed = parseBody(invoiceCreateSchema, await request.json());
+    if (!parsed.success) return parsed.response;
+    const { invoice_date, client_id, title, account_id, status, memo, items } = parsed.data;
 
     const { data: invoice, error: invErr } = await auth.adminClient
       .from('invoices')

@@ -245,6 +245,7 @@ export default function WritersPage() {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch라 setState는 마이크로태스크에서 실행 (동기 cascading render 아님)
   useEffect(() => { fetchWriters(); }, [fetchWriters]);
 
   const handleNameSaved = useCallback((userId: string, name: string | null) => {

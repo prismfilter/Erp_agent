@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/store/authStore';
@@ -9,26 +9,26 @@ import type { Session } from '@supabase/supabase-js';
 // 인증 확인 안전 타임아웃 — 어떤 경우에도 로딩이 무한 대기하지 않도록 보장
 const AUTH_TIMEOUT_MS = 8000;
 
+// 인증 상태는 Zustand authStore가 단일 소스(single source of truth).
+// useAuth는 세션을 로드해 store를 갱신하고, 컴포넌트가 구독할 값을 store에서 읽어 반환한다.
 export function useAuth() {
-  const { user: storeUser, setUser: setStoreUser } = useAuthStore();
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const user = useAuthStore((s) => s.user);
+  const isLoading = useAuthStore((s) => s.isLoading);
+  const setUser = useAuthStore((s) => s.setUser);
+  const setLoading = useAuthStore((s) => s.setLoading);
   // 클라이언트 재생성 방지 (createBrowserClient는 싱글턴이지만 deps 안정화 목적)
   const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     let isMounted = true;
 
-    // 세션에서 사용자 정보(역할·이름·권한) 로드 — checkAuth와 이벤트 핸들러가 공유
+    // 세션에서 사용자 정보(역할·이름·권한)를 로드해 store에 저장
     const loadUser = async (session: Session): Promise<void> => {
       const validation = validatePrismFilterEmail(session.user.email || '');
       if (!validation.valid) {
         logger.warn('❌ 이메일 도메인 검증 실패:', session.user.email);
         await supabase.auth.signOut();
-        if (isMounted) {
-          setUser(null);
-          setStoreUser(null);
-        }
+        if (isMounted) setUser(null);
         return;
       }
 
@@ -77,7 +77,6 @@ export function useAuth() {
 
       if (isMounted) {
         setUser(authUser);
-        setStoreUser(authUser);
         logger.log('✅ 사용자 상태 저장 완료:', authUser.email);
       }
     };
@@ -98,18 +97,12 @@ export function useAuth() {
         } else {
           logger.log('ℹ️ 로그인된 세션 없음');
           setUser(null);
-          setStoreUser(null);
         }
       } catch (error) {
         logger.error('❌ 인증 확인 오류:', error);
-        if (isMounted) {
-          setUser(null);
-          setStoreUser(null);
-        }
+        if (isMounted) setUser(null);
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
 
@@ -117,7 +110,7 @@ export function useAuth() {
     const safetyTimer = setTimeout(() => {
       if (isMounted) {
         logger.warn(`⏱️ 인증 확인 ${AUTH_TIMEOUT_MS / 1000}초 초과 — 로딩 강제 해제`);
-        setIsLoading(false);
+        setLoading(false);
       }
     }, AUTH_TIMEOUT_MS);
 
@@ -139,7 +132,6 @@ export function useAuth() {
             loadUser(session);
           } else {
             setUser(null);
-            setStoreUser(null);
             logger.log('🔄 로그아웃됨');
           }
         }, 0);
@@ -151,11 +143,11 @@ export function useAuth() {
       clearTimeout(safetyTimer);
       subscription?.unsubscribe();
     };
-  }, [supabase, setStoreUser]);
+  }, [supabase, setUser, setLoading]);
 
   return {
-    user: user || storeUser,
+    user,
     isLoading,
-    isAuthenticated: !!(user || storeUser),
+    isAuthenticated: !!user,
   };
 }

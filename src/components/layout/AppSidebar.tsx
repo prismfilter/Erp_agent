@@ -109,14 +109,10 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
     [pathname]
   );
 
-  // 메모이제이션: 아바타 이니셜 (이름 우선, 없으면 이메일 앞 2자)
-  const avatarInitial = useMemo(
-    () =>
-      user?.name
-        ? user.name.substring(0, 1).toUpperCase()
-        : user?.email?.substring(0, 2).toUpperCase() || 'U',
-    [user?.name, user?.email]
-  );
+  // 아바타 이니셜 (이름 우선, 없으면 이메일 앞 2자) — 단순 계산이라 메모이제이션 불필요
+  const avatarInitial = user?.name
+    ? user.name.substring(0, 1).toUpperCase()
+    : user?.email?.substring(0, 2).toUpperCase() || 'U';
 
   return (
     <aside

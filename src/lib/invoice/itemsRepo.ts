@@ -2,12 +2,12 @@
 // 클라이언트가 보낸 임시 group_key를 실제 uuid로 매핑하며 일괄 삽입
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { InvoiceItem } from '@/types/invoice';
+import type { InvoiceItemInput } from '@/lib/validation/schemas';
 
 export async function insertItems(
   adminClient: SupabaseClient,
   invoiceId: string,
-  items: InvoiceItem[]
+  items: InvoiceItemInput[]
 ): Promise<string | null> {
   // 1차: 부모 행(group_key 없음) 삽입
   const parents = items.filter((it) => !it.group_key);
@@ -28,7 +28,7 @@ export async function insertItems(
 
   // 2차: 자식 행 — group_key를 부모 실제 id로 치환
   for (const it of children) {
-    const realParentId = tmpKeyToRealId.get(it.group_key!) ?? it.group_key;
+    const realParentId = tmpKeyToRealId.get(it.group_key!) ?? it.group_key ?? null;
     const { error } = await adminClient
       .from('invoice_items')
       .insert(buildItemRow(invoiceId, it, realParentId));
@@ -38,7 +38,7 @@ export async function insertItems(
   return null;
 }
 
-function buildItemRow(invoiceId: string, it: InvoiceItem, groupKey: string | null) {
+function buildItemRow(invoiceId: string, it: InvoiceItemInput, groupKey: string | null) {
   return {
     invoice_id: invoiceId,
     no: it.no,

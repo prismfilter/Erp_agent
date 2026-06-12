@@ -35,7 +35,8 @@ export function PriceItemSelect({ priceItems, selectedId, onSelect, placeholder 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // 포털은 클라이언트에서만 (SSR 안전)
+  // 포털은 클라이언트에서만 (SSR 안전) — 1회 마운트 가드
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- 마운트 시 1회만 실행 (재렌더 루프 없음)
   useEffect(() => setMounted(true), []);
 
   const selected = useMemo(

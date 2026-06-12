@@ -28,6 +28,7 @@ export default function PayoutsPage() {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch라 setState는 마이크로태스크에서 실행 (동기 cascading render 아님)
   useEffect(() => { fetchInvoices(); }, [fetchInvoices]);
 
   // 작업자 요약 (중복 제거, 최대 3명 + 외 N명)

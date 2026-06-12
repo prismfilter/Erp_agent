@@ -1,24 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserRole } from '@/types';
 import { getAuthedUser, isErrorResponse, canSelfAssignRole } from '@/lib/auth/apiAuth';
-
-const VALID_ROLES: UserRole[] = ['ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'];
+import { parseBody } from '@/lib/validation/parse';
+import { userProfileSchema } from '@/lib/validation/schemas';
 
 export async function PATCH(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { name, role } = body as { name?: string; role?: UserRole };
+    const parsed = parseBody(userProfileSchema, await req.json());
+    if (!parsed.success) return parsed.response;
+    const { name, role } = parsed.data;
 
     const authed = await getAuthedUser();
     if (isErrorResponse(authed)) return authed;
 
     // 업데이트할 필드 구성
     const updates: Record<string, string> = {};
-    if (name !== undefined) updates.name = name.trim();
+    if (name !== undefined && name !== null) updates.name = name.trim();
     if (role !== undefined) {
-      if (!VALID_ROLES.includes(role)) {
-        return NextResponse.json({ error: '유효하지 않은 역할입니다.' }, { status: 400 });
-      }
       // 권한 상승 방지: 본인은 작가 역할로만 자가 지정 가능
       if (!canSelfAssignRole(authed.role, role)) {
         return NextResponse.json(

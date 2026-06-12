@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserRole } from '@/types';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
-
-const VALID_ROLES: UserRole[] = ['ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'];
+import { parseBody } from '@/lib/validation/parse';
+import { adminUserUpdateSchema } from '@/lib/validation/schemas';
 
 export async function PATCH(
   req: NextRequest,
@@ -10,8 +9,9 @@ export async function PATCH(
 ) {
   try {
     const { userId } = await params;
-    const body = await req.json();
-    const { name, role, contract_date } = body as { name?: string; role?: UserRole; contract_date?: string | null };
+    const parsed = parseBody(adminUserUpdateSchema, await req.json());
+    if (!parsed.success) return parsed.response;
+    const { name, role, contract_date } = parsed.data;
 
     // 관리자 권한 확인
     const auth = await requireStaff(true);
@@ -20,12 +20,7 @@ export async function PATCH(
     // 업데이트 필드 구성
     const updates: Record<string, string | null> = {};
     if (name !== undefined) updates.name = name?.trim() ?? null;
-    if (role !== undefined) {
-      if (!VALID_ROLES.includes(role)) {
-        return NextResponse.json({ error: '유효하지 않은 역할입니다.' }, { status: 400 });
-      }
-      updates.role = role;
-    }
+    if (role !== undefined) updates.role = role;
     if (contract_date !== undefined) updates.contract_date = contract_date ?? null;
 
     if (Object.keys(updates).length === 0) {

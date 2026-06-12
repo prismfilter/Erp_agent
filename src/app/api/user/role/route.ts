@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserRole } from '@/types';
 import { getAuthedUser, isErrorResponse, canSelfAssignRole } from '@/lib/auth/apiAuth';
-
-const VALID_ROLES: UserRole[] = ['ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'];
+import { parseBody } from '@/lib/validation/parse';
+import { userRoleSchema } from '@/lib/validation/schemas';
 
 export async function PATCH(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { role } = body as { role: UserRole };
-
-    if (!VALID_ROLES.includes(role)) {
-      return NextResponse.json({ error: '유효하지 않은 역할입니다.' }, { status: 400 });
-    }
+    const parsed = parseBody(userRoleSchema, await req.json());
+    if (!parsed.success) return parsed.response;
+    const { role } = parsed.data;
 
     const authed = await getAuthedUser();
     if (isErrorResponse(authed)) return authed;

@@ -2,6 +2,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
+import { parseBody } from '@/lib/validation/parse';
+import { priceItemCreateSchema } from '@/lib/validation/schemas';
 
 // GET /api/price-items?all=1 (all=1이면 비활성 포함 — 관리 페이지용)
 export async function GET(request: NextRequest) {
@@ -38,12 +40,9 @@ export async function POST(request: NextRequest) {
     const auth = await requireStaff(true);
     if (isErrorResponse(auth)) return auth;
 
-    const body = await request.json();
-    const { category, name, billing_price, writer_base_pay, fee_rate, is_formula, formula_note, sort_order } = body;
-
-    if (!category || !name) {
-      return NextResponse.json({ error: '카테고리와 작업내역명은 필수입니다.' }, { status: 400 });
-    }
+    const parsed = parseBody(priceItemCreateSchema, await request.json());
+    if (!parsed.success) return parsed.response;
+    const { category, name, billing_price, writer_base_pay, fee_rate, is_formula, formula_note, sort_order } = parsed.data;
 
     const { data, error } = await auth.adminClient
       .from('price_items')
