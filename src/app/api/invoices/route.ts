@@ -1,7 +1,7 @@
 // 청구서 목록 조회 + 생성
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireStaff, isErrorResponse } from '@/lib/invoice/apiAuth';
+import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
 import { insertItems } from '@/lib/invoice/itemsRepo';
 
 // GET /api/invoices?client_id=&status=&from=&to=&q=

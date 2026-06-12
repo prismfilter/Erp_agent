@@ -1,7 +1,7 @@
 // 거래처 목록(자동완성용) / 즉시 추가
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireStaff, isErrorResponse } from '@/lib/invoice/apiAuth';
+import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
 
 export async function GET() {
   try {

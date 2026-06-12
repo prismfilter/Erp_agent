@@ -14,18 +14,13 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 export function LoadingScreen({ isDone = false }: LoadingScreenProps) {
   const [progress, setProgress] = useState(0);
-  const startRef = useRef(Date.now());
+  const startRef = useRef(0);
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
-    if (isDone) {
-      cancelAnimationFrame(rafRef.current);
-      setProgress(100);
-      return;
-    }
-  }, [isDone]);
+    // 완료 상태면 애니메이션 불필요 — 표시값은 파생(displayProgress)에서 100으로 처리
+    if (isDone) return;
 
-  useEffect(() => {
     startRef.current = Date.now();
 
     const tick = () => {
@@ -49,9 +44,11 @@ export function LoadingScreen({ isDone = false }: LoadingScreenProps) {
 
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, []);
+  }, [isDone]);
 
-  const dashOffset = CIRCUMFERENCE * (1 - progress / 100);
+  // 완료 시 즉시 100% 표시 (렌더 중 파생값 — effect에서 setState 하지 않음)
+  const displayProgress = isDone ? 100 : progress;
+  const dashOffset = CIRCUMFERENCE * (1 - displayProgress / 100);
 
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center bg-background gap-10">
@@ -153,7 +150,7 @@ export function LoadingScreen({ isDone = false }: LoadingScreenProps) {
             className="font-bold text-foreground tabular-nums"
             style={{ fontSize: 26, letterSpacing: '-0.02em' }}
           >
-            {progress}%
+            {displayProgress}%
           </span>
         </div>
       </div>

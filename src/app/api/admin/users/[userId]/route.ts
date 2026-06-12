@@ -1,8 +1,6 @@
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { UserRole } from '@/types';
+import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
 
 const VALID_ROLES: UserRole[] = ['ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'];
 
@@ -15,34 +13,9 @@ export async function PATCH(
     const body = await req.json();
     const { name, role, contract_date } = body as { name?: string; role?: UserRole; contract_date?: string | null };
 
-    // 세션 확인
-    const cookieStore = await cookies();
-    const authClient = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
-    );
-
-    const { data: { user }, error: authError } = await authClient.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
-    }
-
-    const adminClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
     // 관리자 권한 확인
-    const { data: callerRole } = await adminClient
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (callerRole?.role !== 'ADMIN') {
-      return NextResponse.json({ error: '관리자 권한이 필요합니다.' }, { status: 403 });
-    }
+    const auth = await requireStaff(true);
+    if (isErrorResponse(auth)) return auth;
 
     // 업데이트 필드 구성
     const updates: Record<string, string | null> = {};
@@ -59,7 +32,7 @@ export async function PATCH(
       return NextResponse.json({ error: '변경할 내용이 없습니다.' }, { status: 400 });
     }
 
-    const { error } = await adminClient
+    const { error } = await auth.adminClient
       .from('user_roles')
       .update(updates)
       .eq('user_id', userId);

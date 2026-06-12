@@ -5,10 +5,11 @@ import { useAuthStore } from '@/store/authStore';
 import { UserRole } from '@/types';
 import Link from 'next/link';
 
+// 본인이 직접 설정 가능한 역할은 작가 역할로만 제한 (권한 상승 방지)
+// 직원·관리자 역할은 관리자가 계정 관리에서만 부여한다.
 const ROLE_OPTIONS: { value: UserRole; label: string; icon: string }[] = [
   { value: 'EXCLUSIVE_WRITER', label: '전속 작가', icon: '✍️' },
   { value: 'GENERAL_WRITER',   label: '일반 작가', icon: '📝' },
-  { value: 'STAFF',            label: '직원',      icon: '💼' },
 ];
 
 function getRoleLabel(role: UserRole | null | undefined) {
@@ -33,6 +34,9 @@ export default function ProfilePage() {
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  // 직원·관리자는 본인 역할을 직접 변경할 수 없음 (강등·권한 상승 방지)
+  const isPrivileged = user?.role === 'ADMIN' || user?.role === 'STAFF';
+
   const handleEditStart = useCallback(() => {
     setEditName(user?.name ?? '');
     setSelectedRole(user?.role ?? 'EXCLUSIVE_WRITER');
@@ -52,13 +56,15 @@ export default function ProfilePage() {
     setSaveError('');
 
     try {
+      // 직원·관리자는 역할 변경 불가 — 이름만 전송
+      const payload = isPrivileged
+        ? { name: editName.trim() || null }
+        : { name: editName.trim() || null, role: selectedRole };
+
       const res = await fetch('/api/user/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: editName.trim() || null,
-          role: selectedRole,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -69,7 +75,7 @@ export default function ProfilePage() {
       setUser({
         ...user,
         name: editName.trim() || null,
-        role: selectedRole,
+        role: isPrivileged ? user.role : selectedRole,
       });
       setSaveSuccess(true);
       setIsEditing(false);
@@ -78,7 +84,7 @@ export default function ProfilePage() {
     } finally {
       setIsSaving(false);
     }
-  }, [user, editName, selectedRole, setUser]);
+  }, [user, editName, selectedRole, setUser, isPrivileged]);
 
   const maskedId = user?.id
     ? user.id.substring(0, 8) + '••••••••••••••••••••••••'
@@ -179,14 +185,21 @@ export default function ProfilePage() {
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               역할
             </label>
-            {!isEditing ? (
-              <p className="mt-1.5 text-foreground">
-                {user.role === null || user.role === undefined ? (
-                  <span className="text-muted-foreground italic">미지정</span>
-                ) : (
-                  getRoleLabel(user.role)
+            {!isEditing || isPrivileged ? (
+              <div className="mt-1.5">
+                <p className="text-foreground">
+                  {user.role === null || user.role === undefined ? (
+                    <span className="text-muted-foreground italic">미지정</span>
+                  ) : (
+                    getRoleLabel(user.role)
+                  )}
+                </p>
+                {isEditing && isPrivileged && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    직원·관리자 역할은 직접 변경할 수 없습니다. 관리자에게 문의하세요.
+                  </p>
                 )}
-              </p>
+              </div>
             ) : (
               <div className="mt-2 flex flex-wrap gap-2">
                 {ROLE_OPTIONS.map((opt) => (

@@ -1,10 +1,6 @@
 'use client';
 
-import { useAuth } from '@/hooks/useAuth';
-
 export default function HomePage() {
-  const { user } = useAuth();
-
   return (
     <div className="space-y-6">
       {/* 섹션 헤더 */}

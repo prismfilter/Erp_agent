@@ -1,7 +1,7 @@
 // 청구서 상세 조회 / 수정 / 삭제
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireStaff, isErrorResponse } from '@/lib/invoice/apiAuth';
+import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
 import { insertItems } from '@/lib/invoice/itemsRepo';
 
 // GET /api/invoices/[id]

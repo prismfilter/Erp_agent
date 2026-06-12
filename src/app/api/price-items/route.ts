@@ -1,7 +1,7 @@
 // 프라이스 테이블 목록 / 추가
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireStaff, isErrorResponse } from '@/lib/invoice/apiAuth';
+import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
 
 // GET /api/price-items?all=1 (all=1이면 비활성 포함 — 관리 페이지용)
 export async function GET(request: NextRequest) {

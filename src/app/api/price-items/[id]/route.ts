@@ -1,7 +1,7 @@
 // 프라이스 테이블 항목 수정·비활성화 (ADMIN only)
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireStaff, isErrorResponse } from '@/lib/invoice/apiAuth';
+import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
 
 export async function PATCH(
   request: NextRequest,

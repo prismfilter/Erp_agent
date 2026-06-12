@@ -1,7 +1,7 @@
 // 청구서 복제 — 동일 헤더 + items를 새 draft로 생성
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireStaff, isErrorResponse } from '@/lib/invoice/apiAuth';
+import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
 
 export async function POST(
   request: NextRequest,

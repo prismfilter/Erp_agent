@@ -1,8 +1,6 @@
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { UserRole } from '@/types';
+import { getAuthedUser, isErrorResponse, canSelfAssignRole } from '@/lib/auth/apiAuth';
 
 const VALID_ROLES: UserRole[] = ['ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'];
 
@@ -11,18 +9,8 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
     const { name, role } = body as { name?: string; role?: UserRole };
 
-    // 세션 확인
-    const cookieStore = await cookies();
-    const authClient = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
-    );
-
-    const { data: { user }, error: authError } = await authClient.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
-    }
+    const authed = await getAuthedUser();
+    if (isErrorResponse(authed)) return authed;
 
     // 업데이트할 필드 구성
     const updates: Record<string, string> = {};
@@ -31,6 +19,13 @@ export async function PATCH(req: NextRequest) {
       if (!VALID_ROLES.includes(role)) {
         return NextResponse.json({ error: '유효하지 않은 역할입니다.' }, { status: 400 });
       }
+      // 권한 상승 방지: 본인은 작가 역할로만 자가 지정 가능
+      if (!canSelfAssignRole(authed.role, role)) {
+        return NextResponse.json(
+          { error: '해당 역할은 직접 설정할 수 없습니다. 관리자에게 문의하세요.' },
+          { status: 403 }
+        );
+      }
       updates.role = role;
     }
 
@@ -38,18 +33,9 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: '변경할 내용이 없습니다.' }, { status: 400 });
     }
 
-    // 서비스 롤 키로 RLS 우회
-    const adminClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    const { error } = await adminClient
+    const { error } = await authed.adminClient
       .from('user_roles')
-      .upsert(
-        { user_id: user.id, ...updates },
-        { onConflict: 'user_id' }
-      );
+      .upsert({ user_id: authed.userId, ...updates }, { onConflict: 'user_id' });
 
     if (error) {
       console.error('프로필 저장 오류:', error);

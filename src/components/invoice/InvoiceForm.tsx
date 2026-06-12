@@ -5,7 +5,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { PriceItem, Client, CompanyAccount, Invoice, InvoiceItem } from '@/types/invoice';
-import { calcInvoiceTotals, calcLineTax, calcAttribution } from '@/lib/invoice/calculator';
+import { calcInvoiceTotals, calcAttribution } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
 import { PriceItemSelect } from './PriceItemSelect';
 

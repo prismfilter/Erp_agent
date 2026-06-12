@@ -1,8 +1,6 @@
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { UserRole } from '@/types';
+import { getAuthedUser, isErrorResponse, canSelfAssignRole } from '@/lib/auth/apiAuth';
 
 const VALID_ROLES: UserRole[] = ['ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'];
 
@@ -15,36 +13,21 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: '유효하지 않은 역할입니다.' }, { status: 400 });
     }
 
-    // 쿠키 기반 클라이언트로 현재 로그인 사용자 확인
-    const cookieStore = await cookies();
-    const authClient = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll: () => cookieStore.getAll(),
-          setAll: () => {},
-        },
-      }
-    );
+    const authed = await getAuthedUser();
+    if (isErrorResponse(authed)) return authed;
 
-    const { data: { user }, error: authError } = await authClient.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+    // 권한 상승 방지: 본인은 작가 역할로만 자가 지정 가능
+    // (STAFF/ADMIN 승격은 관리자가 /api/admin/users 경로로만 수행)
+    if (!canSelfAssignRole(authed.role, role)) {
+      return NextResponse.json(
+        { error: '해당 역할은 직접 설정할 수 없습니다. 관리자에게 문의하세요.' },
+        { status: 403 }
+      );
     }
 
-    // 서비스 롤 클라이언트로 RLS 우회하여 저장
-    const adminClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    const { error } = await adminClient
+    const { error } = await authed.adminClient
       .from('user_roles')
-      .upsert(
-        { user_id: user.id, role },
-        { onConflict: 'user_id' }
-      );
+      .upsert({ user_id: authed.userId, role }, { onConflict: 'user_id' });
 
     if (error) {
       console.error('역할 저장 오류:', error);

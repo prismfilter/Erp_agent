@@ -1,7 +1,7 @@
 // 회사 입금계좌 목록 (드롭다운용)
 
 import { NextResponse } from 'next/server';
-import { requireStaff, isErrorResponse } from '@/lib/invoice/apiAuth';
+import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
 
 export async function GET() {
   try {
