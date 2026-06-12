@@ -110,6 +110,12 @@ export function calcInvoiceTotals(items: InvoiceItem[]): InvoiceTotals {
   };
 }
 
+// description에서 "{title}_" 접두사 제거 — 청구서 표에서 거래명 컬럼과 분리 표시용
+export function stripTitlePrefix(description: string, title: string): string {
+  const prefix = `${title}_`;
+  return title && description.startsWith(prefix) ? description.slice(prefix.length) : description;
+}
+
 // 내보내기 파일명 생성: PF_청구서_{거래처}_{거래명}_{YYMMDD} (특수문자 _ 치환)
 export function buildExportFilename(clientName: string, title: string, invoiceDate: string): string {
   const d = new Date(invoiceDate);

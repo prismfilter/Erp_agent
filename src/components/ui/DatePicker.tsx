@@ -3,11 +3,65 @@
 // 현대적 날짜 선택기 — react-day-picker(v10) 캘린더를 포털 팝오버로 띄운다.
 // value/onChange는 'YYYY-MM-DD' 문자열(타임존 안전). 표시는 '2026. 06. 12.'.
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, type ChangeEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { DayPicker } from 'react-day-picker';
+import { DayPicker, type DropdownProps } from 'react-day-picker';
 import { ko } from 'react-day-picker/locale';
 import 'react-day-picker/style.css';
+
+// 년/월 선택 드롭다운 — native select 대신 스크롤 가능한 짧은 목록으로 대체
+function ScrollDropdown(props: DropdownProps) {
+  const { options, value, onChange, 'aria-label': ariaLabel } = props;
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const current = options?.find((o) => o.value === value);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const select = (v: number) => {
+    // react-day-picker는 select change 이벤트를 기대 — synthetic 이벤트로 전달
+    onChange?.({ target: { value: String(v) } } as ChangeEvent<HTMLSelectElement>);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={ref} className="relative inline-block">
+      <button
+        type="button"
+        aria-label={ariaLabel}
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1 px-2 py-1 rounded-md bg-background border border-border text-foreground text-sm font-semibold hover:border-primary transition"
+      >
+        {current?.label}
+        <span className="text-[10px] text-muted-foreground">▾</span>
+      </button>
+      {open && (
+        <div className="absolute z-[110] mt-1 max-h-44 min-w-[4.5rem] overflow-y-auto bg-card border border-border rounded-lg shadow-xl">
+          {options?.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              disabled={o.disabled}
+              onClick={() => select(o.value)}
+              className={`block w-full px-3 py-1.5 text-left text-sm transition hover:bg-primary/10 disabled:opacity-40 ${
+                o.value === value ? 'bg-primary/15 text-primary font-semibold' : 'text-foreground'
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface DatePickerProps {
   value: string; // YYYY-MM-DD
@@ -106,6 +160,7 @@ export function DatePicker({ value, onChange, className }: DatePickerProps) {
         startMonth={new Date(2020, 0)}
         endMonth={new Date(2035, 11)}
         reverseYears
+        components={{ Dropdown: ScrollDropdown }}
       />
     </div>
   );
