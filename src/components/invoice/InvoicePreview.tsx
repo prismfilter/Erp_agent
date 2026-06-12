@@ -100,7 +100,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
               <th className="px-3 py-2.5 text-right w-24 font-semibold last:rounded-tr-md">세 액</th>
             ) : (
               <>
-                <th className="px-3 py-2.5 text-right w-24 font-semibold">할인</th>
+                <th className="px-3 py-2.5 text-right w-24 font-semibold">할인금액</th>
                 <th className="px-3 py-2.5 text-right w-28 font-semibold">작가 지급액</th>
                 <th className="px-3 py-2.5 text-right w-24 font-semibold last:rounded-tr-md">귀속 금액</th>
               </>

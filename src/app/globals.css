@@ -187,3 +187,36 @@
     break-inside: avoid;
   }
 }
+
+/* ===== react-day-picker 다크 테마 + 인디고 그라데이션 ===== */
+.rdp-popover .rdp-root {
+  --rdp-accent-color: #5c6cff;
+  --rdp-accent-background-color: color-mix(in oklch, #5c6cff 15%, transparent);
+  --rdp-today-color: #8097ff;
+  --rdp-day-width: 2.1rem;
+  --rdp-day-height: 2.1rem;
+  color: var(--foreground);
+  font-size: 0.8rem;
+}
+.rdp-popover .rdp-caption_label,
+.rdp-popover .rdp-weekday {
+  color: var(--muted-foreground);
+}
+.rdp-popover .rdp-chevron {
+  fill: var(--foreground);
+}
+.rdp-popover .rdp-day_button:hover {
+  background-color: color-mix(in oklch, var(--primary) 18%, transparent);
+  border-radius: 0.5rem;
+}
+.rdp-popover .rdp-selected .rdp-day_button {
+  background-image: linear-gradient(135deg, #4a5ee8, #8097ff);
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  border-radius: 0.5rem;
+}
+.rdp-popover .rdp-today:not(.rdp-selected) .rdp-day_button {
+  color: var(--rdp-today-color);
+  font-weight: 700;
+}

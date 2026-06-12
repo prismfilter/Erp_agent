@@ -9,6 +9,8 @@ import { calcInvoiceTotals, calcItemBreakdown } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
 import { PriceItemSelect } from './PriceItemSelect';
 import { PercentCell } from './PercentCell';
+import { NumericInput } from '@/components/ui/NumericInput';
+import { DatePicker } from '@/components/ui/DatePicker';
 
 interface InvoiceFormProps {
   invoice?: Invoice; // 수정 모드일 때 전달
@@ -47,7 +49,8 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
   const [invoiceDate, setInvoiceDate] = useState(invoice?.invoice_date ?? new Date().toISOString().slice(0, 10));
   const [clientName, setClientName] = useState(invoice?.client?.name ?? '');
   const [title, setTitle] = useState(invoice?.title ?? '');
-  const [accountId, setAccountId] = useState(invoice?.account_id ?? '');
+  const [bankName, setBankName] = useState(invoice?.account?.bank_name ?? '');
+  const [accountNumber, setAccountNumber] = useState(invoice?.account?.account_number ?? '');
   const [memo, setMemo] = useState(invoice?.memo ?? '');
 
   // 라인 항목
@@ -58,6 +61,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showClientSuggest, setShowClientSuggest] = useState(false);
+  const [showBankSuggest, setShowBankSuggest] = useState(false);
 
   // 마스터 데이터 로드
   useEffect(() => {
@@ -72,10 +76,11 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
       if (aRes.ok) {
         const accs: CompanyAccount[] = (await aRes.json()).accounts || [];
         setAccounts(accs);
-        // 신규 작성 시 기본 계좌 자동 선택
+        // 신규 작성 시 기본 계좌(은행명·계좌번호) 자동 입력
         if (!invoice && accs.length > 0) {
           const def = accs.find((a) => a.is_default) ?? accs[0];
-          setAccountId(def.id);
+          setBankName(def.bank_name);
+          setAccountNumber(def.account_number);
         }
       }
     })();
@@ -228,11 +233,22 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
         if (cRes.ok) clientId = (await cRes.json()).client?.id ?? null;
       }
 
+      // 입금계좌: 은행명+계좌번호 쌍으로 조회/등록 (없으면 자동 등록)
+      let accountId: string | null = null;
+      if (bankName.trim() && accountNumber.trim()) {
+        const aRes = await fetch('/api/company-accounts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bank_name: bankName.trim(), account_number: accountNumber.trim() }),
+        });
+        if (aRes.ok) accountId = (await aRes.json()).account?.id ?? null;
+      }
+
       const payload = {
         invoice_date: invoiceDate,
         client_id: clientId,
         title: title.trim(),
-        account_id: accountId || null,
+        account_id: accountId,
         memo: memo || null,
         items,
       };
@@ -259,14 +275,13 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
   return (
     <div className="space-y-6">
       {/* 헤더 입력 영역 */}
-      <div className="bg-card border border-border rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="bg-card border border-border rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[max-content_1fr_1.4fr_1fr_1fr] gap-4 items-start">
         <div>
           <label className="block text-xs font-semibold text-muted-foreground mb-1.5">날짜 *</label>
-          <input
-            type="date"
+          <DatePicker
             value={invoiceDate}
-            onChange={(e) => setInvoiceDate(e.target.value)}
-            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
+            onChange={setInvoiceDate}
+            className="w-40 flex items-center justify-between gap-2 px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none hover:border-primary/50 focus:border-primary text-foreground"
           />
         </div>
         <div className="relative">
@@ -305,19 +320,45 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
             className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
           />
         </div>
-        <div>
-          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">입금계좌</label>
-          <select
-            value={accountId}
-            onChange={(e) => setAccountId(e.target.value)}
+        <div className="relative">
+          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">은행명</label>
+          <input
+            type="text"
+            value={bankName}
+            onChange={(e) => { setBankName(e.target.value); setShowBankSuggest(true); }}
+            onFocus={() => setShowBankSuggest(true)}
+            onBlur={() => setTimeout(() => setShowBankSuggest(false), 150)}
+            placeholder="예: 신한은행"
             className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
-          >
-            {accounts.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.bank_name} {a.account_number}
-              </option>
-            ))}
-          </select>
+          />
+          {showBankSuggest && accounts.length > 0 && (
+            <div className="absolute z-40 mt-1 w-full bg-card border border-border rounded-lg shadow-xl max-h-48 overflow-y-auto">
+              {accounts.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  onMouseDown={() => {
+                    setBankName(a.bank_name);
+                    setAccountNumber(a.account_number);
+                    setShowBankSuggest(false);
+                  }}
+                  className="w-full px-3 py-2 text-xs text-left hover:bg-primary/10 text-foreground"
+                >
+                  {a.bank_name} <span className="text-muted-foreground">{a.account_number}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">계좌번호</label>
+          <input
+            type="text"
+            value={accountNumber}
+            onChange={(e) => setAccountNumber(e.target.value)}
+            placeholder="예: 140-016-071366"
+            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
+          />
         </div>
       </div>
 
@@ -345,7 +386,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[220px]">상세내용</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[110px]">작업자</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">공급가액</th>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-28">할인</th>
+                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-28">할인금액</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground w-24">작가지급(%)</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">귀속금액</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">액션</th>
@@ -410,10 +451,9 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                     </td>
                     <td className="px-2 py-2">
                       <div className="relative">
-                        <input
-                          type="number"
-                          value={it.supply_amount || ''}
-                          onChange={(e) => handleSupplyChange(it.id!, Number(e.target.value) || 0)}
+                        <NumericInput
+                          value={it.supply_amount}
+                          onChange={(v) => handleSupplyChange(it.id!, v)}
                           className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground tabular-nums"
                         />
                         {it.is_negotiated && (
@@ -425,10 +465,9 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                       </div>
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="number"
-                        value={it.discount_amount || ''}
-                        onChange={(e) => updateItem(it.id!, { discount_amount: Number(e.target.value) || 0 })}
+                      <NumericInput
+                        value={it.discount_amount}
+                        onChange={(v) => updateItem(it.id!, { discount_amount: v })}
                         placeholder="0"
                         className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground tabular-nums"
                       />

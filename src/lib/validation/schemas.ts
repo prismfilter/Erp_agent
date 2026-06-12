@@ -78,6 +78,12 @@ export const clientCreateSchema = z.object({
   name: z.string().trim().min(1, '거래처명은 필수입니다.'),
 });
 
+// ── 회사 입금계좌 ───────────────────────────────────────────────────────────
+export const companyAccountCreateSchema = z.object({
+  bank_name: z.string().trim().min(1, '은행명은 필수입니다.'),
+  account_number: z.string().trim().min(1, '계좌번호는 필수입니다.'),
+});
+
 // ── 사용자 본인 프로필/역할 (자가 승격 차단은 canSelfAssignRole가 담당) ──
 export const userProfileSchema = z.object({
   name: z.string().nullable().optional(),

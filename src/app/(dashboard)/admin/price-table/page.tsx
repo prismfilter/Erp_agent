@@ -10,6 +10,7 @@ import { calcFee, calcWriterNet } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableHeader } from '@/components/ui/SortableHeader';
+import { NumericInput } from '@/components/ui/NumericInput';
 
 const CATEGORIES = ['앨범', '방송·공연·시상식', '광고', '기타', '밴드(플레디스)', '밴드'];
 
@@ -43,10 +44,9 @@ function AmountCell({
 
   if (isEditing) {
     return (
-      <input
-        type="number"
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
+      <NumericInput
+        value={draft === '' ? 0 : Number(draft)}
+        onChange={(v) => setDraft(v === 0 ? '' : String(v))}
         onKeyDown={(e) => {
           if (e.key === 'Enter') handleSave();
           if (e.key === 'Escape') setIsEditing(false);
@@ -220,19 +220,17 @@ export default function PriceTablePage() {
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">희망청구가</label>
-            <input
-              type="number"
-              value={newBilling}
-              onChange={(e) => setNewBilling(e.target.value)}
+            <NumericInput
+              value={newBilling === '' ? 0 : Number(newBilling)}
+              onChange={(v) => setNewBilling(v === 0 ? '' : String(v))}
               className="w-32 px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
             />
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">작가지급액</label>
-            <input
-              type="number"
-              value={newWriterPay}
-              onChange={(e) => setNewWriterPay(e.target.value)}
+            <NumericInput
+              value={newWriterPay === '' ? 0 : Number(newWriterPay)}
+              onChange={(v) => setNewWriterPay(v === 0 ? '' : String(v))}
               className="w-32 px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
             />
           </div>
