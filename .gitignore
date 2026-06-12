@@ -46,3 +46,6 @@ supabase/.temp/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Playwright MCP 임시 스냅샷
+.playwright-mcp/
