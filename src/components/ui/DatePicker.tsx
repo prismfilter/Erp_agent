@@ -102,6 +102,10 @@ export function DatePicker({ value, onChange, className }: DatePickerProps) {
         locale={ko}
         showOutsideDays
         defaultMonth={selected}
+        captionLayout="dropdown"
+        startMonth={new Date(2020, 0)}
+        endMonth={new Date(2035, 11)}
+        reverseYears
       />
     </div>
   );

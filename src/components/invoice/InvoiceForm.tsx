@@ -49,8 +49,9 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
   const [invoiceDate, setInvoiceDate] = useState(invoice?.invoice_date ?? new Date().toISOString().slice(0, 10));
   const [clientName, setClientName] = useState(invoice?.client?.name ?? '');
   const [title, setTitle] = useState(invoice?.title ?? '');
-  const [bankName, setBankName] = useState(invoice?.account?.bank_name ?? '');
-  const [accountNumber, setAccountNumber] = useState(invoice?.account?.account_number ?? '');
+  const [accountText, setAccountText] = useState(
+    invoice?.account ? `${invoice.account.bank_name} ${invoice.account.account_number}` : ''
+  );
   const [memo, setMemo] = useState(invoice?.memo ?? '');
 
   // 라인 항목
@@ -61,7 +62,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showClientSuggest, setShowClientSuggest] = useState(false);
-  const [showBankSuggest, setShowBankSuggest] = useState(false);
+  const [showAccountSuggest, setShowAccountSuggest] = useState(false);
 
   // 마스터 데이터 로드
   useEffect(() => {
@@ -76,11 +77,10 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
       if (aRes.ok) {
         const accs: CompanyAccount[] = (await aRes.json()).accounts || [];
         setAccounts(accs);
-        // 신규 작성 시 기본 계좌(은행명·계좌번호) 자동 입력
+        // 신규 작성 시 기본 계좌(입금계좌) 자동 입력
         if (!invoice && accs.length > 0) {
           const def = accs.find((a) => a.is_default) ?? accs[0];
-          setBankName(def.bank_name);
-          setAccountNumber(def.account_number);
+          setAccountText(`${def.bank_name} ${def.account_number}`);
         }
       }
     })();
@@ -233,13 +233,17 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
         if (cRes.ok) clientId = (await cRes.json()).client?.id ?? null;
       }
 
-      // 입금계좌: 은행명+계좌번호 쌍으로 조회/등록 (없으면 자동 등록)
+      // 입금계좌: "은행명 계좌번호" 문자열을 첫 공백 기준으로 분리 → 조회/등록
       let accountId: string | null = null;
-      if (bankName.trim() && accountNumber.trim()) {
+      const acc = accountText.trim();
+      const sp = acc.indexOf(' ');
+      const bankName = sp > 0 ? acc.slice(0, sp) : acc;
+      const accNumber = sp > 0 ? acc.slice(sp + 1).trim() : '';
+      if (bankName && accNumber) {
         const aRes = await fetch('/api/company-accounts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ bank_name: bankName.trim(), account_number: accountNumber.trim() }),
+          body: JSON.stringify({ bank_name: bankName, account_number: accNumber }),
         });
         if (aRes.ok) accountId = (await aRes.json()).account?.id ?? null;
       }
@@ -275,7 +279,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
   return (
     <div className="space-y-6">
       {/* 헤더 입력 영역 */}
-      <div className="bg-card border border-border rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[max-content_1fr_1.4fr_1fr_1fr] gap-4 items-start">
+      <div className="bg-card border border-border rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[max-content_1fr_1.4fr_1.2fr] gap-4 items-start">
         <div>
           <label className="block text-xs font-semibold text-muted-foreground mb-1.5">날짜 *</label>
           <DatePicker
@@ -321,44 +325,33 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
           />
         </div>
         <div className="relative">
-          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">은행명</label>
+          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">입금계좌</label>
           <input
             type="text"
-            value={bankName}
-            onChange={(e) => { setBankName(e.target.value); setShowBankSuggest(true); }}
-            onFocus={() => setShowBankSuggest(true)}
-            onBlur={() => setTimeout(() => setShowBankSuggest(false), 150)}
-            placeholder="예: 신한은행"
-            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
+            value={accountText}
+            onChange={(e) => { setAccountText(e.target.value); setShowAccountSuggest(true); }}
+            onFocus={() => setShowAccountSuggest(true)}
+            onBlur={() => setTimeout(() => setShowAccountSuggest(false), 150)}
+            placeholder="예: 신한은행 140-016-071366"
+            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
           />
-          {showBankSuggest && accounts.length > 0 && (
+          {showAccountSuggest && accounts.length > 0 && (
             <div className="absolute z-40 mt-1 w-full bg-card border border-border rounded-lg shadow-xl max-h-48 overflow-y-auto">
               {accounts.map((a) => (
                 <button
                   key={a.id}
                   type="button"
                   onMouseDown={() => {
-                    setBankName(a.bank_name);
-                    setAccountNumber(a.account_number);
-                    setShowBankSuggest(false);
+                    setAccountText(`${a.bank_name} ${a.account_number}`);
+                    setShowAccountSuggest(false);
                   }}
                   className="w-full px-3 py-2 text-xs text-left hover:bg-primary/10 text-foreground"
                 >
-                  {a.bank_name} <span className="text-muted-foreground">{a.account_number}</span>
+                  {a.bank_name} <span className="text-muted-foreground tabular-nums">{a.account_number}</span>
                 </button>
               ))}
             </div>
           )}
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">계좌번호</label>
-          <input
-            type="text"
-            value={accountNumber}
-            onChange={(e) => setAccountNumber(e.target.value)}
-            placeholder="예: 140-016-071366"
-            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
-          />
         </div>
       </div>
 
@@ -445,7 +438,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                         type="text"
                         value={it.writer_names}
                         onChange={(e) => updateItem(it.id!, { writer_names: e.target.value })}
-                        placeholder="실명 (콤마 구분)"
+                        placeholder="작업자명"
                         className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground"
                       />
                     </td>

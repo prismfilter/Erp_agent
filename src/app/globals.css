@@ -220,3 +220,42 @@
   color: var(--rdp-today-color);
   font-weight: 700;
 }
+/* 년/월 선택 드롭다운 (captionLayout="dropdown") */
+.rdp-popover .rdp-dropdowns {
+  display: flex;
+  gap: 0.4rem;
+}
+.rdp-popover .rdp-dropdown_root {
+  position: relative;
+}
+.rdp-popover .rdp-dropdown {
+  appearance: none;
+  background-color: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.25rem 1.6rem 0.25rem 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+.rdp-popover .rdp-dropdown:hover,
+.rdp-popover .rdp-dropdown:focus {
+  border-color: var(--primary);
+}
+.rdp-popover .rdp-dropdown option {
+  background-color: var(--card);
+  color: var(--foreground);
+}
+/* 네이티브 드롭다운 화살표 보정 */
+.rdp-popover .rdp-dropdown_root::after {
+  content: '▾';
+  position: absolute;
+  right: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+}
