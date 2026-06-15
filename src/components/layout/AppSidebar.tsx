@@ -162,48 +162,44 @@ export function AppSidebar({
       role="navigation"
       aria-label="사이드바 네비게이션"
     >
-      {/* ===== 헤더: 로고 + 접기/펼치기 버튼 ===== */}
-      <div
-        className={`group border-b border-border ${
-          collapsed ? 'flex flex-col items-center gap-2 py-3 px-2' : 'h-16 flex items-center px-4'
-        }`}
-      >
+      {/* ===== 헤더: 로고 + 접기 버튼 (메뉴와 동일 패턴: 가로 고정, 로고 고정폭 가운데) ===== */}
+      {/* 헤더 좌우 패딩을 nav(축소 p-2 / 펼침 p-4)와 일치시켜 로고가 메뉴 아이콘과 같은 위치·움직임을 갖게 함 */}
+      <div className={`group h-16 flex items-center border-b border-border ${collapsed ? 'px-2' : 'px-4'}`}>
         <Link
           href="/"
           onClick={onClose}
-          className={`flex items-center rounded-lg transition focus:outline-none min-w-0 ${
-            collapsed ? 'justify-center' : 'flex-1 gap-3 px-3'
-          }`}
+          className="flex items-center flex-1 min-w-0 rounded-lg px-3 transition focus:outline-none"
           aria-label="홈으로 돌아가기"
         >
-          <img
-            src="/prism-filter-logo.svg"
-            alt="PRISM FILTER"
-            className={`prism-logo flex-shrink-0 ${collapsed ? 'w-9 h-9' : 'w-10 h-10'}`}
-          />
+          {/* 로고 고정폭 영역 — 메뉴 아이콘과 동일 위치(가운데) → 호버 펼침 시 점프 방지 */}
+          <span className="w-8 flex justify-center flex-shrink-0">
+            <img
+              src="/prism-filter-logo.svg"
+              alt="PRISM FILTER"
+              className="prism-logo w-8 h-8"
+            />
+          </span>
           {!collapsed && (
-            <div className="flex-1 min-w-0">
+            <div className="ml-2 flex-1 min-w-0 whitespace-nowrap">
               <div className="text-sm font-bold text-foreground truncate">PRISM FILTER</div>
               <div className="text-xs text-muted-foreground truncate">정산 자동화</div>
             </div>
           )}
         </Link>
 
-        {/* 접기/펼치기 토글 (데스크톱 전용 — onToggleCollapse 있을 때만) */}
-        {onToggleCollapse && (
+        {/* 접기 토글 (펼침 상태에서 호버 노출) — 축소 시엔 호버하면 자동 펼침되므로 숨김 */}
+        {onToggleCollapse && !collapsed && (
           <button
             type="button"
             onClick={onToggleCollapse}
-            aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
-            title={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
-            className={`flex-shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/15 transition cursor-pointer ${
-              collapsed ? '' : 'ml-1 opacity-0 group-hover:opacity-100'
-            }`}
+            aria-label="사이드바 접기"
+            title="사이드바 접기"
+            className="flex-shrink-0 ml-1 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/15 transition cursor-pointer opacity-0 group-hover:opacity-100"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect width="18" height="18" x="3" y="3" rx="2" />
               <path d="M9 3v18" />
-              {collapsed ? <path d="m14 9 3 3-3 3" /> : <path d="m16 15-3-3 3-3" />}
+              <path d="m16 15-3-3 3-3" />
             </svg>
           </button>
         )}
