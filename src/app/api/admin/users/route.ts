@@ -10,7 +10,7 @@ export async function GET() {
     // 전체 사용자 목록 조회
     const { data, error } = await auth.adminClient
       .from('user_roles')
-      .select('id, user_id, name, role, created_at')
+      .select('id, user_id, name, role, contract_date, created_at')
       .order('created_at', { ascending: false });
 
     if (error) {

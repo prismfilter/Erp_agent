@@ -36,7 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: '내부 지급서', href: '/payouts', icon: '💸', staffOnly: true, section: '인보이스' },
   // 관리 섹션
   { label: '구성원', href: '/staff', icon: '👥', section: '관리' },
-  { label: '작가 목록', href: '/writers', icon: '✍️', section: '관리' },
+  { label: '작가 마스터', href: '/admin/writers', icon: '✍️', staffOnly: true, section: '관리' },
   { label: '프라이스 테이블', href: '/admin/price-table', icon: '💰', staffOnly: true, section: '관리' },
   { label: '관리자용', href: '/admin/accounts', icon: '⚙️', adminOnly: true, section: '관리' },
 ];

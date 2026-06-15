@@ -21,13 +21,20 @@ const STATUS_OPTIONS: { value: InvoiceStatus; label: string }[] = [
 export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const searchParams = useSearchParams();
-  const initialTab: PreviewTab = searchParams.get('tab') === 'internal' ? 'internal' : 'external';
+  const tabParam = searchParams.get('tab');
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<PreviewTab>(initialTab);
+  const [tab, setTab] = useState<PreviewTab>(tabParam === 'internal' ? 'internal' : 'external');
   const [showNegotiatedNote, setShowNegotiatedNote] = useState(true);
+
+  // URL ?tab= 쿼리와 탭 동기화 — 프리렌더/늦은 도착으로 초기값을 놓쳐도 보정.
+  // 사용자의 수동 탭 클릭은 URL을 바꾸지 않으므로 보존됨.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- URL 쿼리와 탭 동기화
+    if (tabParam === 'internal' || tabParam === 'external') setTab(tabParam);
+  }, [tabParam]);
 
   useEffect(() => {
     (async () => {

@@ -48,6 +48,7 @@ const priceItems: PriceItem[] = [
     formula_note: null,
     sort_order: 1,
     is_active: true,
+    deleted_at: null,
   },
 ];
 

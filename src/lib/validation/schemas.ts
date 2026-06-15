@@ -71,6 +71,22 @@ export const priceItemUpdateSchema = z.object({
   formula_note: z.string().nullable().optional(),
   sort_order: z.number().optional(),
   is_active: z.boolean().optional(),
+  deleted_at: z.string().nullable().optional(), // 휴지통 복구(null)/이동 시각
+});
+
+// ── 작가 마스터 ───────────────────────────────────────────────────────────
+const WRITER_TYPE = z.enum(['전속작가', '일반작가']);
+
+export const writerCreateSchema = z.object({
+  name: z.string().trim().min(1, '작가명은 필수입니다.'),
+  writer_type: WRITER_TYPE,
+  fee_rate: z.number().min(0).max(100),
+});
+
+export const writerUpdateSchema = z.object({
+  name: z.string().trim().min(1).optional(),
+  writer_type: WRITER_TYPE.optional(),
+  fee_rate: z.number().min(0).max(100).optional(),
 });
 
 // ── 거래처 ────────────────────────────────────────────────────────────────

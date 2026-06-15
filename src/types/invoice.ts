@@ -15,6 +15,17 @@ export interface PriceItem {
   formula_note: string | null;
   sort_order: number;
   is_active: boolean;
+  deleted_at: string | null;      // 휴지통 이동 시각 (null = 정상)
+}
+
+// 작가 마스터 (로그인 계정과 무관한 작가/작업자 레지스트리)
+export interface Writer {
+  id: string;
+  name: string;
+  writer_type: string;            // '전속작가' | '일반작가'
+  fee_rate: number;               // 수수료 요율(%) 0~100
+  status: string;
+  created_at: string;
 }
 
 // 거래처

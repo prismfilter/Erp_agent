@@ -40,3 +40,41 @@ export async function PATCH(
     return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
   }
 }
+
+// DELETE /api/price-items/[id]
+//   ?permanent=1 영구 삭제, 그 외 휴지통으로 이동(soft delete)
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const auth = await requireStaff(true);
+    if (isErrorResponse(auth)) return auth;
+
+    const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const permanent = searchParams.get('permanent') === '1';
+
+    if (permanent) {
+      // 영구 삭제 (FK는 ON DELETE SET NULL — 과거 청구서 데이터는 보존)
+      const { error } = await auth.adminClient.from('price_items').delete().eq('id', id);
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+    } else {
+      // 휴지통으로 이동 (soft delete)
+      const { error } = await auth.adminClient
+        .from('price_items')
+        .update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('프라이스 테이블 삭제 API 오류:', err);
+    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+  }
+}

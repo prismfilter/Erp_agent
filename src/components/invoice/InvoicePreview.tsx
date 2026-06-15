@@ -40,7 +40,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
     [items, mode]
   );
 
-  const colCount = mode === 'external' ? 6 : 8;
+  const colCount = mode === 'external' ? 5 : 7;
   const emptyRowCount = Math.max(0, MIN_ROWS - displayItems.length);
   const accountLabel = invoice.account
     ? `${invoice.account.bank_name} ${invoice.account.account_number}`
@@ -95,7 +95,6 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
           <tr className="bg-slate-800 text-white">
             <th className="px-3 py-2.5 text-center w-10 font-semibold first:rounded-tl-md">No.</th>
             <th className="px-3 py-2.5 text-center w-24 font-semibold">작업자</th>
-            <th className="px-3 py-2.5 text-left w-28 font-semibold">거래명</th>
             <th className="px-3 py-2.5 text-left font-semibold">상세내용</th>
             <th className="px-3 py-2.5 text-right w-28 font-semibold">공급가액</th>
             {mode === 'external' ? (
@@ -118,8 +117,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
               <td className="px-3 py-2 text-center text-slate-700">
                 {it.writer_names || '-'}
               </td>
-              <td className="px-3 py-2 text-left text-slate-600">{invoice.title}</td>
-              <td className="px-3 py-2 text-left text-slate-700">
+              <td className="px-3 py-2 text-left text-slate-700 break-keep">
                 {stripTitlePrefix(it.description, invoice.title)}
                 {showNegotiatedNote && it.is_negotiated && (
                   <span className="block text-[10px] text-indigo-400 mt-0.5">
