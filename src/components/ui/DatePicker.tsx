@@ -37,7 +37,7 @@ function ScrollDropdown(props: DropdownProps) {
         type="button"
         aria-label={ariaLabel}
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 px-2 py-1 rounded-md bg-background border border-border text-foreground text-sm font-semibold hover:border-primary transition"
+        className="flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 border border-border text-foreground text-sm font-semibold hover:bg-primary/20 hover:border-primary transition"
       >
         {current?.label}
         <span className="text-[10px] text-muted-foreground">▾</span>

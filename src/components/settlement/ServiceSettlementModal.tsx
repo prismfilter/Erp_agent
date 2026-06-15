@@ -95,13 +95,16 @@ export function ServiceSettlementModal({
               {/* 작가 선택 */}
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5">작가명</label>
-                <WriterSelect
-                  writers={writerOptions}
-                  value={writerName}
-                  onChange={setWriterName}
-                  onPickWriter={(w) => setWriterName(w.name)}
-                  placeholder="작가 선택 / 입력"
-                />
+                {/* 15~20글자 수준으로 폭 제한 — 드롭다운도 트리거 폭(256px)을 따름 */}
+                <div className="w-64 max-w-full">
+                  <WriterSelect
+                    writers={writerOptions}
+                    value={writerName}
+                    onChange={setWriterName}
+                    onPickWriter={(w) => setWriterName(w.name)}
+                    placeholder="작가 선택 / 입력"
+                  />
+                </div>
                 <p className="text-[11px] text-muted-foreground mt-1">작가 마스터 · 내부 지급서 작업자 중 선택 (직접 입력 가능)</p>
               </div>
 
