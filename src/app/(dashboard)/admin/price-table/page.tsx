@@ -206,7 +206,7 @@ export default function PriceTablePage() {
     writer_base_pay: (it) => it.writer_base_pay,
     fee: (it) => (it.writer_base_pay != null ? calcFee(it.writer_base_pay, it.fee_rate) : null),
     net: (it) => (it.writer_base_pay != null ? calcWriterNet(it.writer_base_pay, it.fee_rate) : null),
-  });
+  }, 'pf_sort_price_table');
 
   // 카테고리별 그룹핑 + 그룹 내부 정렬
   const grouped = useMemo(() => {

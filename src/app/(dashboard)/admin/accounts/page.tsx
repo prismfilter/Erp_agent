@@ -237,7 +237,7 @@ export default function AccountsPage() {
     name: (u) => u.name,
     role: (u) => u.role,
     created_at: (u) => u.created_at,
-  });
+  }, 'pf_sort_accounts');
 
   const filteredUsers = useMemo(() => {
     const base = selectedTab === '전체'

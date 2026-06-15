@@ -94,7 +94,7 @@ export default function InvoicesPage() {
     title: (inv) => inv.title,
     total: (inv) => calcInvoiceTotals(inv.items ?? []).grandTotal,
     status: (inv) => inv.status,
-  });
+  }, 'pf_sort_invoices');
 
   // 필터링 + 정렬
   const filtered = useMemo(() => {

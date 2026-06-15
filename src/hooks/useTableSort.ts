@@ -2,17 +2,67 @@
 
 // 테이블 정렬 공용 훅 — 한 번에 한 컬럼만 정렬 (오름/내림 토글)
 // 각 페이지가 accessor 맵(정렬키 → 행에서 비교값 추출 함수)을 전달
+// storageKey를 넘기면 정렬 상태를 localStorage에 저장해, 새로고침·재방문 시에도 유지
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 export type SortDir = 'asc' | 'desc';
 
 type SortValue = string | number | null | undefined;
 type Accessors<T> = Record<string, (row: T) => SortValue>;
 
-export function useTableSort<T>(accessors: Accessors<T>) {
+// 저장된 정렬 상태 복원 (잘못된 값은 무시)
+function readSort(storageKey?: string): { sortKey: string | null; dir: SortDir } | null {
+  if (!storageKey || typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(storageKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (
+      parsed &&
+      typeof parsed.sortKey === 'string' &&
+      (parsed.dir === 'asc' || parsed.dir === 'desc')
+    ) {
+      return { sortKey: parsed.sortKey, dir: parsed.dir };
+    }
+  } catch {
+    // 파싱 실패 → 무시
+  }
+  return null;
+}
+
+export function useTableSort<T>(accessors: Accessors<T>, storageKey?: string) {
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [dir, setDir] = useState<SortDir>('desc');
+
+  // 마운트 후 저장된 정렬 복원 (SSR hydration 불일치 방지 위해 effect에서 수행)
+  useEffect(() => {
+    const restored = readSort(storageKey);
+    if (restored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSortKey(restored.sortKey);
+      setDir(restored.dir);
+    }
+  }, [storageKey]);
+
+  // 정렬 변경 시 저장 (첫 렌더 제외 — 복원 전 초기값 덮어쓰기 방지)
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    if (!storageKey || typeof window === 'undefined') return;
+    try {
+      if (sortKey) {
+        window.localStorage.setItem(storageKey, JSON.stringify({ sortKey, dir }));
+      } else {
+        window.localStorage.removeItem(storageKey);
+      }
+    } catch {
+      // 저장 실패 → 무시
+    }
+  }, [sortKey, dir, storageKey]);
 
   // 3단계 순환: 해제 → 내림차순(desc) → 오름차순(asc) → 해제
   // 다른 컬럼 클릭 시 → 그 컬럼의 내림차순부터 시작

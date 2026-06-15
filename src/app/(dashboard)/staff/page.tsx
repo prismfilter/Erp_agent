@@ -281,7 +281,7 @@ export default function StaffPage() {
     role: (m) => m.role,
     created_at: (m) => m.created_at,
     contract_date: (m) => m.contract_date,
-  });
+  }, 'pf_sort_staff');
 
   const filtered = useMemo(() => {
     const base = selectedTab === '전체'

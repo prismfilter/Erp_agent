@@ -264,7 +264,7 @@ export default function WriterMasterPage() {
     name: (w) => w.name,
     writer_type: (w) => w.writer_type,
     fee_rate: (w) => w.fee_rate,
-  });
+  }, 'pf_sort_writers');
 
   const filtered = useMemo(() => {
     const base = selectedTab === '전체'
