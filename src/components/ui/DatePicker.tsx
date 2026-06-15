@@ -140,7 +140,7 @@ export function DatePicker({ value, onChange, className }: DatePickerProps) {
   const popover = open && pos && (
     <div
       ref={popRef}
-      style={{ position: 'fixed', left: pos.left, top: pos.top, zIndex: 100 }}
+      style={{ position: 'fixed', left: pos.left, top: pos.top, zIndex: 300 }}
       className="rdp-popover bg-card border border-border rounded-xl shadow-2xl p-3"
     >
       <DayPicker

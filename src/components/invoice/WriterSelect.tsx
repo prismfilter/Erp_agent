@@ -134,7 +134,7 @@ export function WriterSelect({
         bottom: pos.openUp ? window.innerHeight - pos.top + 4 : undefined,
         width: pos.width,
       }}
-      className="z-[100] max-h-72 overflow-y-auto bg-card border border-border rounded-lg shadow-xl"
+      className="z-[300] max-h-72 overflow-y-auto bg-card border border-border rounded-lg shadow-xl"
     >
       {/* 자유 입력 겸 검색 */}
       <div className="sticky top-0 bg-card p-2 border-b border-border">
