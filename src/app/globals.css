@@ -177,11 +177,14 @@
   }
 
   .invoice-print-area,
-  .invoice-print-area * {
+  .invoice-print-area *,
+  .settlement-print-area,
+  .settlement-print-area * {
     visibility: visible;
   }
 
-  .invoice-print-area {
+  .invoice-print-area,
+  .settlement-print-area {
     position: absolute;
     left: 0;
     top: 0;
@@ -193,17 +196,28 @@
   }
 
   /* 표 헤더·합계 박스의 진한 배경색을 인쇄 시에도 유지 */
-  .invoice-print-area * {
+  .invoice-print-area *,
+  .settlement-print-area * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
   /* 페이지 분할 시 테이블 헤더 반복 + 행 중간 절단 방지 */
-  .invoice-print-area thead {
+  .invoice-print-area thead,
+  .settlement-print-area thead {
     display: table-header-group;
   }
-  .invoice-print-area tr {
+  .invoice-print-area tr,
+  .settlement-print-area tr {
     break-inside: avoid;
+  }
+
+  /* 정산서 멀티 페이지: 각 페이지 끝에서 분할(마지막 페이지 제외) */
+  .settlement-page {
+    break-after: page;
+  }
+  .settlement-page:last-child {
+    break-after: auto;
   }
 }
 
