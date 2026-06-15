@@ -3,17 +3,18 @@
 /* 실제 CSS 변수: --color- 없이 정의 (와일드카드 생성 방지) */
 :root,
 .light {
+  /* Soft Light — 부드러운 쿨 그레이 배경 + 흰 카드, 눈부심 완화 */
   color-scheme: light;
-  --background: #f8fafc;
-  --foreground: #111827;
+  --background: #eef1f6;        /* 쿨 그레이 — 흰 카드와 분리, 광량 완화 */
+  --foreground: #1f2937;        /* 슬레이트 — 순흑 대비 완화 */
   --primary: #6366f1;
   --primary-foreground: #ffffff;
   --sidebar: #ffffff;
-  --sidebar-foreground: #374151;
+  --sidebar-foreground: #475569;
   --card: #ffffff;
-  --border: #e5e7eb;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
+  --border: #e2e6ee;
+  --muted: #eceff5;
+  --muted-foreground: #64748b;
   --accent: #4f46e5;
 }
 
@@ -119,6 +120,14 @@
 /* 활성 메뉴 호버 시에도 그라데이션 유지 */
 .dark [aria-current="page"]:hover {
   background: linear-gradient(135deg, #5568ee 0%, #8ea5ff 100%) !important;
+}
+
+/*
+  라이트 모드 — 흰 카드에 부드러운 그림자로 분리감(눈부심 완화).
+  배경(쿨 그레이) 위에 카드가 살짝 떠 있는 느낌으로 대비를 낮춤.
+*/
+.light .bg-card {
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
 }
 
 /*

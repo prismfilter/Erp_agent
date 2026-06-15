@@ -41,7 +41,15 @@ const NAV_ITEMS: NavItem[] = [
   { label: '관리자용', href: '/admin/accounts', icon: '⚙️', adminOnly: true, section: '관리' },
 ];
 
-export function AppSidebar({ onClose }: { onClose?: () => void }) {
+export function AppSidebar({
+  onClose,
+  collapsed = false,
+  onToggleCollapse,
+}: {
+  onClose?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
@@ -120,42 +128,68 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
       role="navigation"
       aria-label="사이드바 네비게이션"
     >
-      {/* ===== 헤더: PRISM FILTER 로고 + 텍스트 ===== */}
-      <div className="border-b border-border h-16 flex items-center px-4">
+      {/* ===== 헤더: 로고 + 접기/펼치기 버튼 ===== */}
+      <div
+        className={`group border-b border-border ${
+          collapsed ? 'flex flex-col items-center gap-2 py-3 px-2' : 'h-16 flex items-center px-4'
+        }`}
+      >
         <Link
           href="/"
           onClick={onClose}
-          className="w-full flex items-center gap-3 px-3 rounded-lg transition focus:outline-none"
+          className={`flex items-center rounded-lg transition focus:outline-none min-w-0 ${
+            collapsed ? 'justify-center' : 'flex-1 gap-3 px-3'
+          }`}
           aria-label="홈으로 돌아가기"
         >
-          {/* 프리즘 필터 로고 */}
           <img
             src="/prism-filter-logo.svg"
             alt="PRISM FILTER"
-            className="prism-logo w-10 h-10 flex-shrink-0"
+            className={`prism-logo flex-shrink-0 ${collapsed ? 'w-9 h-9' : 'w-10 h-10'}`}
           />
-
-          <div className="flex-1">
-            <div className="text-sm font-bold text-foreground">
-              PRISM FILTER
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-bold text-foreground truncate">PRISM FILTER</div>
+              <div className="text-xs text-muted-foreground truncate">정산 자동화</div>
             </div>
-            <div className="text-xs text-muted-foreground">
-              정산 자동화
-            </div>
-          </div>
+          )}
         </Link>
+
+        {/* 접기/펼치기 토글 (데스크톱 전용 — onToggleCollapse 있을 때만) */}
+        {onToggleCollapse && (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
+            title={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
+            className={`flex-shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/15 transition cursor-pointer ${
+              collapsed ? '' : 'ml-1 opacity-0 group-hover:opacity-100'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <path d="M9 3v18" />
+              {collapsed ? <path d="m14 9 3 3-3 3" /> : <path d="m16 15-3-3 3-3" />}
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* ===== 메인 네비게이션 (섹션 그룹) ===== */}
-      <nav className="flex-1 p-4 overflow-y-auto" aria-label="주요 메뉴">
+      <nav
+        className={`flex-1 ${collapsed ? 'p-2 overflow-visible' : 'p-4 overflow-y-auto'}`}
+        aria-label="주요 메뉴"
+      >
         <div className="space-y-6">
           {groupedItems.map(([section, items], idx) => (
             <div key={section}>
               {idx > 0 && <hr className="border-border mb-5 mt-2" />}
-              {/* 섹션 레이블 */}
-              <div className="text-xs font-semibold text-muted-foreground mb-3 px-2 uppercase tracking-wider">
-                {section}
-              </div>
+              {/* 섹션 레이블 (접힘 시 숨김) */}
+              {!collapsed && (
+                <div className="text-xs font-semibold text-muted-foreground mb-3 px-2 uppercase tracking-wider">
+                  {section}
+                </div>
+              )}
               {/* 섹션 내 메뉴 아이템 */}
               <div className="space-y-1">
                 {items.map((item) => (
@@ -163,7 +197,9 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
                     key={item.href}
                     href={item.href}
                     onClick={onClose}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                    className={`group/item relative flex items-center py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                      collapsed ? 'justify-center px-0' : 'gap-3 px-3'
+                    } ${
                       isActive(item.href)
                         ? 'bg-primary text-primary-foreground shadow-md'
                         : 'text-sidebar-foreground hover:bg-primary/15'
@@ -173,7 +209,13 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
                     <span className="text-lg flex-shrink-0" aria-hidden="true">
                       {item.icon}
                     </span>
-                    <span className="truncate">{item.label}</span>
+                    {!collapsed && <span className="truncate">{item.label}</span>}
+                    {/* 접힘 시 호버 툴팁 (블럭 텍스트) */}
+                    {collapsed && (
+                      <span className="pointer-events-none absolute left-full ml-2 z-50 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-opacity group-hover/item:opacity-100">
+                        {item.label}
+                      </span>
+                    )}
                   </Link>
                 ))}
               </div>
@@ -182,24 +224,32 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
         </div>
       </nav>
 
-      {/* ===== 하단: 사용자 프로필 (Image #20 스타일) ===== */}
-      <div className="border-t border-border p-4">
+      {/* ===== 하단: 사용자 프로필 ===== */}
+      <div className={`border-t border-border ${collapsed ? 'p-2' : 'p-4'}`}>
         <DropdownMenu>
-          <DropdownMenuTrigger className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-blue-600/10 transition text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-sidebar">
+          <DropdownMenuTrigger
+            className={`w-full flex items-center py-3 rounded-lg hover:bg-blue-600/10 transition text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-sidebar ${
+              collapsed ? 'justify-center' : 'gap-3 px-3'
+            }`}
+          >
             <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
               {avatarInitial}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-foreground truncate">
-                {user?.name ?? user?.email?.split('@')[0]}
-              </div>
-              <div className="text-xs text-muted-foreground truncate">
-                {user?.email}
-              </div>
-            </div>
-            <span className="text-muted-foreground flex-shrink-0" aria-hidden="true">
-              ▾
-            </span>
+            {!collapsed && (
+              <>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-foreground truncate">
+                    {user?.name ?? user?.email?.split('@')[0]}
+                  </div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {user?.email}
+                  </div>
+                </div>
+                <span className="text-muted-foreground flex-shrink-0" aria-hidden="true">
+                  ▾
+                </span>
+              </>
+            )}
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="w-56 bg-card border-border">
             {/* 사용자 정보 */}

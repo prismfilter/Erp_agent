@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -58,7 +59,12 @@ export default function LoginPage() {
 
   return (
     <div className="flex h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md bg-card border border-border rounded-lg p-8 shadow-lg">
+      <div className="relative w-full max-w-md bg-card border border-border rounded-lg p-8 shadow-lg">
+        {/* 테마 토글 (우측 상단 모서리) */}
+        <div className="absolute top-3 right-3 z-10">
+          <ThemeToggle />
+        </div>
+
         {/* 헤더 */}
         <div className="text-center mb-8">
           <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center">
