@@ -4,6 +4,7 @@
 
 import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { ServiceSettlement } from '@/types/invoice';
 import { SettlementPreview } from '@/components/settlement/SettlementPreview';
 import { exportSettlementExcel } from '@/lib/settlement/settlementExcel';
@@ -11,10 +12,12 @@ import { formatWon } from '@/lib/settlement/calculator';
 
 export default function SettlementDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
   const [settlement, setSettlement] = useState<ServiceSettlement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -39,6 +42,24 @@ export default function SettlementDetailPage({ params }: { params: Promise<{ id:
       await exportSettlementExcel(settlement);
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!settlement) return;
+    if (!confirm(`${settlement.writer_name}의 용역 정산서를 삭제할까요?\n삭제 후 복구할 수 없습니다.`)) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/settlements/service/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        router.push('/settlement/service');
+      } else {
+        alert((await res.json()).error || '삭제에 실패했습니다.');
+        setDeleting(false);
+      }
+    } catch {
+      alert('삭제 중 오류가 발생했습니다.');
+      setDeleting(false);
     }
   };
 
@@ -73,7 +94,7 @@ export default function SettlementDetailPage({ params }: { params: Promise<{ id:
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/settlement/service"
-            className="px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition"
+            className="px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer"
           >
             ← 목록
           </Link>
@@ -89,6 +110,13 @@ export default function SettlementDetailPage({ params }: { params: Promise<{ id:
             className="px-3 py-2 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition cursor-pointer"
           >
             🖨️ PDF 저장 / 인쇄
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="px-3 py-2 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition font-medium cursor-pointer disabled:opacity-50"
+          >
+            {deleting ? '삭제 중...' : '🗑 삭제'}
           </button>
         </div>
       </div>
