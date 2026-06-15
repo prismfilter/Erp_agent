@@ -227,97 +227,91 @@ export function AppSidebar({
               {/* 섹션 내 메뉴 아이템 */}
               <div className="space-y-1">
                 {items.map((item) => {
-                  // ── 확장형 트리(하위 메뉴 있음) ──
+                  // ── 확장형 트리(하위 메뉴 있음) — 축소/펼침 공통 구조 ──
+                  // 하위 목록을 항상 DOM에 두고 grid-rows 0fr↔1fr 트랜지션으로 슬라이드.
+                  // 축소→호버 펼침 시 하위가 부드럽게 내려오며 아래 섹션을 밀어낸다.
                   if (item.children && item.children.length > 0) {
                     const childActive = item.children.some((c) => isActive(c.href));
                     const open = openTree.has(item.label);
+                    const showChildren = !collapsed && open; // 축소면 무조건 닫힘
 
-                    // 접힘 사이드바: 펼칠 공간이 없으므로 첫 하위로 이동하는 아이콘 링크 + 툴팁
-                    if (collapsed) {
-                      return (
-                        <Link
-                          key={item.label}
-                          href={item.children[0].href}
-                          onClick={onClose}
-                          className={`group/item relative flex items-center justify-center px-0 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-                            childActive
-                              ? 'bg-primary text-primary-foreground shadow-md'
-                              : 'text-sidebar-foreground hover:bg-primary/15'
-                          }`}
-                          aria-current={childActive ? 'page' : undefined}
-                        >
-                          <span className="text-lg flex-shrink-0" aria-hidden="true">
-                            {item.icon}
-                          </span>
-                          <span className="pointer-events-none absolute left-full ml-2 z-50 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-opacity group-hover/item:opacity-100">
-                            {item.label}
-                          </span>
-                        </Link>
-                      );
-                    }
-
-                    // 펼침 사이드바: 부모 토글 버튼 + 하위 목록
                     return (
                       <div key={item.label}>
                         <button
                           type="button"
-                          onClick={() => toggleTree(item.label)}
-                          aria-expanded={open}
-                          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                          onClick={() => { if (!collapsed) toggleTree(item.label); }}
+                          aria-expanded={!collapsed && open}
+                          className={`w-full flex items-center py-2 rounded-lg text-sm font-medium transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                            collapsed ? 'justify-center px-0' : 'gap-3 px-3'
+                          } ${
                             childActive
-                              ? 'bg-primary/10 text-foreground'
+                              ? collapsed
+                                ? 'bg-primary text-primary-foreground shadow-md'
+                                : 'bg-primary/10 text-foreground'
                               : 'text-sidebar-foreground hover:bg-primary/15'
                           }`}
+                          aria-current={collapsed && childActive ? 'page' : undefined}
                         >
                           <span className="text-lg flex-shrink-0" aria-hidden="true">
                             {item.icon}
                           </span>
-                          <span className="flex-1 text-left truncate">{item.label}</span>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className={`flex-shrink-0 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-                            aria-hidden="true"
-                          >
-                            <path d="m6 9 6 6 6-6" />
-                          </svg>
+                          {!collapsed && (
+                            <>
+                              <span className="flex-1 text-left truncate">{item.label}</span>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className={`flex-shrink-0 text-muted-foreground transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+                                aria-hidden="true"
+                              >
+                                <path d="m6 9 6 6 6-6" />
+                              </svg>
+                            </>
+                          )}
                         </button>
-                        {/* 하위 목록 */}
-                        {open && (
-                          <div className="mt-1 space-y-1">
-                            {item.children.map((child) => {
-                              const active = isActive(child.href);
-                              return (
-                                <Link
-                                  key={child.href}
-                                  href={child.href}
-                                  onClick={onClose}
-                                  className={`flex items-center gap-2 pl-9 pr-3 py-2 rounded-lg text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-                                    active
-                                      ? 'bg-primary text-primary-foreground font-medium shadow-md'
-                                      : 'text-sidebar-foreground hover:bg-primary/15'
-                                  }`}
-                                  aria-current={active ? 'page' : undefined}
-                                >
-                                  <span
-                                    className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${
-                                      active ? 'bg-primary-foreground' : 'bg-muted-foreground'
+                        {/* 하위 목록 — grid-rows 0fr↔1fr 슬라이드 (자식 overflow-hidden 필수) */}
+                        <div
+                          className={`grid transition-[grid-template-rows] duration-500 ease-in-out ${
+                            showChildren ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                          }`}
+                        >
+                          <div className="overflow-hidden">
+                            <div className="mt-1 space-y-1">
+                              {item.children.map((child) => {
+                                const active = isActive(child.href);
+                                return (
+                                  <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    onClick={onClose}
+                                    tabIndex={showChildren ? undefined : -1}
+                                    className={`flex items-center gap-2 pl-9 pr-3 py-2 rounded-lg text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                                      active
+                                        ? 'bg-primary text-primary-foreground font-medium shadow-md'
+                                        : 'text-sidebar-foreground hover:bg-primary/15'
                                     }`}
-                                    aria-hidden="true"
-                                  />
-                                  <span className="truncate">{child.label}</span>
-                                </Link>
-                              );
-                            })}
+                                    aria-current={active ? 'page' : undefined}
+                                  >
+                                    <span
+                                      className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${
+                                        active ? 'bg-primary-foreground' : 'bg-muted-foreground'
+                                      }`}
+                                      aria-hidden="true"
+                                    />
+                                    <span className="truncate">{child.label}</span>
+                                  </Link>
+                                );
+                              })}
+                            </div>
                           </div>
-                        )}
+                        </div>
                       </div>
                     );
                   }
