@@ -5,6 +5,7 @@
 
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { isAllowedEmail } from '@/lib/auth/domain';
 
 // 미인증 접근이 허용되는 공개 경로 (로그인·OAuth 콜백 등)
 const PUBLIC_PATHS = ['/login', '/auth', '/auth-code-error'];
@@ -40,6 +41,14 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
+
+  // 비허용 도메인 인증 세션 → 안내 페이지로 차단 (콜백 우회/기존 세션 방어)
+  if (user && !isAllowedEmail(user.email) && !isPublicPath(pathname)) {
+    const errorUrl = request.nextUrl.clone();
+    errorUrl.pathname = '/auth-code-error';
+    errorUrl.search = '?reason=domain';
+    return NextResponse.redirect(errorUrl);
+  }
 
   // 미인증 + 보호 경로 → 로그인으로 리다이렉트
   if (!user && !isPublicPath(pathname)) {

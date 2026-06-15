@@ -6,6 +6,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { UserRole } from '@/types';
+import { isAllowedEmail, ALLOWED_EMAIL_DOMAIN } from './domain';
 
 interface AuthedUser {
   userId: string;
@@ -41,6 +42,15 @@ export async function getAuthedUser(): Promise<AuthedUser | NextResponse> {
   const { data: { user }, error: authError } = await authClient.auth.getUser();
   if (authError || !user) {
     return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+  }
+
+  // 도메인 검증: 회사 계정(@prism-filter.com) 외 모든 세션은 데이터 접근 차단.
+  // 모든 API가 getAuthedUser(또는 requireStaff→getAuthedUser)를 거치므로 여기서 일괄 보호된다.
+  if (!isAllowedEmail(user.email)) {
+    return NextResponse.json(
+      { error: `접근이 허용되지 않은 계정입니다. 회사 계정(@${ALLOWED_EMAIL_DOMAIN})으로 로그인하세요.` },
+      { status: 403 }
+    );
   }
 
   const adminClient = createAdminClient();
