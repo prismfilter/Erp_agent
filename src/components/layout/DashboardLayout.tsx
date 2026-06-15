@@ -36,12 +36,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen w-full bg-background">
       {/* 데스크톱 사이드바 — 레일 자리(부모, 축소 폭 유지) + 오버레이(자식, 호버 시 펼침) */}
       <div
-        className={`hidden md:block relative ${collapsed ? 'md:w-16' : 'md:w-64'} transition-[width] duration-200`}
+        className={`hidden md:block relative ${collapsed ? 'md:w-16' : 'md:w-64'} transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
         onMouseEnter={() => { if (collapsed) setHovered(true); }}
         onMouseLeave={() => setHovered(false)}
       >
         <div
-          className={`absolute inset-y-0 left-0 ${effectiveCollapsed ? 'w-16' : 'w-64'} transition-[width] duration-200 z-30 ${
+          className={`absolute inset-y-0 left-0 ${effectiveCollapsed ? 'w-16' : 'w-64'} transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width] z-30 ${
             collapsed && hovered ? 'shadow-2xl' : ''
           }`}
         >

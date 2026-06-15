@@ -211,7 +211,7 @@ export function AppSidebar({
 
       {/* ===== 메인 네비게이션 (섹션 그룹) ===== */}
       <nav
-        className={`flex-1 ${collapsed ? 'p-2 overflow-visible' : 'p-4 overflow-y-auto'}`}
+        className={`flex-1 ${collapsed ? 'p-2 overflow-visible' : 'p-4 overflow-y-auto overflow-x-hidden scrollbar-hide'}`}
         aria-label="주요 메뉴"
       >
         <div className="space-y-6">

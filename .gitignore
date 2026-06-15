@@ -47,5 +47,10 @@ supabase/.temp/
 *.tsbuildinfo
 next-env.d.ts
 
-# Playwright MCP 임시 스냅샷
+# Playwright MCP 임시 스냅샷 · 검증 스크린샷 (모든 산출물을 이 폴더로 일원화)
 .playwright-mcp/
+
+# 루트에 실수로 생성되는 검증용 이미지 방어 (public/ 자산은 하위 경로라 영향 없음)
+/*.png
+/*.jpg
+/*.jpeg

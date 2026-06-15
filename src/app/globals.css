@@ -84,6 +84,16 @@
     overflow: hidden;
   }
 
+  /* 스크롤바 숨김 — 스크롤 기능은 유지하되 스크롤바만 비표시
+     (사이드바 호버 펼침 전환 중 스크롤바가 깜빡이는 현상 방지) */
+  .scrollbar-hide {
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE/Edge */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;                /* Chrome/Safari/Edge */
+  }
+
   .prism-logo {
     filter: none;
     object-fit: contain;
