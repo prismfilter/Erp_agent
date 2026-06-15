@@ -70,6 +70,7 @@ export interface Invoice {
   title: string;
   account_id: string | null;
   status: InvoiceStatus;
+  paid_at: string | null;         // 입금 완료 시각 (status='paid' 전환 시 기록)
   memo: string | null;
   created_at: string;
   updated_at: string;
@@ -77,6 +78,28 @@ export interface Invoice {
   client?: Client | null;
   account?: CompanyAccount | null;
   items?: InvoiceItem[];
+}
+
+// 용역 정산 세부 항목 (정산 시점 스냅샷)
+export interface ServiceSettlementDetailItem {
+  invoice_id: string;
+  invoice_date: string;
+  paid_at: string | null;
+  client_name: string;
+  title: string;
+  description: string;
+  writer_pay: number;
+}
+
+// 용역 정산 레코드
+export interface ServiceSettlement {
+  id: string;
+  writer_name: string;
+  period_start: string;
+  period_end: string;
+  total_amount: number;
+  detail: ServiceSettlementDetailItem[];
+  created_at: string;
 }
 
 // 청구서 합계 (실시간 계산 결과)

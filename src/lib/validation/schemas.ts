@@ -89,6 +89,13 @@ export const writerUpdateSchema = z.object({
   fee_rate: z.number().min(0).max(100).optional(),
 });
 
+// ── 용역 정산 ─────────────────────────────────────────────────────────────
+export const serviceSettlementCreateSchema = z.object({
+  writer_name: z.string().trim().min(1, '작가명은 필수입니다.'),
+  period_start: z.string().min(1, '시작일은 필수입니다.'),
+  period_end: z.string().min(1, '종료일은 필수입니다.'),
+});
+
 // ── 거래처 ────────────────────────────────────────────────────────────────
 export const clientCreateSchema = z.object({
   name: z.string().trim().min(1, '거래처명은 필수입니다.'),

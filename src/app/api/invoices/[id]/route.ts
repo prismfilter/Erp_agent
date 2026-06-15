@@ -60,7 +60,11 @@ export async function PATCH(
     if (client_id !== undefined) updates.client_id = client_id || null;
     if (title !== undefined) updates.title = title;
     if (account_id !== undefined) updates.account_id = account_id || null;
-    if (status !== undefined) updates.status = status;
+    if (status !== undefined) {
+      updates.status = status;
+      // 입금 완료 시점 기록 — 용역 정산 기간 매칭의 기준. paid 외 상태로 되돌리면 해제.
+      updates.paid_at = status === 'paid' ? new Date().toISOString() : null;
+    }
     if (memo !== undefined) updates.memo = memo || null;
 
     const { error: upErr } = await auth.adminClient

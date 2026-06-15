@@ -50,7 +50,7 @@ export default function PayoutsPage() {
     title: (inv) => inv.title,
     writerPay: (inv) => calcInvoiceTotals(inv.items ?? []).writerPayTotal,
     attribution: (inv) => calcInvoiceTotals(inv.items ?? []).attributionTotal,
-  });
+  }, 'pf_sort_payouts');
 
   const filtered = useMemo(() => {
     const base = invoices.filter((inv) => !search || inv.title.toLowerCase().includes(search.toLowerCase()));
@@ -97,6 +97,7 @@ export default function PayoutsPage() {
                   <th className="px-4 py-3 text-left font-semibold text-foreground text-xs uppercase">작업자</th>
                   <SortableHeader label="총 작가지급액 (B)" sortKey="writerPay" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
                   <SortableHeader label="총 귀속금액 (C)" sortKey="attribution" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
+                  <th className="px-4 py-3 text-center font-semibold text-foreground text-xs uppercase whitespace-nowrap">입금 여부</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -126,6 +127,17 @@ export default function PayoutsPage() {
                       </td>
                       <td className="px-4 py-3 text-center text-muted-foreground tabular-nums whitespace-nowrap">
                         {formatWon(totals.attributionTotal)}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {inv.status === 'paid' ? (
+                          <span className="px-2.5 py-1 rounded text-xs font-medium bg-green-500/20 text-green-400 whitespace-nowrap">
+                            완료
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded text-xs font-medium bg-red-500/20 text-red-400 whitespace-nowrap">
+                            미완료
+                          </span>
+                        )}
                       </td>
                     </tr>
                   );

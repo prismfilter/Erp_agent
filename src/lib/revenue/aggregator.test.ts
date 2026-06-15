@@ -29,6 +29,7 @@ function invoice(date: string, items: InvoiceItem[], id = 'inv'): Invoice {
     title: 't',
     account_id: null,
     status: 'paid',
+    paid_at: null,
     memo: null,
     created_at: date,
     updated_at: date,
