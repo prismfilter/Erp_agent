@@ -406,6 +406,7 @@ export default function PriceTablePage() {
         grouped.map(([category, categoryItems]) => {
           const ids = categoryItems.map((it) => it.id);
           const allSelected = ids.length > 0 && ids.every((id) => selected.has(id));
+          const someSelected = ids.some((id) => selected.has(id));
           return (
           <div key={category} className="bg-card border border-border rounded-lg overflow-hidden w-full max-w-[1060px] mx-auto">
             <div className="px-4 py-3 border-b border-border bg-primary/5">
@@ -414,14 +415,16 @@ export default function PriceTablePage() {
             <div className="overflow-x-auto">
               <table className="w-full text-xs table-fixed min-w-[980px]">
                 <thead className="bg-primary/10 border-b border-border">
-                  <tr>
+                  <tr className="group">
                     {isAdmin && (
                       <th className="px-3 py-2 w-10 text-center">
                         <input
                           type="checkbox"
                           checked={allSelected}
                           onChange={(e) => toggleMany(ids, e.target.checked)}
-                          className="accent-[var(--primary)]"
+                          className={`accent-[var(--primary)] transition-opacity ${
+                            someSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                          }`}
                           aria-label={`${category} 전체 선택`}
                         />
                       </th>
@@ -436,14 +439,16 @@ export default function PriceTablePage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {categoryItems.map((it) => (
-                    <tr key={it.id} className={`hover:bg-primary/5 ${!it.is_active && !viewTrash ? 'opacity-40' : ''} ${selected.has(it.id) ? 'bg-primary/5' : ''}`}>
+                    <tr key={it.id} className={`group hover:bg-primary/5 ${!it.is_active && !viewTrash ? 'opacity-40' : ''} ${selected.has(it.id) ? 'bg-primary/5' : ''}`}>
                       {isAdmin && (
                         <td className="px-3 py-2 text-center">
                           <input
                             type="checkbox"
                             checked={selected.has(it.id)}
                             onChange={() => toggleOne(it.id)}
-                            className="accent-[var(--primary)]"
+                            className={`accent-[var(--primary)] transition-opacity ${
+                              selected.has(it.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                            }`}
                             aria-label={`${it.name} 선택`}
                           />
                         </td>
