@@ -37,6 +37,9 @@ const NAV_ITEMS: NavItem[] = [
   // 메뉴 섹션
   { label: '홈 피드', href: '/', icon: '🏠', section: '메뉴' },
   { label: '매출현황', href: '/revenue', icon: '📈', staffOnly: true, section: '메뉴' },
+  // 인보이스 섹션
+  { label: '거래처 청구서', href: '/invoices', icon: '🧾', staffOnly: true, section: '인보이스' },
+  { label: '내부 지급서', href: '/payouts', icon: '💸', staffOnly: true, section: '인보이스' },
   // 정산 섹션 (확장형 트리)
   {
     label: '정산서',
@@ -47,9 +50,6 @@ const NAV_ITEMS: NavItem[] = [
       { label: '용역 정산', href: '/settlement/service' },
     ],
   },
-  // 인보이스 섹션
-  { label: '거래처 청구서', href: '/invoices', icon: '🧾', staffOnly: true, section: '인보이스' },
-  { label: '내부 지급서', href: '/payouts', icon: '💸', staffOnly: true, section: '인보이스' },
   // 관리 섹션
   { label: '구성원', href: '/staff', icon: '👥', section: '관리' },
   { label: '작가 마스터', href: '/admin/writers', icon: '✍️', staffOnly: true, section: '관리' },

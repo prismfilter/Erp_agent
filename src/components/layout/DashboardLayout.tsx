@@ -21,6 +21,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setOpen] = useState(false);
   // DashboardLayout은 인증 로더 통과 후 클라이언트에서만 마운트 → lazy 쿠키 초기화 안전(플래시 없음)
   const [collapsed, setCollapsed] = useState(() => readCollapsed());
+  // 축소 상태에서 사이드바 호버 시 임시 펼침(오버레이) — 마우스를 떼면 다시 축소
+  const [hovered, setHovered] = useState(false);
+  const effectiveCollapsed = collapsed && !hovered;
 
   const toggleCollapsed = () =>
     setCollapsed((v) => {
@@ -31,9 +34,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-full bg-background">
-      {/* 데스크톱 사이드바 */}
-      <div className={`hidden md:flex ${collapsed ? 'md:w-16' : 'md:w-64'} flex-col transition-[width] duration-200`}>
-        <AppSidebar collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
+      {/* 데스크톱 사이드바 — 레일 자리(부모, 축소 폭 유지) + 오버레이(자식, 호버 시 펼침) */}
+      <div
+        className={`hidden md:block relative ${collapsed ? 'md:w-16' : 'md:w-64'} transition-[width] duration-200`}
+        onMouseEnter={() => { if (collapsed) setHovered(true); }}
+        onMouseLeave={() => setHovered(false)}
+      >
+        <div
+          className={`absolute inset-y-0 left-0 ${effectiveCollapsed ? 'w-16' : 'w-64'} transition-[width] duration-200 z-30 ${
+            collapsed && hovered ? 'shadow-2xl' : ''
+          }`}
+        >
+          <AppSidebar collapsed={effectiveCollapsed} onToggleCollapse={toggleCollapsed} />
+        </div>
       </div>
 
       {/* 모바일 사이드바 오버레이 */}

@@ -99,7 +99,7 @@ function WriterTypeSelect({
     <DropdownMenu>
       <DropdownMenuTrigger
         title="구분 변경"
-        className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 text-foreground text-sm border border-border hover:border-primary transition cursor-pointer ${triggerClassName ?? ''}`}
+        className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-foreground text-sm border border-border hover:border-primary transition cursor-pointer ${triggerClassName ?? ''}`}
       >
         {typeBadge(value)}
         <span className="text-[10px] opacity-70" aria-hidden="true">▾</span>
@@ -372,19 +372,19 @@ export default function WriterMasterPage() {
             <table className="w-full text-sm">
               <thead className="bg-primary/10 border-b border-border">
                 <tr>
-                  <SortableHeader label="작가명" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
-                  <SortableHeader label="구분" sortKey="writer_type" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
-                  <SortableHeader label="용역 요율(%)" sortKey="fee_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
-                  {isAdmin && <th className="px-6 py-3 text-center font-semibold text-foreground text-xs uppercase w-24">액션</th>}
+                  <SortableHeader label="작가명" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-2.5 text-xs uppercase" />
+                  <SortableHeader label="구분" sortKey="writer_type" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
+                  <SortableHeader label="용역 요율(%)" sortKey="fee_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
+                  {isAdmin && <th className="px-6 py-2.5 text-center font-semibold text-foreground text-xs uppercase w-24">액션</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {filtered.map((w) => (
                   <tr key={w.id} className="hover:bg-primary/5">
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-2.5">
                       <NameCell value={w.name} editable={isAdmin} onSave={(v) => patchWriter(w.id, { name: v })} />
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-6 py-2.5 text-center">
                       {isAdmin ? (
                         <WriterTypeSelect
                           value={w.writer_type}
@@ -397,11 +397,11 @@ export default function WriterMasterPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-6 py-2.5 text-center">
                       <FeeRateCell value={w.fee_rate} editable={isAdmin} onSave={(v) => patchWriter(w.id, { fee_rate: v })} />
                     </td>
                     {isAdmin && (
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-6 py-2.5 text-center">
                         {confirmingId === w.id ? (
                           <div className="flex items-center justify-center gap-1">
                             <button
