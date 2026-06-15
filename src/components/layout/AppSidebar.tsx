@@ -220,7 +220,7 @@ export function AppSidebar({
               {idx > 0 && <hr className="border-border mb-5 mt-2" />}
               {/* 섹션 레이블 (접힘 시 숨김) */}
               {!collapsed && (
-                <div className="text-xs font-semibold text-muted-foreground mb-3 px-2 uppercase tracking-wider">
+                <div className="text-xs font-semibold text-muted-foreground mb-3 px-2 uppercase tracking-wider whitespace-nowrap overflow-hidden">
                   {section}
                 </div>
               )}
@@ -241,9 +241,7 @@ export function AppSidebar({
                           type="button"
                           onClick={() => { if (!collapsed) toggleTree(item.label); }}
                           aria-expanded={!collapsed && open}
-                          className={`w-full flex items-center py-2 rounded-lg text-sm font-medium transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-                            collapsed ? 'justify-center px-0' : 'gap-3 px-3'
-                          } ${
+                          className={`w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 ${
                             childActive
                               ? collapsed
                                 ? 'bg-primary text-primary-foreground shadow-md'
@@ -252,12 +250,13 @@ export function AppSidebar({
                           }`}
                           aria-current={collapsed && childActive ? 'page' : undefined}
                         >
-                          <span className="text-lg flex-shrink-0" aria-hidden="true">
+                          {/* 아이콘 고정폭 영역 — 일반 메뉴와 동일(가운데) → 정렬 점프 방지 */}
+                          <span className="w-8 flex justify-center flex-shrink-0 text-lg" aria-hidden="true">
                             {item.icon}
                           </span>
                           {!collapsed && (
                             <>
-                              <span className="flex-1 text-left truncate">{item.label}</span>
+                              <span className="ml-1 flex-1 text-left truncate whitespace-nowrap">{item.label}</span>
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="14"
@@ -323,25 +322,18 @@ export function AppSidebar({
                       key={href}
                       href={href}
                       onClick={onClose}
-                      className={`group/item relative flex items-center py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-                        collapsed ? 'justify-center px-0' : 'gap-3 px-3'
-                      } ${
+                      className={`group/item relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
                         isActive(href)
                           ? 'bg-primary text-primary-foreground shadow-md'
                           : 'text-sidebar-foreground hover:bg-primary/15'
                       }`}
                       aria-current={isActive(href) ? 'page' : undefined}
                     >
-                      <span className="text-lg flex-shrink-0" aria-hidden="true">
+                      {/* 아이콘 고정폭 영역 — 축소/펼침에서 위치 동일(가운데) → 정렬 점프 방지 */}
+                      <span className="w-8 flex justify-center flex-shrink-0 text-lg" aria-hidden="true">
                         {item.icon}
                       </span>
-                      {!collapsed && <span className="truncate">{item.label}</span>}
-                      {/* 접힘 시 호버 툴팁 (블럭 텍스트) */}
-                      {collapsed && (
-                        <span className="pointer-events-none absolute left-full ml-2 z-50 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-opacity group-hover/item:opacity-100">
-                          {item.label}
-                        </span>
-                      )}
+                      {!collapsed && <span className="ml-1 flex-1 truncate whitespace-nowrap">{item.label}</span>}
                     </Link>
                   );
                 })}
