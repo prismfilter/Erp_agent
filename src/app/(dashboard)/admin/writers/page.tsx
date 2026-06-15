@@ -1,6 +1,6 @@
 'use client';
 
-// 작가 마스터 — 작가명·구분(전속/일반)·수수료 요율(%) 관리
+// 작가 마스터 — 작가명·구분(전속/일반)·용역 요율(%) 관리
 // 로그인 계정(user_roles)과 무관한 작가/작업자 레지스트리. 조회: ADMIN+STAFF / 수정: ADMIN only
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
@@ -8,6 +8,13 @@ import { useAuthStore } from '@/store/authStore';
 import type { Writer } from '@/types/invoice';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableHeader } from '@/components/ui/SortableHeader';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from '@/components/ui/dropdown-menu';
 
 const WRITER_TYPES = ['전속작가', '일반작가'] as const;
 type WriterType = (typeof WRITER_TYPES)[number];
@@ -63,17 +70,54 @@ function NameCell({
   }
 
   return (
-    <button
-      onClick={() => { setDraft(value); setIsEditing(true); }}
-      className="text-foreground hover:text-primary transition cursor-pointer"
-      title="클릭하여 수정"
-    >
-      {value}
-    </button>
+    <div className="flex items-center gap-1.5 group">
+      <span className="text-foreground">{value}</span>
+      <button
+        onClick={() => { setDraft(value); setIsEditing(true); }}
+        className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-primary/10 cursor-pointer"
+        title="이름 수정"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+        </svg>
+      </button>
+    </div>
   );
 }
 
-// 수수료 요율(%) 인라인 편집 셀
+// 구분(전속/일반) 선택 — 테마 그라데이션과 어울리는 커스텀 드롭다운(검은 native select 대체)
+function WriterTypeSelect({
+  value,
+  onChange,
+  triggerClassName,
+}: {
+  value: string;
+  onChange: (v: WriterType) => void;
+  triggerClassName?: string;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        title="구분 변경"
+        className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 text-foreground text-sm border border-border hover:border-primary transition cursor-pointer ${triggerClassName ?? ''}`}
+      >
+        {typeBadge(value)}
+        <span className="text-[10px] opacity-70" aria-hidden="true">▾</span>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="center" className="min-w-36 bg-card border border-border">
+        <DropdownMenuRadioGroup value={value} onValueChange={(v) => onChange(String(v) as WriterType)}>
+          {WRITER_TYPES.map((t) => (
+            <DropdownMenuRadioItem key={t} value={t} className="text-foreground cursor-pointer">
+              {typeBadge(t)}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+// 용역 요율(%) 인라인 편집 셀
 function FeeRateCell({
   value,
   editable,
@@ -238,14 +282,14 @@ export default function WriterMasterPage() {
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">작가 마스터</h1>
           <p className="text-muted-foreground text-sm">
-            작가/작업자 명단 · 구분 · 수수료 요율 관리
+            작가/작업자 명단 · 구분 · 용역 요율 관리
             {!isAdmin && ' · 수정은 관리자만 가능'}
           </p>
         </div>
         {isAdmin && (
           <button
             onClick={() => setAdding((v) => !v)}
-            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
+            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium cursor-pointer"
           >
             + 등록
           </button>
@@ -269,16 +313,10 @@ export default function WriterMasterPage() {
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">구분</label>
-            <select
-              value={newType}
-              onChange={(e) => setNewType(e.target.value as WriterType)}
-              className="px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none text-foreground"
-            >
-              {WRITER_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
+            <WriterTypeSelect value={newType} onChange={setNewType} />
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1">수수료 요율(%)</label>
+            <label className="block text-xs text-muted-foreground mb-1">용역 요율(%)</label>
             <input
               type="number"
               min={0}
@@ -290,7 +328,7 @@ export default function WriterMasterPage() {
           </div>
           <button
             onClick={handleAdd}
-            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
+            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition cursor-pointer"
           >
             추가
           </button>
@@ -335,8 +373,8 @@ export default function WriterMasterPage() {
               <thead className="bg-primary/10 border-b border-border">
                 <tr>
                   <SortableHeader label="작가명" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
-                  <SortableHeader label="구분" sortKey="writer_type" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
-                  <SortableHeader label="수수료 요율(%)" sortKey="fee_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
+                  <SortableHeader label="구분" sortKey="writer_type" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
+                  <SortableHeader label="용역 요율(%)" sortKey="fee_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
                   {isAdmin && <th className="px-6 py-3 text-center font-semibold text-foreground text-xs uppercase w-24">액션</th>}
                 </tr>
               </thead>
@@ -346,17 +384,15 @@ export default function WriterMasterPage() {
                     <td className="px-6 py-4">
                       <NameCell value={w.name} editable={isAdmin} onSave={(v) => patchWriter(w.id, { name: v })} />
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-center">
                       {isAdmin ? (
-                        <select
+                        <WriterTypeSelect
                           value={w.writer_type}
-                          onChange={(e) => patchWriter(w.id, { writer_type: e.target.value })}
-                          className="px-2 py-1 text-xs bg-background border border-border rounded outline-none text-foreground hover:border-primary transition cursor-pointer"
-                        >
-                          {WRITER_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                        </select>
+                          onChange={(v) => patchWriter(w.id, { writer_type: v })}
+                          triggerClassName="mx-auto"
+                        />
                       ) : (
-                        <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded text-xs font-medium">
+                        <span className="inline-block bg-primary/15 text-primary px-3 py-1 rounded-md text-xs font-medium">
                           {typeBadge(w.writer_type)}
                         </span>
                       )}
@@ -370,13 +406,13 @@ export default function WriterMasterPage() {
                           <div className="flex items-center justify-center gap-1">
                             <button
                               onClick={() => deleteWriter(w.id)}
-                              className="px-2 py-1 rounded text-[11px] font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition"
+                              className="px-2 py-1 rounded text-[11px] font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition cursor-pointer"
                             >
                               삭제
                             </button>
                             <button
                               onClick={() => setConfirmingId(null)}
-                              className="px-2 py-1 rounded text-[11px] font-medium bg-gray-500/20 text-gray-400 hover:bg-gray-500/30 transition"
+                              className="px-2 py-1 rounded text-[11px] font-medium bg-gray-500/20 text-gray-400 hover:bg-gray-500/30 transition cursor-pointer"
                             >
                               취소
                             </button>
@@ -384,7 +420,7 @@ export default function WriterMasterPage() {
                         ) : (
                           <button
                             onClick={() => setConfirmingId(w.id)}
-                            className="p-1.5 text-muted-foreground hover:text-red-400 transition rounded hover:bg-red-500/10"
+                            className="p-1.5 text-muted-foreground hover:text-red-400 transition rounded hover:bg-red-500/10 cursor-pointer"
                             title="삭제"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
