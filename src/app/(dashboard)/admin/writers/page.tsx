@@ -255,7 +255,7 @@ export default function WriterMasterPage() {
       {/* 등록 폼 */}
       {adding && (
         <div className="bg-card border border-primary/40 rounded-lg p-4 flex flex-wrap items-end gap-3">
-          <div className="flex-1 min-w-[180px]">
+          <div className="w-64">
             <label className="block text-xs text-muted-foreground mb-1">작가명</label>
             <input
               type="text"
@@ -263,6 +263,7 @@ export default function WriterMasterPage() {
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
               placeholder="작가명 입력"
+              maxLength={20}
               className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
             />
           </div>

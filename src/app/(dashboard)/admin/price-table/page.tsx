@@ -422,7 +422,7 @@ export default function PriceTablePage() {
                           type="checkbox"
                           checked={allSelected}
                           onChange={(e) => toggleMany(ids, e.target.checked)}
-                          className={`accent-[var(--primary)] transition-opacity ${
+                          className={`accent-[var(--primary)] cursor-pointer transition-opacity ${
                             someSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                           }`}
                           aria-label={`${category} 전체 선택`}
@@ -446,7 +446,7 @@ export default function PriceTablePage() {
                             type="checkbox"
                             checked={selected.has(it.id)}
                             onChange={() => toggleOne(it.id)}
-                            className={`accent-[var(--primary)] transition-opacity ${
+                            className={`accent-[var(--primary)] cursor-pointer transition-opacity ${
                               selected.has(it.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                             }`}
                             aria-label={`${it.name} 선택`}

@@ -4,10 +4,11 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import type { PriceItem, Client, CompanyAccount, Invoice, InvoiceItem } from '@/types/invoice';
+import type { PriceItem, Client, CompanyAccount, Invoice, InvoiceItem, Writer } from '@/types/invoice';
 import { calcInvoiceTotals, calcItemBreakdown } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
 import { PriceItemSelect } from './PriceItemSelect';
+import { WriterSelect } from './WriterSelect';
 import { PercentCell } from './PercentCell';
 import { NumericInput } from '@/components/ui/NumericInput';
 import { DatePicker } from '@/components/ui/DatePicker';
@@ -42,6 +43,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
 
   // 마스터 데이터
   const [priceItems, setPriceItems] = useState<PriceItem[]>([]);
+  const [writers, setWriters] = useState<Writer[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [accounts, setAccounts] = useState<CompanyAccount[]>([]);
 
@@ -67,12 +69,14 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
   // 마스터 데이터 로드
   useEffect(() => {
     (async () => {
-      const [pRes, cRes, aRes] = await Promise.all([
+      const [pRes, wRes, cRes, aRes] = await Promise.all([
         fetch('/api/price-items'),
+        fetch('/api/writers'),
         fetch('/api/clients'),
         fetch('/api/company-accounts'),
       ]);
       if (pRes.ok) setPriceItems((await pRes.json()).priceItems || []);
+      if (wRes.ok) setWriters((await wRes.json()).writers || []);
       if (cRes.ok) setClients((await cRes.json()).clients || []);
       if (aRes.ok) {
         const accs: CompanyAccount[] = (await aRes.json()).accounts || [];
@@ -380,7 +384,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[110px]">작업자</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">공급가액</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground w-28">할인금액</th>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-24">작가지급(%)</th>
+                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-24">작가수수료(%)</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">귀속금액</th>
                 <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">액션</th>
               </tr>
@@ -434,12 +438,11 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                       />
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="text"
+                      <WriterSelect
+                        writers={writers}
                         value={it.writer_names}
-                        onChange={(e) => updateItem(it.id!, { writer_names: e.target.value })}
-                        placeholder="작업자명"
-                        className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground"
+                        onChange={(name) => updateItem(it.id!, { writer_names: name })}
+                        onPickWriter={(w) => updateItem(it.id!, { writer_names: w.name, writer_pay_rate: w.fee_rate })}
                       />
                     </td>
                     <td className="px-2 py-2">
