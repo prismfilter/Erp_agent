@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { createClient } from '@/lib/supabase/client';
@@ -17,20 +17,36 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 
-interface NavItem {
+// 트리형(확장 메뉴) 하위 항목
+interface NavChild {
   label: string;
   href: string;
+}
+
+interface NavItem {
+  label: string;
+  href?: string;        // children이 있는 트리 부모는 href 없음(토글 전용)
   icon: string;
   adminOnly?: boolean;
-  staffOnly?: boolean; // ADMIN + STAFF만 (작가 역할 숨김)
+  staffOnly?: boolean;  // ADMIN + STAFF만 (작가 역할 숨김)
   section?: string;
+  children?: NavChild[]; // 확장형 트리 하위 메뉴
 }
 
 const NAV_ITEMS: NavItem[] = [
   // 메뉴 섹션
   { label: '홈 피드', href: '/', icon: '🏠', section: '메뉴' },
   { label: '매출현황', href: '/revenue', icon: '📈', staffOnly: true, section: '메뉴' },
-  { label: '정산서', href: '/settlement', icon: '📄', section: '메뉴' },
+  // 정산 섹션 (확장형 트리)
+  {
+    label: '정산서',
+    icon: '📄',
+    section: '정산',
+    children: [
+      { label: '저작권료 정산', href: '/settlement/royalty' },
+      { label: '용역 정산', href: '/settlement/service' },
+    ],
+  },
   // 인보이스 섹션
   { label: '거래처 청구서', href: '/invoices', icon: '🧾', staffOnly: true, section: '인보이스' },
   { label: '내부 지급서', href: '/payouts', icon: '💸', staffOnly: true, section: '인보이스' },
@@ -117,6 +133,24 @@ export function AppSidebar({
     [pathname]
   );
 
+  // 트리(확장형) 메뉴 펼침 상태 — 현재 경로가 하위에 속하면 자동 펼침(lazy init)
+  const [openTree, setOpenTree] = useState<Set<string>>(() => {
+    const open = new Set<string>();
+    NAV_ITEMS.forEach((item) => {
+      if (item.children?.some((c) => isActive(c.href))) open.add(item.label);
+    });
+    return open;
+  });
+
+  const toggleTree = useCallback((label: string) => {
+    setOpenTree((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
+  }, []);
+
   // 아바타 이니셜 (이름 우선, 없으면 이메일 앞 2자) — 단순 계산이라 메모이제이션 불필요
   const avatarInitial = user?.name
     ? user.name.substring(0, 1).toUpperCase()
@@ -192,32 +226,131 @@ export function AppSidebar({
               )}
               {/* 섹션 내 메뉴 아이템 */}
               <div className="space-y-1">
-                {items.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={onClose}
-                    className={`group/item relative flex items-center py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-                      collapsed ? 'justify-center px-0' : 'gap-3 px-3'
-                    } ${
-                      isActive(item.href)
-                        ? 'bg-primary text-primary-foreground shadow-md'
-                        : 'text-sidebar-foreground hover:bg-primary/15'
-                    }`}
-                    aria-current={isActive(item.href) ? 'page' : undefined}
-                  >
-                    <span className="text-lg flex-shrink-0" aria-hidden="true">
-                      {item.icon}
-                    </span>
-                    {!collapsed && <span className="truncate">{item.label}</span>}
-                    {/* 접힘 시 호버 툴팁 (블럭 텍스트) */}
-                    {collapsed && (
-                      <span className="pointer-events-none absolute left-full ml-2 z-50 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-opacity group-hover/item:opacity-100">
-                        {item.label}
+                {items.map((item) => {
+                  // ── 확장형 트리(하위 메뉴 있음) ──
+                  if (item.children && item.children.length > 0) {
+                    const childActive = item.children.some((c) => isActive(c.href));
+                    const open = openTree.has(item.label);
+
+                    // 접힘 사이드바: 펼칠 공간이 없으므로 첫 하위로 이동하는 아이콘 링크 + 툴팁
+                    if (collapsed) {
+                      return (
+                        <Link
+                          key={item.label}
+                          href={item.children[0].href}
+                          onClick={onClose}
+                          className={`group/item relative flex items-center justify-center px-0 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                            childActive
+                              ? 'bg-primary text-primary-foreground shadow-md'
+                              : 'text-sidebar-foreground hover:bg-primary/15'
+                          }`}
+                          aria-current={childActive ? 'page' : undefined}
+                        >
+                          <span className="text-lg flex-shrink-0" aria-hidden="true">
+                            {item.icon}
+                          </span>
+                          <span className="pointer-events-none absolute left-full ml-2 z-50 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-opacity group-hover/item:opacity-100">
+                            {item.label}
+                          </span>
+                        </Link>
+                      );
+                    }
+
+                    // 펼침 사이드바: 부모 토글 버튼 + 하위 목록
+                    return (
+                      <div key={item.label}>
+                        <button
+                          type="button"
+                          onClick={() => toggleTree(item.label)}
+                          aria-expanded={open}
+                          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                            childActive
+                              ? 'bg-primary/10 text-foreground'
+                              : 'text-sidebar-foreground hover:bg-primary/15'
+                          }`}
+                        >
+                          <span className="text-lg flex-shrink-0" aria-hidden="true">
+                            {item.icon}
+                          </span>
+                          <span className="flex-1 text-left truncate">{item.label}</span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className={`flex-shrink-0 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+                            aria-hidden="true"
+                          >
+                            <path d="m6 9 6 6 6-6" />
+                          </svg>
+                        </button>
+                        {/* 하위 목록 */}
+                        {open && (
+                          <div className="mt-1 space-y-1">
+                            {item.children.map((child) => {
+                              const active = isActive(child.href);
+                              return (
+                                <Link
+                                  key={child.href}
+                                  href={child.href}
+                                  onClick={onClose}
+                                  className={`flex items-center gap-2 pl-9 pr-3 py-2 rounded-lg text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                                    active
+                                      ? 'bg-primary text-primary-foreground font-medium shadow-md'
+                                      : 'text-sidebar-foreground hover:bg-primary/15'
+                                  }`}
+                                  aria-current={active ? 'page' : undefined}
+                                >
+                                  <span
+                                    className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${
+                                      active ? 'bg-primary-foreground' : 'bg-muted-foreground'
+                                    }`}
+                                    aria-hidden="true"
+                                  />
+                                  <span className="truncate">{child.label}</span>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  // ── 일반 단일 메뉴 ──
+                  const href = item.href ?? '/';
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={onClose}
+                      className={`group/item relative flex items-center py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                        collapsed ? 'justify-center px-0' : 'gap-3 px-3'
+                      } ${
+                        isActive(href)
+                          ? 'bg-primary text-primary-foreground shadow-md'
+                          : 'text-sidebar-foreground hover:bg-primary/15'
+                      }`}
+                      aria-current={isActive(href) ? 'page' : undefined}
+                    >
+                      <span className="text-lg flex-shrink-0" aria-hidden="true">
+                        {item.icon}
                       </span>
-                    )}
-                  </Link>
-                ))}
+                      {!collapsed && <span className="truncate">{item.label}</span>}
+                      {/* 접힘 시 호버 툴팁 (블럭 텍스트) */}
+                      {collapsed && (
+                        <span className="pointer-events-none absolute left-full ml-2 z-50 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-opacity group-hover/item:opacity-100">
+                          {item.label}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           ))}
