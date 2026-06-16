@@ -9,7 +9,6 @@ interface SiteHeaderProps {
 
 const pageLabels: Record<string, string> = {
   '/': '홈 피드',
-  '/settlement': '정산서',
   '/writers': '작가 목록',
   '/staff': '구성원',
   '/revenue': '매출현황',

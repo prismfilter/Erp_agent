@@ -37,6 +37,9 @@ dev-*.log
 # Supabase 임시 파일
 supabase/.temp/
 
+# agentmemory 런타임 저장소 (iii-engine state/stream store) — 커밋 금지
+/data/
+
 # env files (can opt-in for committing if needed)
 .env*
 
