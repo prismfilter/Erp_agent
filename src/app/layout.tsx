@@ -14,8 +14,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      {/* subpixel-antialiased: Windows ClearType 서브픽셀 렌더링 → 작은 글씨 선명(흐림 방지) */}
-      <body className="subpixel-antialiased">
+      {/* antialiased(grayscale): 서브픽셀 색번짐 노이즈 없이 또렷. static Pretendard 힌팅으로 작은 글씨 선명 */}
+      <body className="antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
