@@ -181,7 +181,7 @@ export function AppSidebar({
             <img
               src="/prismfilter-logo.png"
               alt="PRISMFILTER MUSIC GROUP"
-              className="prism-logo w-14 h-14"
+              className="prism-logo w-12 h-12"
             />
           </span>
           {!collapsed && (
@@ -243,7 +243,9 @@ export function AppSidebar({
                           type="button"
                           onClick={() => { if (!collapsed) toggleTree(item.label); }}
                           aria-expanded={!collapsed && open}
-                          className={`w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                          className={`w-full flex items-center py-2 rounded-lg text-sm font-medium transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                            collapsed ? 'justify-center' : 'pr-3'
+                          } ${
                             childActive
                               ? collapsed
                                 ? 'bg-primary text-primary-foreground shadow-md'
@@ -324,7 +326,9 @@ export function AppSidebar({
                       key={href}
                       href={href}
                       onClick={onClose}
-                      className={`group/item relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                      className={`group/item relative flex items-center py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                        collapsed ? 'justify-center' : 'pr-3'
+                      } ${
                         isActive(href)
                           ? 'bg-primary text-primary-foreground shadow-md'
                           : 'text-sidebar-foreground hover:bg-primary/15'
