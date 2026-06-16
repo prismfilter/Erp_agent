@@ -1,0 +1,294 @@
+@import "tailwindcss";
+
+/* 실제 CSS 변수: --color- 없이 정의 (와일드카드 생성 방지) */
+:root,
+.light {
+  /* Soft Light — 부드러운 쿨 그레이 배경 + 흰 카드, 눈부심 완화 */
+  color-scheme: light;
+  --background: #eef1f6;        /* 쿨 그레이 — 흰 카드와 분리, 광량 완화 */
+  --foreground: #1f2937;        /* 슬레이트 — 순흑 대비 완화 */
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #475569;
+  --card: #ffffff;
+  --border: #e2e6ee;
+  --muted: #eceff5;
+  --muted-foreground: #64748b;
+  --accent: #4f46e5;
+}
+
+.dark {
+  /* Cosmic Dark — 딥 네이비 기반, 카드·사이드바·활성메뉴는 그라데이션으로 처리 */
+  color-scheme: dark;
+  --background: #0b0d1e;
+  --foreground: #eeeeff;
+  --primary: #5c6cff;
+  --primary-foreground: #ffffff;
+  --sidebar: #0d1028;
+  --sidebar-foreground: #ccd2f5;
+  --card: #1a1f45;
+  --border: #242c56;
+  --muted: #181d3c;
+  --muted-foreground: #8896cc;
+  --accent: #4a54e8;
+}
+
+.classic-dark {
+  /* 이전 다크 모드 색상 */
+  color-scheme: dark;
+  --background: #0c111d;
+  --foreground: #e6edf3;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --sidebar: #080e1a;
+  --sidebar-foreground: #d1d5db;
+  --card: #111827;
+  --border: #30363d;
+  --muted: #1f2937;
+  --muted-foreground: #9ca3af;
+  --accent: #4f46e5;
+}
+
+/*
+  @theme inline: CSS 변수를 Tailwind 유틸리티에 연결
+  새 --color-* 변수를 생성하지 않아 와일드카드 패턴이 생성되지 않음
+  bg-background, text-foreground, bg-border 등 자동 생성
+*/
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  body {
+    overflow: hidden;
+  }
+
+  /* 스크롤바 숨김 — 스크롤 기능은 유지하되 스크롤바만 비표시
+     (사이드바 호버 펼침 전환 중 스크롤바가 깜빡이는 현상 방지) */
+  .scrollbar-hide {
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE/Edge */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;                /* Chrome/Safari/Edge */
+  }
+
+  .prism-logo {
+    filter: none;
+    object-fit: contain;
+  }
+
+  .dark .prism-logo,
+  .classic-dark .prism-logo {
+    filter: brightness(0) invert(1);
+  }
+}
+
+/*
+  다크 모드 그라데이션 오버라이드
+  — @layer 밖에 배치하여 Tailwind 유틸리티보다 높은 cascade 우선순위 확보
+  — CSS 변수(단색)로 표현 불가한 gradient를 실제 bg 속성으로 직접 적용
+*/
+
+/* 카드: 인디고-네이비 → 딥 다크, 위쪽이 밝아 '연보라+흰빛' 느낌 */
+.dark .bg-card {
+  background: linear-gradient(160deg, #1f2452 0%, #131530 100%);
+}
+
+/* 사이드바: 수직 그라데이션으로 상단이 살짝 밝아 공간감 부여 */
+.dark .bg-sidebar {
+  background: linear-gradient(180deg, #0f1232 0%, #09091e 100%);
+}
+
+/* 활성 메뉴: 인디고 → 밝은 퍼리윙클, '흰색+연보라' 조화 구현 */
+.dark [aria-current="page"] {
+  background: linear-gradient(135deg, #4a5ee8 0%, #8097ff 100%) !important;
+  box-shadow: 0 4px 18px rgba(74, 94, 232, 0.4) !important;
+}
+
+/* 활성 메뉴 호버 시에도 그라데이션 유지 */
+.dark [aria-current="page"]:hover {
+  background: linear-gradient(135deg, #5568ee 0%, #8ea5ff 100%) !important;
+}
+
+/*
+  라이트 모드 — 흰 카드에 부드러운 그림자로 분리감(눈부심 완화).
+  배경(쿨 그레이) 위에 카드가 살짝 떠 있는 느낌으로 대비를 낮춤.
+*/
+.light .bg-card {
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+/*
+  청구서 작성 폼 라인 항목 테이블 — 셀 구분 세로선
+  — 첫 셀 제외 각 셀 좌측에 연한 세로선
+  — top/bottom 여백을 둬 테이블 위·아래 테두리에 닿지 않게
+*/
+.invoice-line-table th:not(:first-child),
+.invoice-line-table td:not(:first-child) {
+  position: relative;
+}
+.invoice-line-table th:not(:first-child)::before,
+.invoice-line-table td:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--border);
+  opacity: 0.55;
+}
+
+/*
+  청구서 인쇄 (PDF 저장 / 인쇄 버튼)
+  — 활성 탭의 .invoice-print-area만 A4 세로로 출력
+  — 항목이 많아 페이지가 나뉘면 테이블 헤더 반복
+*/
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .invoice-print-area,
+  .invoice-print-area *,
+  .settlement-print-area,
+  .settlement-print-area * {
+    visibility: visible;
+  }
+
+  .invoice-print-area,
+  .settlement-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: none !important;
+    min-height: 0 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+  }
+
+  /* 표 헤더·합계 박스의 진한 배경색을 인쇄 시에도 유지 */
+  .invoice-print-area *,
+  .settlement-print-area * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 페이지 분할 시 테이블 헤더 반복 + 행 중간 절단 방지 */
+  .invoice-print-area thead,
+  .settlement-print-area thead {
+    display: table-header-group;
+  }
+  .invoice-print-area tr,
+  .settlement-print-area tr {
+    break-inside: avoid;
+  }
+
+  /* 정산서 멀티 페이지: 각 페이지 끝에서 분할(마지막 페이지 제외) */
+  .settlement-page {
+    break-after: page;
+  }
+  .settlement-page:last-child {
+    break-after: auto;
+  }
+}
+
+/* ===== react-day-picker 다크 테마 + 인디고 그라데이션 ===== */
+.rdp-popover .rdp-root {
+  --rdp-accent-color: #5c6cff;
+  --rdp-accent-background-color: color-mix(in oklch, #5c6cff 15%, transparent);
+  --rdp-today-color: #8097ff;
+  --rdp-day-width: 2.1rem;
+  --rdp-day-height: 2.1rem;
+  color: var(--foreground);
+  font-size: 0.8rem;
+}
+.rdp-popover .rdp-caption_label,
+.rdp-popover .rdp-weekday {
+  color: var(--muted-foreground);
+}
+.rdp-popover .rdp-chevron {
+  fill: var(--foreground);
+}
+.rdp-popover .rdp-day_button:hover {
+  background-color: color-mix(in oklch, var(--primary) 18%, transparent);
+  border-radius: 0.5rem;
+}
+.rdp-popover .rdp-selected .rdp-day_button {
+  background-image: linear-gradient(135deg, #4a5ee8, #8097ff);
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  border-radius: 0.5rem;
+}
+.rdp-popover .rdp-today:not(.rdp-selected) .rdp-day_button {
+  color: var(--rdp-today-color);
+  font-weight: 700;
+}
+/* 년/월 선택 드롭다운 (captionLayout="dropdown") */
+.rdp-popover .rdp-dropdowns {
+  display: flex;
+  gap: 0.4rem;
+}
+.rdp-popover .rdp-dropdown_root {
+  position: relative;
+}
+.rdp-popover .rdp-dropdown {
+  appearance: none;
+  background-color: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.25rem 1.6rem 0.25rem 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+.rdp-popover .rdp-dropdown:hover,
+.rdp-popover .rdp-dropdown:focus {
+  border-color: var(--primary);
+}
+.rdp-popover .rdp-dropdown option {
+  background-color: var(--card);
+  color: var(--foreground);
+}
+/* 네이티브 드롭다운 화살표 보정 */
+.rdp-popover .rdp-dropdown_root::after {
+  content: '▾';
+  position: absolute;
+  right: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+}

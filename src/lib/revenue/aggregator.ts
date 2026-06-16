@@ -1,0 +1,94 @@
+// 매출 집계 로직 (순수 함수)
+// 비즈니스 규칙:
+// - 집계 대상: status='paid'(입금완료) 청구서만
+// - 매출 금액: 내부 지급서 기준 귀속금액(C) = Σ(공급가액 − 작가지급액)
+// - 카테고리: invoice_items.price_item_id → price_items.category (null이면 '커스텀')
+
+import type { Invoice, PriceItem } from '@/types/invoice';
+import { getInternalItems, calcItemBreakdown } from '@/lib/invoice/calculator';
+
+// 차트 표시 순서 고정 (프라이스 테이블 카테고리 + 커스텀)
+export const REVENUE_CATEGORIES = [
+  '앨범',
+  '방송·공연·시상식',
+  '광고',
+  '기타',
+  '밴드',
+  '밴드(플레디스)',
+  '커스텀',
+] as const;
+
+export interface QuarterRevenue {
+  total: number; // 귀속금액 합
+  count: number; // 청구서 건수
+}
+
+export interface RevenueData {
+  byQuarter: Record<string, QuarterRevenue>;          // 'YYYY-Q1' → 매출·건수
+  byYear: Record<number, number>;                     // 연도 → 매출 합
+  byCategory: Record<string, Record<number, number>>; // 카테고리 → (연도 → 매출 합)
+  years: number[];                                    // 데이터 존재 연도 (내림차순)
+}
+
+// invoice_date('YYYY-MM-DD')에서 연도·분기 추출 — 타임존 이슈 없는 문자열 파싱
+function parseYearQuarter(invoiceDate: string): { year: number; quarter: number } {
+  const year = parseInt(invoiceDate.slice(0, 4), 10);
+  const month = parseInt(invoiceDate.slice(5, 7), 10);
+  return { year, quarter: Math.ceil(month / 3) };
+}
+
+export function aggregateRevenue(paidInvoices: Invoice[], priceItems: PriceItem[]): RevenueData {
+  const priceItemCategory = new Map<string, string>();
+  priceItems.forEach((p) => priceItemCategory.set(p.id, p.category));
+
+  const byQuarter: Record<string, QuarterRevenue> = {};
+  const byYear: Record<number, number> = {};
+  const byCategory: Record<string, Record<number, number>> = {};
+  const yearSet = new Set<number>();
+
+  for (const inv of paidInvoices) {
+    if (!inv.invoice_date) continue;
+    const { year, quarter } = parseYearQuarter(inv.invoice_date);
+    const qKey = `${year}-Q${quarter}`;
+    yearSet.add(year);
+
+    const internal = getInternalItems(inv.items ?? []);
+    let invoiceTotal = 0;
+
+    for (const it of internal) {
+      const attribution = calcItemBreakdown(it).attribution;
+      invoiceTotal += attribution;
+
+      // 카테고리 분류 (커스텀·할인 행은 price_item_id가 null)
+      const category = it.price_item_id
+        ? priceItemCategory.get(it.price_item_id) ?? '커스텀'
+        : '커스텀';
+      if (!byCategory[category]) byCategory[category] = {};
+      byCategory[category][year] = (byCategory[category][year] ?? 0) + attribution;
+    }
+
+    if (!byQuarter[qKey]) byQuarter[qKey] = { total: 0, count: 0 };
+    byQuarter[qKey].total += invoiceTotal;
+    byQuarter[qKey].count += 1;
+
+    byYear[year] = (byYear[year] ?? 0) + invoiceTotal;
+  }
+
+  return {
+    byQuarter,
+    byYear,
+    byCategory,
+    years: Array.from(yearSet).sort((a, b) => b - a),
+  };
+}
+
+// 분기 매출 조회 헬퍼 (없으면 0)
+export function getQuarter(data: RevenueData, year: number, quarter: number): QuarterRevenue {
+  return data.byQuarter[`${year}-Q${quarter}`] ?? { total: 0, count: 0 };
+}
+
+// 전년 동기 대비 증감률 (%) — 전년 0이면 null
+export function calcYoY(current: number, previous: number): number | null {
+  if (previous === 0) return null;
+  return ((current - previous) / Math.abs(previous)) * 100;
+}

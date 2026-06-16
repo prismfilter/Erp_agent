@@ -1,0 +1,56 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# 개발 로그
+*.log
+dev-*.log
+
+# Supabase 임시 파일
+supabase/.temp/
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Playwright MCP 임시 스냅샷 · 검증 스크린샷 (모든 산출물을 이 폴더로 일원화)
+.playwright-mcp/
+
+# 루트에 실수로 생성되는 검증용 이미지 방어 (public/ 자산은 하위 경로라 영향 없음)
+/*.png
+/*.jpg
+/*.jpeg

@@ -1,0 +1,70 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["@context7/mcp"],
+      "disabled": false,
+      "alwaysAllow": ["resources/list", "tools/call"],
+      "env": {
+        "CONTEXT7_API_KEY": "ctx7sk-daa1b2e7-63ed-4583-95c3-82da85060062",
+        "CONTEXT7_ENABLED": "true"
+      },
+      "description": "최신 공식 문서 및 API 예제를 실시간으로 제공하는 MCP 서버",
+      "documentationSources": [
+        {
+          "name": "Next.js",
+          "version": "16.2+",
+          "url": "https://nextjs.org/docs"
+        },
+        {
+          "name": "React",
+          "version": "19.2+",
+          "url": "https://react.dev"
+        },
+        {
+          "name": "Tailwind CSS",
+          "version": "4.0+",
+          "url": "https://tailwindcss.com/docs"
+        },
+        {
+          "name": "TypeScript",
+          "version": "5.0+",
+          "url": "https://www.typescriptlang.org/docs"
+        },
+        {
+          "name": "Supabase",
+          "version": "latest",
+          "url": "https://supabase.com/docs"
+        },
+        {
+          "name": "React Hook Form",
+          "version": "7.78+",
+          "url": "https://react-hook-form.com"
+        },
+        {
+          "name": "Zod",
+          "version": "4.4+",
+          "url": "https://zod.dev"
+        },
+        {
+          "name": "shadcn/ui",
+          "version": "4.10+",
+          "url": "https://ui.shadcn.com"
+        },
+        {
+          "name": "Zustand",
+          "version": "5.0+",
+          "url": "https://docs.pmnd.rs/zustand"
+        },
+        {
+          "name": "Lucide React",
+          "version": "1.17+",
+          "url": "https://lucide.dev"
+        }
+      ]
+    }
+  },
+  "autoInitialize": true,
+  "cacheResponses": true,
+  "cacheTTL": 3600
+}
