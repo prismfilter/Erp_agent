@@ -21,6 +21,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<PreviewTab>(tabParam === 'internal' ? 'internal' : 'external');
   const [showNegotiatedNote, setShowNegotiatedNote] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   // URL ?tab= 쿼리와 탭 동기화 — 프리렌더/늦은 도착으로 초기값을 놓쳐도 보정.
   // 사용자의 수동 탭 클릭은 URL을 바꾸지 않으므로 보존됨.
@@ -45,6 +46,18 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
 
   // PDF 저장/인쇄 — 활성 탭만 인쇄 (print CSS)
   const handlePrint = () => window.print();
+
+  const handleExcel = async () => {
+    if (!invoice) return;
+    setExporting(true);
+    try {
+      await exportInvoiceExcel(invoice);
+    } catch {
+      alert('엑셀 생성에 실패했습니다.');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -82,10 +95,11 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
             ✏️ 수정
           </Link>
           <button
-            onClick={() => exportInvoiceExcel(invoice)}
-            className="px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition"
+            onClick={handleExcel}
+            disabled={exporting}
+            className="px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
           >
-            📊 엑셀 다운로드
+            {exporting ? '생성 중...' : '📊 엑셀 다운로드'}
           </button>
           <button
             onClick={handlePrint}

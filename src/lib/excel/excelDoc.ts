@@ -1,0 +1,225 @@
+// 청구서·정산서 엑셀(.xlsx) 공용 디자인 — PDF 미리보기와 유사하게(로고·진한 헤더·테두리·합계 박스·푸터).
+// exceljs는 셀 색/폰트/테두리/이미지/병합을 지원. 무거우므로 호출측에서 동적 import 한다.
+
+import type { Workbook, Worksheet, Borders } from 'exceljs';
+
+export const COMPANY = {
+  name: '주식회사 프리즘필터뮤직그룹',
+  bizNumber: '718-87-01509',
+  address: '서울특별시 강남구 도산대로 26길 20, B2',
+};
+
+// 색상(ARGB) — PDF 미리보기와 동일 톤
+export const C = {
+  ink: 'FF0F172A', // 본문(거의 검정)
+  dark: 'FF1E293B', // 진한 헤더 배경 / 합계 강조 (slate-800)
+  muted: 'FF64748B', // 연한 라벨
+  light: 'FFF1F5F9', // 옅은 배경(정보/소계)
+  indigo: 'FF4F46E5', // 강조(INVOICE/SETTLEMENT)
+  white: 'FFFFFFFF',
+  line: 'FFCBD5E1', // 테두리(slate-300)
+};
+
+export const FONT = '맑은 고딕'; // Korean Windows 기본 — 엑셀에서 보기 좋게
+export const WON = '#,##0" 원"';
+
+const thin = (argb = C.line) => ({ style: 'thin' as const, color: { argb } });
+export const allBorder: Partial<Borders> = {
+  top: thin(),
+  left: thin(),
+  bottom: thin(),
+  right: thin(),
+};
+export const solid = (argb: string) =>
+  ({ type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb } });
+
+// public 로고를 ArrayBuffer로 — addImage(buffer)에 사용
+export async function loadLogo(): Promise<ArrayBuffer | null> {
+  try {
+    const res = await fetch('/prismfilter-logo.png');
+    if (!res.ok) return null;
+    return await res.arrayBuffer();
+  } catch {
+    return null;
+  }
+}
+
+// 문서 헤더(로고 + 브랜드 + 타이틀) — 1~4행 사용, 다음 콘텐츠 시작 행 반환
+export function drawHeader(
+  wb: Workbook,
+  ws: Worksheet,
+  logo: ArrayBuffer | null,
+  opts: { title: string; subtitle: string; cols: number }
+): number {
+  const { title, subtitle, cols } = opts;
+  ws.getRow(1).height = 30;
+  ws.getRow(2).height = 16;
+  ws.getRow(3).height = 12;
+  ws.getRow(4).height = 6;
+
+  const brand = ws.getCell(1, 3);
+  brand.value = 'PRISMFILTER MUSIC GROUP';
+  brand.font = { name: FONT, bold: true, size: 14, color: { argb: C.ink } };
+  brand.alignment = { vertical: 'middle' };
+
+  const company = ws.getCell(2, 3);
+  company.value = COMPANY.name;
+  company.font = { name: FONT, size: 10, color: { argb: C.muted } };
+
+  const t = ws.getCell(1, cols);
+  t.value = title;
+  t.font = { name: FONT, bold: true, size: 22, color: { argb: C.ink } };
+  t.alignment = { horizontal: 'right', vertical: 'middle' };
+
+  const s = ws.getCell(2, cols);
+  s.value = subtitle;
+  s.font = { name: FONT, bold: true, size: 9, color: { argb: C.indigo } };
+  s.alignment = { horizontal: 'right' };
+
+  // 헤더 하단 구분선(굵게)
+  for (let c = 1; c <= cols; c++) {
+    ws.getCell(4, c).border = { bottom: { style: 'medium', color: { argb: C.ink } } };
+  }
+
+  if (logo) {
+    const id = wb.addImage({ buffer: logo, extension: 'png' });
+    ws.addImage(id, { tl: { col: 0.2, row: 0.15 }, ext: { width: 78, height: 78 } });
+  }
+  return 6;
+}
+
+// 정보 한 줄 (라벨 1~2열 병합 + 값 3~cols 병합)
+export function infoRow(
+  ws: Worksheet,
+  row: number,
+  cols: number,
+  label: string,
+  value: string
+): void {
+  ws.mergeCells(row, 1, row, 2);
+  const l = ws.getCell(row, 1);
+  l.value = label;
+  l.font = { name: FONT, size: 10, color: { argb: C.muted } };
+  l.alignment = { horizontal: 'left', vertical: 'middle' };
+
+  ws.mergeCells(row, 3, row, cols);
+  const v = ws.getCell(row, 3);
+  v.value = value;
+  v.font = { name: FONT, bold: true, size: 10, color: { argb: C.ink } };
+  v.alignment = { horizontal: 'left', vertical: 'middle' };
+  ws.getRow(row).height = 18;
+}
+
+export interface HeadCol {
+  text: string;
+  align?: 'left' | 'center' | 'right';
+}
+
+// 표 헤더 (진한 배경 + 흰 굵은 글씨 + 테두리)
+export function tableHead(ws: Worksheet, row: number, headers: HeadCol[]): void {
+  headers.forEach((h, i) => {
+    const cell = ws.getCell(row, i + 1);
+    cell.value = h.text;
+    cell.font = { name: FONT, bold: true, size: 10, color: { argb: C.white } };
+    cell.fill = solid(C.dark);
+    cell.alignment = { horizontal: h.align ?? 'center', vertical: 'middle' };
+    cell.border = allBorder;
+  });
+  ws.getRow(row).height = 22;
+}
+
+export type CellAlign = 'left' | 'center' | 'right';
+
+// 표 데이터 한 행 (값 + 정렬 + 통화서식 + 테두리)
+export function tableRow(
+  ws: Worksheet,
+  row: number,
+  cells: { value: string | number; align?: CellAlign; won?: boolean }[]
+): void {
+  cells.forEach((c, i) => {
+    const cell = ws.getCell(row, i + 1);
+    cell.value = c.value;
+    cell.font = { name: FONT, size: 10, color: { argb: C.ink } };
+    cell.alignment = { horizontal: c.align ?? 'center', vertical: 'middle', wrapText: i === 2 };
+    cell.border = allBorder;
+    if (c.won) cell.numFmt = WON;
+  });
+  ws.getRow(row).height = 20;
+}
+
+// 합계 한 줄 (라벨 우측정렬 병합 + 값) — emph면 진한 배경 흰 글씨
+export function totalRow(
+  ws: Worksheet,
+  row: number,
+  cols: number,
+  label: string,
+  amount: number,
+  emph = false
+): void {
+  // 라벨: 1 ~ (cols-1) 병합, 우측 정렬
+  ws.mergeCells(row, 1, row, cols - 1);
+  const l = ws.getCell(row, 1);
+  l.value = label;
+  l.alignment = { horizontal: 'right', vertical: 'middle' };
+  const v = ws.getCell(row, cols);
+  v.value = amount;
+  v.numFmt = WON;
+  v.alignment = { horizontal: 'right', vertical: 'middle' };
+  if (emph) {
+    l.font = { name: FONT, bold: true, size: 12, color: { argb: C.white } };
+    v.font = { name: FONT, bold: true, size: 12, color: { argb: C.white } };
+    l.fill = solid(C.dark);
+    v.fill = solid(C.dark);
+    ws.getRow(row).height = 26;
+  } else {
+    l.font = { name: FONT, size: 10, color: { argb: C.ink } };
+    v.font = { name: FONT, size: 10, color: { argb: C.ink } };
+    ws.getRow(row).height = 20;
+  }
+  l.border = allBorder;
+  v.border = allBorder;
+}
+
+// 푸터 (회사 정보) — row, row+1 사용
+export function drawFooter(
+  ws: Worksheet,
+  row: number,
+  cols: number,
+  account: string
+): void {
+  for (let c = 1; c <= cols; c++) {
+    ws.getCell(row, c).border = { top: { style: 'thin', color: { argb: C.line } } };
+  }
+  const r1 = ws.getCell(row, 1);
+  r1.value = COMPANY.name;
+  r1.font = { name: FONT, bold: true, size: 10, color: { argb: C.ink } };
+  const right1 = ws.getCell(row, cols);
+  right1.value = `사업자등록번호 : ${COMPANY.bizNumber}`;
+  right1.font = { name: FONT, size: 9, color: { argb: C.muted } };
+  right1.alignment = { horizontal: 'right' };
+
+  const r2 = ws.getCell(row + 1, 1);
+  r2.value = COMPANY.address;
+  r2.font = { name: FONT, size: 9, color: { argb: C.muted } };
+  const right2 = ws.getCell(row + 1, cols);
+  right2.value = account;
+  right2.font = { name: FONT, size: 9, color: { argb: C.muted } };
+  right2.alignment = { horizontal: 'right' };
+  ws.getRow(row).height = 18;
+}
+
+// 워크북 다운로드 (Blob)
+export async function downloadWorkbook(wb: Workbook, filename: string): Promise<void> {
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
