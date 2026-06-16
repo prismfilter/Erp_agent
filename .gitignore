@@ -57,3 +57,6 @@ next-env.d.ts
 /*.png
 /*.jpg
 /*.jpeg
+
+# 루트에 실수로 생성되는 검증용 엑셀 방어
+/*.xlsx
