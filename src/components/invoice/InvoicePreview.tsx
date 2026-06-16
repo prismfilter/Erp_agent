@@ -47,7 +47,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
     : '-';
 
   return (
-    <div className="invoice-print-area mx-auto w-full max-w-[794px] min-h-[1090px] bg-white text-black border border-gray-200 shadow-lg p-12 flex flex-col print:max-w-none print:min-h-0 print:shadow-none print:border-0 print:p-0">
+    <div className="invoice-print-area mx-auto w-full max-w-[794px] min-h-[1123px] bg-white text-black border border-gray-200 shadow-lg p-12 flex flex-col print:max-w-none print:min-h-[265mm] print:shadow-none print:border-0 print:p-0">
       {/* ===== 헤더: 좌측 로고/브랜드 · 우측 타이틀 ===== */}
       <div className="flex items-start justify-between pb-6 border-b-2 border-slate-800">
         <div className="flex items-center gap-3">
