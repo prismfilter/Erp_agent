@@ -169,23 +169,23 @@ export function AppSidebar({
     >
       {/* ===== 헤더: 로고 + 접기 버튼 (메뉴와 동일 패턴: 가로 고정, 로고 고정폭 가운데) ===== */}
       {/* 헤더 좌우 패딩을 nav(축소 p-2 / 펼침 p-4)와 일치시켜 로고가 메뉴 아이콘과 같은 위치·움직임을 갖게 함 */}
-      <div className={`group h-16 flex items-center border-b border-border ${collapsed ? 'px-2' : 'px-4'}`}>
+      <div className={`group h-16 flex items-center border-b border-border ${collapsed ? '' : 'pr-2'}`}>
         <Link
           href="/"
           onClick={onClose}
-          className="flex items-center flex-1 min-w-0 rounded-lg px-3 transition focus:outline-none"
+          className="flex items-center flex-1 min-w-0 rounded-lg transition focus:outline-none"
           aria-label="홈으로 돌아가기"
         >
-          {/* 로고 고정폭 영역 — 메뉴 아이콘과 동일 위치(가운데) → 호버 펼침 시 점프 방지 */}
-          <span className="w-8 flex justify-center flex-shrink-0">
+          {/* 로고: 축소 사이드바 폭(w-16)에 가운데 정렬 → 축소 시 사이드바 중앙, 펼침 시 동일 위치(좌측 고정·점프 방지) */}
+          <span className="w-16 flex justify-center flex-shrink-0">
             <img
               src="/prismfilter-logo.png"
               alt="PRISMFILTER MUSIC GROUP"
-              className="prism-logo w-8 h-8"
+              className="prism-logo w-14 h-14"
             />
           </span>
           {!collapsed && (
-            <div className="ml-2 flex-1 min-w-0 whitespace-nowrap">
+            <div className="flex-1 min-w-0 whitespace-nowrap">
               <div className="text-sm font-bold text-foreground truncate">PRISMFILTER ERP</div>
               <div className="text-xs text-muted-foreground truncate">정산 자동화</div>
             </div>
