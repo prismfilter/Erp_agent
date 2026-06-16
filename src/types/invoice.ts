@@ -1,6 +1,6 @@
 // 인보이스(청구서) 도메인 타입 정의
 
-export type InvoiceStatus = 'draft' | 'confirmed' | 'sent' | 'paid';
+export type InvoiceStatus = 'draft' | 'sent' | 'paid';
 export type InvoiceItemType = 'normal' | 'discount' | 'custom';
 
 // 프라이스 테이블 항목 (마스터)

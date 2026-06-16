@@ -45,7 +45,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             collapsed && hovered ? 'shadow-2xl' : ''
           }`}
         >
-          <AppSidebar collapsed={effectiveCollapsed} onToggleCollapse={toggleCollapsed} />
+          <AppSidebar
+            collapsed={effectiveCollapsed}
+            persistentCollapsed={collapsed}
+            onToggleCollapse={toggleCollapsed}
+          />
         </div>
       </div>
 

@@ -25,16 +25,17 @@ export interface QuarterRevenue {
 
 export interface RevenueData {
   byQuarter: Record<string, QuarterRevenue>;          // 'YYYY-Q1' → 매출·건수
+  byMonth: Record<string, QuarterRevenue>;            // 'YYYY-1' ~ 'YYYY-12' → 매출·건수
   byYear: Record<number, number>;                     // 연도 → 매출 합
   byCategory: Record<string, Record<number, number>>; // 카테고리 → (연도 → 매출 합)
   years: number[];                                    // 데이터 존재 연도 (내림차순)
 }
 
-// invoice_date('YYYY-MM-DD')에서 연도·분기 추출 — 타임존 이슈 없는 문자열 파싱
-function parseYearQuarter(invoiceDate: string): { year: number; quarter: number } {
+// invoice_date('YYYY-MM-DD')에서 연도·월·분기 추출 — 타임존 이슈 없는 문자열 파싱
+function parseYearMonth(invoiceDate: string): { year: number; month: number; quarter: number } {
   const year = parseInt(invoiceDate.slice(0, 4), 10);
   const month = parseInt(invoiceDate.slice(5, 7), 10);
-  return { year, quarter: Math.ceil(month / 3) };
+  return { year, month, quarter: Math.ceil(month / 3) };
 }
 
 export function aggregateRevenue(paidInvoices: Invoice[], priceItems: PriceItem[]): RevenueData {
@@ -42,14 +43,16 @@ export function aggregateRevenue(paidInvoices: Invoice[], priceItems: PriceItem[
   priceItems.forEach((p) => priceItemCategory.set(p.id, p.category));
 
   const byQuarter: Record<string, QuarterRevenue> = {};
+  const byMonth: Record<string, QuarterRevenue> = {};
   const byYear: Record<number, number> = {};
   const byCategory: Record<string, Record<number, number>> = {};
   const yearSet = new Set<number>();
 
   for (const inv of paidInvoices) {
     if (!inv.invoice_date) continue;
-    const { year, quarter } = parseYearQuarter(inv.invoice_date);
+    const { year, month, quarter } = parseYearMonth(inv.invoice_date);
     const qKey = `${year}-Q${quarter}`;
+    const mKey = `${year}-${month}`;
     yearSet.add(year);
 
     const internal = getInternalItems(inv.items ?? []);
@@ -71,11 +74,16 @@ export function aggregateRevenue(paidInvoices: Invoice[], priceItems: PriceItem[
     byQuarter[qKey].total += invoiceTotal;
     byQuarter[qKey].count += 1;
 
+    if (!byMonth[mKey]) byMonth[mKey] = { total: 0, count: 0 };
+    byMonth[mKey].total += invoiceTotal;
+    byMonth[mKey].count += 1;
+
     byYear[year] = (byYear[year] ?? 0) + invoiceTotal;
   }
 
   return {
     byQuarter,
+    byMonth,
     byYear,
     byCategory,
     years: Array.from(yearSet).sort((a, b) => b - a),
@@ -85,6 +93,11 @@ export function aggregateRevenue(paidInvoices: Invoice[], priceItems: PriceItem[
 // 분기 매출 조회 헬퍼 (없으면 0)
 export function getQuarter(data: RevenueData, year: number, quarter: number): QuarterRevenue {
   return data.byQuarter[`${year}-Q${quarter}`] ?? { total: 0, count: 0 };
+}
+
+// 월 매출 조회 헬퍼 (없으면 0) — month는 1~12
+export function getMonth(data: RevenueData, year: number, month: number): QuarterRevenue {
+  return data.byMonth[`${year}-${month}`] ?? { total: 0, count: 0 };
 }
 
 // 전년 동기 대비 증감률 (%) — 전년 0이면 null
