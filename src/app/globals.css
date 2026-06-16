@@ -1,6 +1,5 @@
-/* Pretendard 가변 폰트(동적 서브셋) — 전역 기본 글꼴. @import는 최상단이어야 하므로 tailwindcss보다 먼저.
-   버전 고정(@v1.3.9)·min으로 캐시 안정화(jsDelivr @latest 회피) */
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
+/* Pretendard 정적(static) 동적 서브셋 — 작은 글씨 힌팅이 우수해 선명. @import는 최상단(tailwindcss보다 먼저). */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css");
 @import "tailwindcss";
 
 /* 실제 CSS 변수: --color- 없이 정의 (와일드카드 생성 방지) */
@@ -76,8 +75,8 @@
   html,
   body {
     height: 100%;
-    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
-      "Segoe UI", "Helvetica Neue", sans-serif;
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI",
+      "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
     margin: 0;
     padding: 0;
     background-color: var(--background);
@@ -171,8 +170,8 @@
 */
 .invoice-print-area,
 .settlement-print-area {
-  font-family: "Pretendard Variable", Pretendard, -apple-system, "Segoe UI",
-    "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  font-family: "Pretendard", -apple-system, "Segoe UI", "Malgun Gothic",
+    "Apple SD Gothic Neo", sans-serif;
 }
 
 /*
@@ -204,9 +203,14 @@
     top: 0;
     width: 100%;
     max-width: none !important;
-    min-height: 0 !important;
     box-shadow: none !important;
     background: #ffffff !important;
+  }
+
+  /* A4 한 장(인쇄영역 269mm 중 안전 여유)으로 채워 mt-auto 푸터를 페이지 하단에 고정 */
+  .invoice-print-area,
+  .settlement-page {
+    min-height: 265mm !important;
   }
 
   /* 표 헤더·합계 박스의 진한 배경색을 인쇄 시에도 유지 */
@@ -217,10 +221,11 @@
   }
 
   /* ===== 인쇄 가독성 강화 (또렷하게·진하게·확대) ===== */
-  /* 얇은 안티앨리어싱 해제 → 획이 진하고 또렷하게 (흐릿함 해결) */
+  /* grayscale 안티앨리어싱 — 서브픽셀 색번짐(노이즈) 없이 또렷 */
   .invoice-print-area,
   .settlement-print-area {
-    -webkit-font-smoothing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     text-rendering: geometricPrecision;
   }
 
