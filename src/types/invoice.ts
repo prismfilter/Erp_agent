@@ -28,6 +28,27 @@ export interface Writer {
   created_at: string;
 }
 
+// 저작물 DB (전속작가 영구 관리 대상 저작물)
+export interface MusicWork {
+  id: string;
+  no: number;                       // 전역 순번 (UNIQUE, 중복 불가)
+  writer_name: string;              // 작가명
+  komca_code: string | null;        // KOMCA 저작물 코드
+  song_title: string;               // 곡명
+  artist: string | null;            // 아티스트
+  domestic_share: number | null;    // 국내 지분(%)
+  overseas_share: number | null;    // 국외 지분(%)
+  rate: number | null;              // 요율
+  recontract_date: string | null;   // 전속작가 재계약일
+  created_at: string;
+}
+
+// 작가별 저작물 건수 (좌측 작가 목록용)
+export interface WorkWriterGroup {
+  writer_name: string;
+  count: number;
+}
+
 // 거래처
 export interface Client {
   id: string;
