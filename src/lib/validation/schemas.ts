@@ -89,6 +89,31 @@ export const writerUpdateSchema = z.object({
   fee_rate: z.number().min(0).max(100).optional(),
 });
 
+// ── 저작물 DB ─────────────────────────────────────────────────────────────
+export const musicWorkCreateSchema = z.object({
+  no: z.number().int().positive('NO.는 1 이상의 정수여야 합니다.'),
+  writer_name: z.string().trim().min(1, '작가명은 필수입니다.'),
+  komca_code: z.string().trim().nullable().optional(),
+  song_title: z.string().trim().min(1, '곡명은 필수입니다.'),
+  artist: z.string().trim().nullable().optional(),
+  domestic_share: z.number().nullable().optional(),
+  overseas_share: z.number().nullable().optional(),
+  rate: z.number().nullable().optional(),
+  recontract_date: z.string().nullable().optional(),
+});
+
+export const musicWorkUpdateSchema = z.object({
+  no: z.number().int().positive().optional(),
+  writer_name: z.string().trim().min(1).optional(),
+  komca_code: z.string().trim().nullable().optional(),
+  song_title: z.string().trim().min(1).optional(),
+  artist: z.string().trim().nullable().optional(),
+  domestic_share: z.number().nullable().optional(),
+  overseas_share: z.number().nullable().optional(),
+  rate: z.number().nullable().optional(),
+  recontract_date: z.string().nullable().optional(),
+});
+
 // ── 용역 정산 ─────────────────────────────────────────────────────────────
 export const serviceSettlementCreateSchema = z.object({
   writer_name: z.string().trim().min(1, '작가명은 필수입니다.'),
