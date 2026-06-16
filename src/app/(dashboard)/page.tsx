@@ -108,11 +108,11 @@ export default function HomePage() {
           <table className="w-full text-sm">
             <thead className="bg-primary/10">
               <tr>
-                <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">작가명</th>
-                <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">정산분기</th>
-                <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">지급액</th>
-                <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">상태</th>
-                <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">날짜</th>
+                <th className="px-6 py-3 text-left font-bold text-foreground text-xs uppercase">작가명</th>
+                <th className="px-6 py-3 text-left font-bold text-foreground text-xs uppercase">정산분기</th>
+                <th className="px-6 py-3 text-left font-bold text-foreground text-xs uppercase">지급액</th>
+                <th className="px-6 py-3 text-left font-bold text-foreground text-xs uppercase">상태</th>
+                <th className="px-6 py-3 text-left font-bold text-foreground text-xs uppercase">날짜</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">

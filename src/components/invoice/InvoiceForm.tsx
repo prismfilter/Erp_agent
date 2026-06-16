@@ -378,15 +378,15 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
           <table className="w-full text-xs invoice-line-table">
             <thead className="bg-primary/10 border-b border-border">
               <tr>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-10">No</th>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[180px]">항목</th>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[220px]">상세내용</th>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground min-w-[110px]">작업자</th>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">공급가액</th>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-28">할인금액</th>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-24">작가수수료(%)</th>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">귀속금액</th>
-                <th className="px-2 py-2.5 text-center font-semibold text-foreground w-32">액션</th>
+                <th className="px-2 py-2.5 text-center font-bold text-foreground w-10">No</th>
+                <th className="px-2 py-2.5 text-center font-bold text-foreground min-w-[180px]">항목</th>
+                <th className="px-2 py-2.5 text-center font-bold text-foreground min-w-[220px]">상세내용</th>
+                <th className="px-2 py-2.5 text-center font-bold text-foreground min-w-[110px]">작업자</th>
+                <th className="px-2 py-2.5 text-center font-bold text-foreground w-32">공급가액</th>
+                <th className="px-2 py-2.5 text-center font-bold text-foreground w-28">할인금액</th>
+                <th className="px-2 py-2.5 text-center font-bold text-foreground w-24">작가수수료(%)</th>
+                <th className="px-2 py-2.5 text-center font-bold text-foreground w-32">귀속금액</th>
+                <th className="px-2 py-2.5 text-center font-bold text-foreground w-32">액션</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">

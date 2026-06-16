@@ -94,10 +94,10 @@ export default function PayoutsPage() {
                   <SortableHeader label="날짜" sortKey="date" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
                   <SortableHeader label="거래처" sortKey="client" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
                   <SortableHeader label="거래명" sortKey="title" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
-                  <th className="px-4 py-3 text-left font-semibold text-foreground text-xs uppercase">작업자</th>
+                  <th className="px-4 py-3 text-left font-bold text-foreground text-xs uppercase">작업자</th>
                   <SortableHeader label="총 작가지급액 (B)" sortKey="writerPay" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
                   <SortableHeader label="총 귀속금액 (C)" sortKey="attribution" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
-                  <th className="px-4 py-3 text-center font-semibold text-foreground text-xs uppercase whitespace-nowrap">입금 여부</th>
+                  <th className="px-4 py-3 text-center font-bold text-foreground text-xs uppercase whitespace-nowrap">입금 여부</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

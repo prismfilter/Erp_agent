@@ -39,7 +39,7 @@ export async function exportSettlementExcel(settlement: ServiceSettlement): Prom
   const result = calculateSettlement(detail.map((d) => ({ amount: d.writer_pay, rate: 0 })));
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'PRISM FILTER';
+  wb.creator = 'PRISMFILTER MUSIC GROUP';
   wb.created = new Date();
   const ws = wb.addWorksheet('용역 정산서');
 

@@ -55,12 +55,12 @@ export function LoadingScreen({ isDone = false }: LoadingScreenProps) {
       {/* 브랜드 */}
       <div className="flex flex-col items-center gap-3">
         <img
-          src="/prism-filter-logo.svg"
-          alt="PRISM FILTER"
+          src="/prismfilter-logo.png"
+          alt="PRISMFILTER MUSIC GROUP"
           className="prism-logo w-12 h-12"
         />
         <div className="text-center">
-          <p className="text-base font-bold text-foreground tracking-widest">PRISM FILTER</p>
+          <p className="text-base font-bold text-foreground tracking-wide">PRISMFILTER MUSIC GROUP</p>
           <p className="text-xs text-muted-foreground mt-0.5">정산 자동화 시스템</p>
         </div>
       </div>

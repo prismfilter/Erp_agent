@@ -69,12 +69,12 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center">
             <img
-              src="/prism-filter-logo.svg"
-              alt="PRISM FILTER"
+              src="/prismfilter-logo.png"
+              alt="PRISMFILTER MUSIC GROUP"
               className="prism-logo w-20 h-20"
             />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">PRISM FILTER</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">PRISMFILTER MUSIC GROUP</h1>
           <p className="text-muted-foreground">정산 자동화 시스템</p>
         </div>
 

@@ -338,7 +338,7 @@ export default function StaffPage() {
               <thead className="bg-primary/10 border-b border-border">
                 <tr>
                   <SortableHeader label="이름" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
-                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">사용자 ID</th>
+                  <th className="px-6 py-3 text-left font-bold text-foreground text-xs uppercase">사용자 ID</th>
                   <SortableHeader label="역할" sortKey="role" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
                   <SortableHeader label="등록일" sortKey="created_at" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
                   <SortableHeader label="계약일" sortKey="contract_date" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />

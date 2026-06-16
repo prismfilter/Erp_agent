@@ -118,10 +118,10 @@ export default function ServiceSettlementPage() {
             <table className="w-full text-sm">
               <thead className="bg-primary/10 border-b border-border">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-foreground text-xs uppercase">작가명</th>
-                  <th className="px-4 py-3 text-center font-semibold text-foreground text-xs uppercase">정산 기간</th>
-                  <th className="px-4 py-3 text-center font-semibold text-foreground text-xs uppercase">정산 금액</th>
-                  <th className="px-4 py-3 text-center font-semibold text-foreground text-xs uppercase">정산일</th>
+                  <th className="px-4 py-3 text-left font-bold text-foreground text-xs uppercase">작가명</th>
+                  <th className="px-4 py-3 text-center font-bold text-foreground text-xs uppercase">정산 기간</th>
+                  <th className="px-4 py-3 text-center font-bold text-foreground text-xs uppercase">정산 금액</th>
+                  <th className="px-4 py-3 text-center font-bold text-foreground text-xs uppercase">정산일</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
