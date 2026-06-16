@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Invoice, InvoiceItem, PriceItem } from '@/types/invoice';
-import { aggregateRevenue, getQuarter, calcYoY } from './aggregator';
+import { aggregateRevenue, getQuarter, getMonth, calcYoY } from './aggregator';
 
 function item(partial: Partial<InvoiceItem>): InvoiceItem {
   return {
@@ -104,6 +104,32 @@ describe('aggregateRevenue', () => {
   it('invoice_date가 없는 청구서는 건너뛴다', () => {
     const data = aggregateRevenue([invoice('', [item({ supply_amount: 100 })])], priceItems);
     expect(data.years).toEqual([]);
+  });
+
+  it('귀속금액을 월별로도 합산한다 (getMonth)', () => {
+    const data = aggregateRevenue(
+      [invoice('2026-05-10', [item({ price_item_id: 'pi-album', supply_amount: 1_000_000 })])],
+      priceItems
+    );
+    // 2026-05 → 5월. 1,000,000 × 30% = 300,000
+    expect(getMonth(data, 2026, 5).total).toBe(300_000);
+    expect(getMonth(data, 2026, 5).count).toBe(1);
+    // 데이터 없는 달은 0
+    expect(getMonth(data, 2026, 4).total).toBe(0);
+    expect(getMonth(data, 2026, 4).count).toBe(0);
+  });
+
+  it('같은 달 여러 청구서를 누적한다', () => {
+    const data = aggregateRevenue(
+      [
+        invoice('2026-03-05', [item({ supply_amount: 100_000 })], 'a'),
+        invoice('2026-03-20', [item({ supply_amount: 200_000 })], 'b'),
+      ],
+      priceItems
+    );
+    // (100,000 + 200,000) × 30% = 90,000, 2건
+    expect(getMonth(data, 2026, 3).total).toBe(90_000);
+    expect(getMonth(data, 2026, 3).count).toBe(2);
   });
 });
 

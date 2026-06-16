@@ -4,31 +4,20 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import type { Invoice, InvoiceStatus, Client } from '@/types/invoice';
 import { calcInvoiceTotals } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableHeader } from '@/components/ui/SortableHeader';
+import {
+  InvoiceStatusSelect,
+  STATUS_LABEL,
+  INVOICE_STATUS_ORDER,
+} from '@/components/invoice/InvoiceStatusSelect';
 
 type StatusTab = '전체' | InvoiceStatus;
 
-const STATUS_LABEL: Record<InvoiceStatus, string> = {
-  draft: '작성 중',
-  confirmed: '확정',
-  sent: '발송됨',
-  paid: '입금완료',
-};
-
-const STATUS_STYLE: Record<InvoiceStatus, string> = {
-  draft: 'bg-gray-500/20 text-gray-400',
-  confirmed: 'bg-blue-500/20 text-blue-400',
-  sent: 'bg-amber-500/20 text-amber-400',
-  paid: 'bg-green-500/20 text-green-400',
-};
-
 export default function InvoicesPage() {
-  const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,14 +54,21 @@ export default function InvoicesPage() {
     setTimeout(() => setToast(null), 2000);
   };
 
-  const handleDuplicate = async (id: string) => {
-    const res = await fetch(`/api/invoices/${id}/duplicate`, { method: 'POST' });
-    if (res.ok) {
-      const { invoice } = await res.json();
-      showToast('복제 완료');
-      router.push(`/invoices/${invoice.id}/edit`);
-    } else {
-      showToast('복제 실패');
+  // 상태 인라인 변경 — 낙관적 갱신 후 PATCH, 실패 시 롤백
+  const handleStatusChange = async (id: string, status: InvoiceStatus) => {
+    const prev = invoices;
+    setInvoices((list) => list.map((inv) => (inv.id === id ? { ...inv, status } : inv)));
+    try {
+      const res = await fetch(`/api/invoices/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error();
+      showToast(`상태 변경 · ${STATUS_LABEL[status]}`);
+    } catch {
+      setInvoices(prev); // 롤백
+      showToast('상태 변경 실패');
     }
   };
 
@@ -127,7 +123,7 @@ export default function InvoicesPage() {
 
       {/* 상태 탭 */}
       <div className="flex gap-2 border-b border-border overflow-x-auto">
-        {(['전체', 'draft', 'confirmed', 'sent', 'paid'] as StatusTab[]).map((tab) => (
+        {(['전체', ...INVOICE_STATUS_ORDER] as StatusTab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setStatusTab(tab)}
@@ -211,16 +207,15 @@ export default function InvoicesPage() {
                         {formatWon(totals.grandTotal)}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`px-2.5 py-1 rounded text-xs font-medium ${STATUS_STYLE[inv.status]}`}>
-                          {STATUS_LABEL[inv.status]}
-                        </span>
+                        <InvoiceStatusSelect
+                          value={inv.status}
+                          onChange={(status) => handleStatusChange(inv.id, status)}
+                        />
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1 text-xs">
-                          <Link href={`/invoices/${inv.id}`} className="px-2 py-1 text-muted-foreground hover:text-foreground transition" title="보기">보기</Link>
-                          <Link href={`/invoices/${inv.id}/edit`} className="px-2 py-1 text-muted-foreground hover:text-foreground transition" title="수정">수정</Link>
-                          <button onClick={() => handleDuplicate(inv.id)} className="px-2 py-1 text-muted-foreground hover:text-primary transition" title="복제">복제</button>
-                          <button onClick={() => handleDelete(inv.id, inv.title)} className="px-2 py-1 text-red-400 hover:text-red-300 transition" title="삭제">삭제</button>
+                          <Link href={`/invoices/${inv.id}`} className="px-2 py-1 text-muted-foreground hover:text-foreground transition cursor-pointer" title="보기">보기</Link>
+                          <button onClick={() => handleDelete(inv.id, inv.title)} className="px-2 py-1 text-red-400 hover:text-red-300 transition cursor-pointer" title="삭제">삭제</button>
                         </div>
                       </td>
                     </tr>

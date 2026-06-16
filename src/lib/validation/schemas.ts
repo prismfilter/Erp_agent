@@ -4,7 +4,7 @@
 import { z } from 'zod';
 
 const ROLE = z.enum(['ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER']);
-const INVOICE_STATUS = z.enum(['draft', 'confirmed', 'sent', 'paid']);
+const INVOICE_STATUS = z.enum(['draft', 'sent', 'paid']);
 const ITEM_TYPE = z.enum(['normal', 'discount', 'custom']);
 
 // ── 청구서 라인 항목 ──────────────────────────────────────────────────────

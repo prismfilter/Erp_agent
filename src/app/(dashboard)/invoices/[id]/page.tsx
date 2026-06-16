@@ -5,18 +5,11 @@
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import type { Invoice, InvoiceStatus } from '@/types/invoice';
+import type { Invoice } from '@/types/invoice';
 import { InvoicePreview } from '@/components/invoice/InvoicePreview';
 import { exportInvoiceExcel } from '@/lib/invoice/excelExport';
 
 type PreviewTab = 'external' | 'internal';
-
-const STATUS_OPTIONS: { value: InvoiceStatus; label: string }[] = [
-  { value: 'draft', label: '작성 중' },
-  { value: 'confirmed', label: '확정' },
-  { value: 'sent', label: '발송됨' },
-  { value: 'paid', label: '입금완료' },
-];
 
 export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -50,16 +43,6 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
     })();
   }, [id]);
 
-  const handleStatusChange = async (status: InvoiceStatus) => {
-    if (!invoice) return;
-    const res = await fetch(`/api/invoices/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-    if (res.ok) setInvoice({ ...invoice, status });
-  };
-
   // PDF 저장/인쇄 — 활성 탭만 인쇄 (print CSS)
   const handlePrint = () => window.print();
 
@@ -92,15 +75,6 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={invoice.status}
-            onChange={(e) => handleStatusChange(e.target.value as InvoiceStatus)}
-            className="px-3 py-2 text-xs bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
-          >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s.value} value={s.value}>{s.label}</option>
-            ))}
-          </select>
           <Link
             href={`/invoices/${id}/edit`}
             className="px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition"

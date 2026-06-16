@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import type { RevenueData } from '@/lib/revenue/aggregator';
 import { REVENUE_CATEGORIES } from '@/lib/revenue/aggregator';
 import { formatWon } from '@/lib/settlement/calculator';
+import { useChartTooltip, ChartTooltip, type TooltipContent } from './ChartTooltip';
 
 interface CategoryBarChartProps {
   data: RevenueData;
@@ -14,6 +15,14 @@ interface CategoryBarChartProps {
 }
 
 export function CategoryBarChart({ data, year, compare }: CategoryBarChartProps) {
+  const { state: tip, show, move, hide } = useChartTooltip();
+
+  // 호버 핸들러 — 막대(fill)가 있을 때만 부여
+  const hoverProps = (content: TooltipContent, active: boolean) =>
+    active
+      ? { onMouseEnter: (e: React.MouseEvent) => show(e, content), onMouseMove: move, onMouseLeave: hide }
+      : undefined;
+
   // 표시할 카테고리: 고정 순서 중 데이터(현재·전년)가 있는 것만
   const rows = useMemo(() => {
     return REVENUE_CATEGORIES.map((cat) => ({
@@ -55,28 +64,28 @@ export function CategoryBarChart({ data, year, compare }: CategoryBarChartProps)
                 <span className="text-xs font-medium text-foreground">{r.category}</span>
                 <span className="text-xs tabular-nums text-foreground">{formatWon(r.current)}</span>
               </div>
-              {/* 현재 연도 막대 */}
+              {/* 현재 연도 막대 — fill(실제 막대)에만 호버 */}
               <div className="h-5 bg-muted/40 rounded-md overflow-hidden">
                 <div
+                  {...hoverProps({ title: `${year}년 · ${r.category}`, value: formatWon(r.current) }, r.current !== 0)}
                   className="h-full rounded-md transition-all duration-500"
                   style={{
                     width: `${widthPct(r.current)}%`,
                     background: 'linear-gradient(90deg, #4a5ee8 0%, #8097ff 100%)',
                   }}
-                  title={`${year}년 ${r.category}: ${formatWon(r.current)}`}
                 />
               </div>
               {/* compare: 전년도 반투명 막대 (바로 아래) */}
               {compare && (
                 <div className="h-4 mt-1 bg-muted/20 rounded-md overflow-hidden flex items-center">
                   <div
+                    {...hoverProps({ title: `${year - 1}년 · ${r.category}`, value: formatWon(r.previous) }, r.previous !== 0)}
                     className="h-full rounded-md"
                     style={{
                       width: `${widthPct(r.previous)}%`,
                       background: 'linear-gradient(90deg, #4a5474 0%, #8896cc 100%)',
                       opacity: 0.4,
                     }}
-                    title={`${year - 1}년 ${r.category}: ${formatWon(r.previous)}`}
                   />
                   <span className="text-[10px] text-muted-foreground tabular-nums ml-2 flex-shrink-0">
                     {year - 1}년 {formatWon(r.previous)}
@@ -87,6 +96,8 @@ export function CategoryBarChart({ data, year, compare }: CategoryBarChartProps)
           ))}
         </div>
       )}
+
+      <ChartTooltip state={tip} />
     </div>
   );
 }

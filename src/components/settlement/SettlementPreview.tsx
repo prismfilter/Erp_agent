@@ -98,8 +98,8 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
                   <th className="px-3 py-2.5 text-center w-10 font-semibold first:rounded-tl-md">No.</th>
                   <th className="px-3 py-2.5 text-center w-24 font-semibold">입금일</th>
                   <th className="px-3 py-2.5 text-center w-28 font-semibold">거래처</th>
-                  <th className="px-3 py-2.5 text-left font-semibold">작업 내용</th>
-                  <th className="px-3 py-2.5 text-right w-32 font-semibold last:rounded-tr-md">작가 지급액</th>
+                  <th className="px-3 py-2.5 text-center font-semibold">작업 내용</th>
+                  <th className="px-3 py-2.5 text-center w-32 font-semibold last:rounded-tr-md">작가 지급액</th>
                 </tr>
               </thead>
               <tbody>
@@ -108,12 +108,12 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
                     <td className="px-3 py-2 text-center tabular-nums text-slate-500">{startNo + idx + 1}</td>
                     <td className="px-3 py-2 text-center text-slate-600 whitespace-nowrap">{fmtDate(d.paid_at)}</td>
                     <td className="px-3 py-2 text-center text-slate-700">{d.client_name || '-'}</td>
-                    <td className="px-3 py-2 text-left text-slate-700 break-keep">
+                    <td className="px-3 py-2 text-center text-slate-700 break-keep">
                       <span className="text-slate-400">{d.title}</span>
                       {' · '}
                       {stripTitlePrefix(d.description, d.title)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-slate-700 whitespace-nowrap">
+                    <td className="px-3 py-2 text-center tabular-nums text-slate-700 whitespace-nowrap">
                       {formatWon(d.writer_pay)}
                     </td>
                   </tr>

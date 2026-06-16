@@ -5,6 +5,7 @@
 import { useMemo } from 'react';
 import type { RevenueData } from '@/lib/revenue/aggregator';
 import { formatWon } from '@/lib/settlement/calculator';
+import { useChartTooltip, ChartTooltip, type TooltipContent } from './ChartTooltip';
 
 interface YearlyChartProps {
   data: RevenueData;
@@ -15,6 +16,14 @@ interface YearlyChartProps {
 const CHART_HEIGHT = 220; // px
 
 export function YearlyChart({ data, selectedYear, onSelectYear }: YearlyChartProps) {
+  const { state: tip, show, move, hide } = useChartTooltip();
+
+  // 호버 핸들러 — active일 때만(막대 있으면 막대에, 없으면 연도 라벨에)
+  const hoverProps = (content: TooltipContent, active: boolean) =>
+    active
+      ? { onMouseEnter: (e: React.MouseEvent) => show(e, content), onMouseMove: move, onMouseLeave: hide }
+      : undefined;
+
   // 오름차순 표시 (과거 → 현재), 데이터 없으면 선택 연도만
   const years = useMemo(() => {
     const ys = [...data.years].sort((a, b) => a - b);
@@ -39,20 +48,21 @@ export function YearlyChart({ data, selectedYear, onSelectYear }: YearlyChartPro
           const total = data.byYear[y] ?? 0;
           const isSelected = y === selectedYear;
           const h = Math.max(total > 0 ? 6 : 0, (total / maxValue) * CHART_HEIGHT);
+          const content: TooltipContent = { title: `${y}년`, value: formatWon(total) };
 
           return (
             <button
               key={y}
               type="button"
               onClick={() => onSelectYear(y)}
-              className="flex-1 max-w-[120px] flex flex-col items-center justify-end gap-1 cursor-pointer group h-full"
-              title={`${y}년: ${formatWon(total)}`}
+              className="flex-1 max-w-[120px] flex flex-col items-center justify-end gap-1 cursor-pointer h-full"
             >
               <span className={`text-[10px] tabular-nums ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
                 {total > 0 ? formatWon(total) : '-'}
               </span>
               <div
-                className="w-2/3 max-w-[56px] rounded-t-md transition-all duration-300 group-hover:brightness-110"
+                {...hoverProps(content, total > 0)}
+                className="w-2/3 max-w-[56px] rounded-t-md transition-all duration-300 hover:brightness-110"
                 style={{
                   height: h,
                   background: isSelected
@@ -62,13 +72,18 @@ export function YearlyChart({ data, selectedYear, onSelectYear }: YearlyChartPro
                   boxShadow: isSelected ? '0 0 16px rgba(74, 94, 232, 0.55)' : 'none',
                 }}
               />
-              <span className={`text-xs font-semibold ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
+              <span
+                {...hoverProps(content, total === 0)}
+                className={`text-xs font-semibold ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}
+              >
                 {y}
               </span>
             </button>
           );
         })}
       </div>
+
+      <ChartTooltip state={tip} />
     </div>
   );
 }

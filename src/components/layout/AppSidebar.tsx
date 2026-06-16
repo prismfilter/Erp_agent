@@ -60,13 +60,18 @@ const NAV_ITEMS: NavItem[] = [
 export function AppSidebar({
   onClose,
   collapsed = false,
+  persistentCollapsed = false,
   onToggleCollapse,
 }: {
   onClose?: () => void;
   collapsed?: boolean;
+  // 영속(고정) 접힘 상태 — 호버로 임시 펼쳐졌을 때 토글 라벨을 '펼치기'로 보이게 하기 위함
+  persistentCollapsed?: boolean;
   onToggleCollapse?: () => void;
 }) {
   const pathname = usePathname();
+  // 호버로 펼쳐진(=실제로는 접힘) 상태에서 클릭하면 고정 펼침 → '펼치기', 그 외엔 '접기'
+  const toggleLabel = persistentCollapsed ? '사이드바 펼치기' : '사이드바 접기';
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { user } = useAuthStore();
@@ -187,19 +192,20 @@ export function AppSidebar({
           )}
         </Link>
 
-        {/* 접기 토글 (펼침 상태에서 호버 노출) — 축소 시엔 호버하면 자동 펼침되므로 숨김 */}
+        {/* 접기/펼치기 토글 (펼침·호버펼침 상태에서 호버 노출) — 라벨·아이콘은 실제 영속 상태 기준 */}
         {onToggleCollapse && !collapsed && (
           <button
             type="button"
             onClick={onToggleCollapse}
-            aria-label="사이드바 접기"
-            title="사이드바 접기"
+            aria-label={toggleLabel}
+            title={toggleLabel}
             className="flex-shrink-0 ml-1 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/15 transition cursor-pointer opacity-0 group-hover:opacity-100"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect width="18" height="18" x="3" y="3" rx="2" />
               <path d="M9 3v18" />
-              <path d="m16 15-3-3 3-3" />
+              {/* 펼치기일 땐 화살표 오른쪽, 접기일 땐 왼쪽 */}
+              <path d={persistentCollapsed ? 'm14 9 3 3-3 3' : 'm16 15-3-3 3-3'} />
             </svg>
           </button>
         )}
