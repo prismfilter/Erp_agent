@@ -179,14 +179,14 @@ export function AppSidebar({
           {/* 로고 고정폭 영역 — 메뉴 아이콘과 동일 위치(가운데) → 호버 펼침 시 점프 방지 */}
           <span className="w-8 flex justify-center flex-shrink-0">
             <img
-              src="/prism-filter-logo.svg"
-              alt="PRISM FILTER"
+              src="/prismfilter-logo.png"
+              alt="PRISMFILTER MUSIC GROUP"
               className="prism-logo w-8 h-8"
             />
           </span>
           {!collapsed && (
             <div className="ml-2 flex-1 min-w-0 whitespace-nowrap">
-              <div className="text-sm font-bold text-foreground truncate">PRISM FILTER</div>
+              <div className="text-sm font-bold text-foreground truncate">PRISMFILTER ERP</div>
               <div className="text-xs text-muted-foreground truncate">정산 자동화</div>
             </div>
           )}

@@ -47,19 +47,19 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
     : '-';
 
   return (
-    <div className="invoice-print-area mx-auto w-full max-w-[794px] min-h-[1090px] bg-white text-slate-800 border border-gray-200 shadow-lg p-12 flex flex-col print:max-w-none print:min-h-0 print:shadow-none print:border-0 print:p-0">
+    <div className="invoice-print-area mx-auto w-full max-w-[794px] min-h-[1090px] bg-white text-black border border-gray-200 shadow-lg p-12 flex flex-col print:max-w-none print:min-h-0 print:shadow-none print:border-0 print:p-0">
       {/* ===== 헤더: 좌측 로고/브랜드 · 우측 타이틀 ===== */}
       <div className="flex items-start justify-between pb-6 border-b-2 border-slate-800">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/prism-filter-logo.svg" alt="PRISM FILTER" className="w-12 h-12" />
+          <img src="/prismfilter-logo.png" alt="PRISMFILTER MUSIC GROUP" className="w-[72px] h-[72px]" />
           <div>
-            <p className="text-sm font-bold tracking-wide text-slate-800">PRISM FILTER</p>
-            <p className="text-[11px] text-slate-500">{COMPANY.name}</p>
+            <p className="text-sm font-bold tracking-wide text-black whitespace-nowrap">PRISMFILTER MUSIC GROUP</p>
+            <p className="text-[11px] text-slate-600">{COMPANY.name}</p>
           </div>
         </div>
         <div className="text-right">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-800">청구서</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-black">청구서</h1>
           <p className="text-xs tracking-[0.3em] text-indigo-500 font-semibold mt-0.5">INVOICE</p>
           {mode === 'internal' && (
             <span className="inline-block mt-1 text-[10px] font-semibold text-rose-500 border border-rose-300 rounded px-1.5 py-0.5">
@@ -72,20 +72,20 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
       {/* ===== 거래 정보 (2단) ===== */}
       <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-xs mt-6 mb-6">
         <div className="flex">
-          <span className="w-16 text-slate-400 font-medium">거래처</span>
-          <span className="font-semibold text-slate-700">{invoice.client?.name ?? '-'}</span>
+          <span className="w-16 text-slate-500 font-medium">거래처</span>
+          <span className="font-semibold text-slate-900">{invoice.client?.name ?? '-'}</span>
         </div>
         <div className="flex">
-          <span className="w-16 text-slate-400 font-medium">청구일</span>
-          <span className="font-semibold text-slate-700">{invoice.invoice_date}</span>
+          <span className="w-16 text-slate-500 font-medium">청구일</span>
+          <span className="font-semibold text-slate-900">{invoice.invoice_date}</span>
         </div>
         <div className="flex col-span-2">
-          <span className="w-16 text-slate-400 font-medium flex-shrink-0">거래명</span>
-          <span className="font-semibold text-slate-700">{invoice.title}</span>
+          <span className="w-16 text-slate-500 font-medium flex-shrink-0">거래명</span>
+          <span className="font-semibold text-slate-900">{invoice.title}</span>
         </div>
         <div className="flex col-span-2">
-          <span className="w-16 text-slate-400 font-medium flex-shrink-0">입금계좌</span>
-          <span className="font-semibold text-slate-700">{accountLabel}</span>
+          <span className="w-16 text-slate-500 font-medium flex-shrink-0">입금계좌</span>
+          <span className="font-semibold text-slate-900">{accountLabel}</span>
         </div>
       </div>
 
@@ -93,17 +93,17 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
       <table className="w-full text-xs border-collapse">
         <thead>
           <tr className="bg-slate-800 text-white">
-            <th className="px-3 py-2.5 text-center w-10 font-semibold first:rounded-tl-md">No.</th>
-            <th className="px-3 py-2.5 text-center w-24 font-semibold">작업자</th>
-            <th className="px-3 py-2.5 text-center font-semibold">상세내용</th>
-            <th className="px-3 py-2.5 text-center w-28 font-semibold">공급가액</th>
+            <th className="px-3 py-2.5 text-center w-10 font-bold first:rounded-tl-md">No.</th>
+            <th className="px-3 py-2.5 text-center w-24 font-bold">작업자</th>
+            <th className="px-3 py-2.5 text-center font-bold">상세내용</th>
+            <th className="px-3 py-2.5 text-center w-28 font-bold">공급가액</th>
             {mode === 'external' ? (
-              <th className="px-3 py-2.5 text-center w-24 font-semibold last:rounded-tr-md">세 액</th>
+              <th className="px-3 py-2.5 text-center w-24 font-bold last:rounded-tr-md">세 액</th>
             ) : (
               <>
-                <th className="px-3 py-2.5 text-center w-24 font-semibold">할인금액</th>
-                <th className="px-3 py-2.5 text-center w-28 font-semibold">작가 지급액</th>
-                <th className="px-3 py-2.5 text-center w-24 font-semibold last:rounded-tr-md">귀속 금액</th>
+                <th className="px-3 py-2.5 text-center w-24 font-bold">할인금액</th>
+                <th className="px-3 py-2.5 text-center w-28 font-bold">작가 지급액</th>
+                <th className="px-3 py-2.5 text-center w-24 font-bold last:rounded-tr-md">귀속 금액</th>
               </>
             )}
           </tr>
@@ -113,11 +113,11 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
             const bd = calcItemBreakdown(it);
             return (
             <tr key={it.id ?? idx} className="border-b border-gray-200">
-              <td className="px-3 py-2 text-center tabular-nums text-slate-500">{idx + 1}</td>
-              <td className="px-3 py-2 text-center text-slate-700">
+              <td className="px-3 py-2 text-center tabular-nums text-slate-600">{idx + 1}</td>
+              <td className="px-3 py-2 text-center text-slate-900">
                 {it.writer_names || '-'}
               </td>
-              <td className="px-3 py-2 text-center text-slate-700 break-keep">
+              <td className="px-3 py-2 text-center text-slate-900 break-keep">
                 {stripTitlePrefix(it.description, invoice.title)}
                 {showNegotiatedNote && it.is_negotiated && (
                   <span className="block text-[10px] text-indigo-400 mt-0.5">
@@ -128,26 +128,26 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
               {mode === 'external' ? (
                 <>
                   {/* 외부: 공급가액 = 할인 반영된 순매출 */}
-                  <td className="px-3 py-2 text-center tabular-nums text-slate-700 whitespace-nowrap">
+                  <td className="px-3 py-2 text-center tabular-nums text-slate-900 whitespace-nowrap">
                     {formatWon(bd.netSupply)}
                   </td>
-                  <td className="px-3 py-2 text-center tabular-nums text-slate-500 whitespace-nowrap">
+                  <td className="px-3 py-2 text-center tabular-nums text-slate-600 whitespace-nowrap">
                     {formatWon(calcLineTax(bd.netSupply))}
                   </td>
                 </>
               ) : (
                 <>
                   {/* 내부: 공급가액(할인 전) | 할인 | 작가지급액 | 귀속금액 */}
-                  <td className="px-3 py-2 text-center tabular-nums text-slate-700 whitespace-nowrap">
+                  <td className="px-3 py-2 text-center tabular-nums text-slate-900 whitespace-nowrap">
                     {formatWon(it.supply_amount)}
                   </td>
-                  <td className="px-3 py-2 text-center tabular-nums text-slate-500 whitespace-nowrap">
+                  <td className="px-3 py-2 text-center tabular-nums text-slate-600 whitespace-nowrap">
                     {formatWon(it.discount_amount)}
                   </td>
-                  <td className="px-3 py-2 text-center tabular-nums text-slate-700 whitespace-nowrap">
+                  <td className="px-3 py-2 text-center tabular-nums text-slate-900 whitespace-nowrap">
                     {formatWon(bd.writerPay)}
                   </td>
-                  <td className="px-3 py-2 text-center tabular-nums text-slate-500 whitespace-nowrap">
+                  <td className="px-3 py-2 text-center tabular-nums text-slate-600 whitespace-nowrap">
                     {formatWon(bd.attribution)}
                   </td>
                 </>
@@ -202,7 +202,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
                 <span className="font-bold text-sm">총 합계 (B+C)</span>
                 <span className="font-bold text-sm tabular-nums">{formatWon(totals.grandTotal)}</span>
               </div>
-              <p className="text-right text-[10px] text-slate-400 mt-1">거래처 청구서 총 합계와 일치</p>
+              <p className="text-right text-[10px] text-slate-500 mt-1">거래처 청구서 총 합계와 일치</p>
             </>
           )}
         </div>
@@ -221,7 +221,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
       <div className="mt-auto pt-8">
         <div className="flex justify-between items-end text-[11px] border-t border-gray-200 pt-4">
           <div className="text-slate-600">
-            <p className="font-bold text-slate-800">{COMPANY.name}</p>
+            <p className="font-bold text-black">{COMPANY.name}</p>
             <p>{COMPANY.address}</p>
           </div>
           <div className="text-right text-slate-600">

@@ -184,7 +184,7 @@ export default function InvoicesPage() {
                   <SortableHeader label="거래명" sortKey="title" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
                   <SortableHeader label="총 합계" sortKey="total" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
                   <SortableHeader label="상태" sortKey="status" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
-                  <th className="px-4 py-3 text-center font-semibold text-foreground text-xs uppercase">액션</th>
+                  <th className="px-4 py-3 text-center font-bold text-foreground text-xs uppercase">액션</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

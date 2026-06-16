@@ -296,10 +296,10 @@ export default function AccountsPage() {
               <thead className="bg-primary/10 border-b border-border">
                 <tr>
                   <SortableHeader label="이름" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
-                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">사용자 ID</th>
+                  <th className="px-6 py-3 text-left font-bold text-foreground text-xs uppercase">사용자 ID</th>
                   <SortableHeader label="현재 역할" sortKey="role" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
                   <SortableHeader label="등록일" sortKey="created_at" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
-                  <th className="px-6 py-3 text-left font-semibold text-foreground text-xs uppercase">역할 변경</th>
+                  <th className="px-6 py-3 text-left font-bold text-foreground text-xs uppercase">역할 변경</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

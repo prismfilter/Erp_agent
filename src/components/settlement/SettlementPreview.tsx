@@ -52,22 +52,22 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
         return (
           <div
             key={pageIdx}
-            className="settlement-page mx-auto w-full max-w-[794px] min-h-[1090px] bg-white text-slate-800 border border-gray-200 shadow-lg p-12 flex flex-col print:max-w-none print:min-h-0 print:shadow-none print:border-0 print:p-0"
+            className="settlement-page mx-auto w-full max-w-[794px] min-h-[1090px] bg-white text-black border border-gray-200 shadow-lg p-12 flex flex-col print:max-w-none print:min-h-0 print:shadow-none print:border-0 print:p-0"
           >
             {/* ===== 헤더 ===== */}
             <div className="flex items-start justify-between pb-6 border-b-2 border-slate-800">
               <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/prism-filter-logo.svg" alt="PRISM FILTER" className="w-12 h-12" />
+                <img src="/prismfilter-logo.png" alt="PRISMFILTER MUSIC GROUP" className="w-[72px] h-[72px]" />
                 <div>
-                  <p className="text-sm font-bold tracking-wide text-slate-800">PRISM FILTER</p>
-                  <p className="text-[11px] text-slate-500">{COMPANY.name}</p>
+                  <p className="text-sm font-bold tracking-wide text-black whitespace-nowrap">PRISMFILTER MUSIC GROUP</p>
+                  <p className="text-[11px] text-slate-600">{COMPANY.name}</p>
                 </div>
               </div>
               <div className="text-right">
-                <h1 className="text-3xl font-bold tracking-tight text-slate-800">용역 정산서</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-black">용역 정산서</h1>
                 <p className="text-xs tracking-[0.3em] text-indigo-500 font-semibold mt-0.5">SETTLEMENT</p>
-                <span className="inline-block mt-1 text-[10px] font-semibold text-slate-500 border border-slate-300 rounded px-1.5 py-0.5">
+                <span className="inline-block mt-1 text-[10px] font-semibold text-slate-600 border border-slate-300 rounded px-1.5 py-0.5">
                   PAGE {pageIdx + 1} / {pages.length}
                 </span>
               </div>
@@ -76,17 +76,17 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
             {/* ===== 정산 정보 ===== */}
             <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-xs mt-6 mb-6">
               <div className="flex">
-                <span className="w-20 text-slate-400 font-medium flex-shrink-0">작가명</span>
-                <span className="font-semibold text-slate-700">{settlement.writer_name}</span>
+                <span className="w-20 text-slate-500 font-medium flex-shrink-0">작가명</span>
+                <span className="font-semibold text-slate-900">{settlement.writer_name}</span>
               </div>
               <div className="flex">
-                <span className="w-20 text-slate-400 font-medium flex-shrink-0">건수</span>
-                <span className="font-semibold text-slate-700">{detail.length}건</span>
+                <span className="w-20 text-slate-500 font-medium flex-shrink-0">건수</span>
+                <span className="font-semibold text-slate-900">{detail.length}건</span>
               </div>
               <div className="flex col-span-2">
-                <span className="w-20 text-slate-400 font-medium flex-shrink-0">정산 기간</span>
-                <span className="font-semibold text-slate-700">
-                  {settlement.period_start} ~ {settlement.period_end} <span className="text-slate-400">(입금 완료일 기준)</span>
+                <span className="w-20 text-slate-500 font-medium flex-shrink-0">정산 기간</span>
+                <span className="font-semibold text-slate-900">
+                  {settlement.period_start} ~ {settlement.period_end} <span className="text-slate-500">(입금 완료일 기준)</span>
                 </span>
               </div>
             </div>
@@ -95,25 +95,25 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-800 text-white">
-                  <th className="px-3 py-2.5 text-center w-10 font-semibold first:rounded-tl-md">No.</th>
-                  <th className="px-3 py-2.5 text-center w-24 font-semibold">입금일</th>
-                  <th className="px-3 py-2.5 text-center w-28 font-semibold">거래처</th>
-                  <th className="px-3 py-2.5 text-center font-semibold">작업 내용</th>
-                  <th className="px-3 py-2.5 text-center w-32 font-semibold last:rounded-tr-md">작가 지급액</th>
+                  <th className="px-3 py-2.5 text-center w-10 font-bold first:rounded-tl-md">No.</th>
+                  <th className="px-3 py-2.5 text-center w-24 font-bold">입금일</th>
+                  <th className="px-3 py-2.5 text-center w-28 font-bold">거래처</th>
+                  <th className="px-3 py-2.5 text-center font-bold">작업 내용</th>
+                  <th className="px-3 py-2.5 text-center w-32 font-bold last:rounded-tr-md">작가 지급액</th>
                 </tr>
               </thead>
               <tbody>
                 {pageItems.map((d, idx) => (
                   <tr key={`${pageIdx}-${idx}`} className="border-b border-gray-200">
-                    <td className="px-3 py-2 text-center tabular-nums text-slate-500">{startNo + idx + 1}</td>
+                    <td className="px-3 py-2 text-center tabular-nums text-slate-600">{startNo + idx + 1}</td>
                     <td className="px-3 py-2 text-center text-slate-600 whitespace-nowrap">{fmtDate(d.paid_at)}</td>
-                    <td className="px-3 py-2 text-center text-slate-700">{d.client_name || '-'}</td>
-                    <td className="px-3 py-2 text-center text-slate-700 break-keep">
-                      <span className="text-slate-400">{d.title}</span>
+                    <td className="px-3 py-2 text-center text-slate-900">{d.client_name || '-'}</td>
+                    <td className="px-3 py-2 text-center text-slate-900 break-keep">
+                      <span className="text-slate-500">{d.title}</span>
                       {' · '}
                       {stripTitlePrefix(d.description, d.title)}
                     </td>
-                    <td className="px-3 py-2 text-center tabular-nums text-slate-700 whitespace-nowrap">
+                    <td className="px-3 py-2 text-center tabular-nums text-slate-900 whitespace-nowrap">
                       {formatWon(d.writer_pay)}
                     </td>
                   </tr>
@@ -149,7 +149,7 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
                     <span className="font-bold text-sm">실 수령액</span>
                     <span className="font-bold text-sm tabular-nums">{formatWon(result.netAmount)}</span>
                   </div>
-                  <p className="text-right text-[10px] text-slate-400 mt-1">원천징수 3.3% 공제 후 지급액</p>
+                  <p className="text-right text-[10px] text-slate-500 mt-1">원천징수 3.3% 공제 후 지급액</p>
                 </div>
               </div>
             )}
@@ -158,7 +158,7 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
             <div className="mt-auto pt-8">
               <div className="flex justify-between items-end text-[11px] border-t border-gray-200 pt-4">
                 <div className="text-slate-600">
-                  <p className="font-bold text-slate-800">{COMPANY.name}</p>
+                  <p className="font-bold text-black">{COMPANY.name}</p>
                   <p>{COMPANY.address}</p>
                 </div>
                 <div className="text-right text-slate-600">

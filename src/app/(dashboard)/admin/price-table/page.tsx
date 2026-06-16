@@ -434,7 +434,7 @@ export default function PriceTablePage() {
                     <SortableHeader label="작가지급액 (방어선)" sortKey="writer_base_pay" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-36" />
                     <SortableHeader label="관리 수수료 (20%)" sortKey="fee" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-36" />
                     <SortableHeader label="작가 실수령액" sortKey="net" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-32" />
-                    {isAdmin && <th className="px-3 py-2 text-center font-semibold text-foreground w-28">{viewTrash ? '액션' : '상태'}</th>}
+                    {isAdmin && <th className="px-3 py-2 text-center font-bold text-foreground w-28">{viewTrash ? '액션' : '상태'}</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">

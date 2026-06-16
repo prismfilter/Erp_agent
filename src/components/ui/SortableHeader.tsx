@@ -35,7 +35,7 @@ export function SortableHeader({
 
   return (
     // 패딩·text-xs·uppercase 등은 호출측 className으로 제어 (페이지별 상이)
-    <th className={`font-semibold text-foreground ${className}`}>
+    <th className={`font-bold text-foreground ${className}`}>
       <button
         type="button"
         onClick={() => onSort(sortKey)}

@@ -375,7 +375,7 @@ export default function WriterMasterPage() {
                   <SortableHeader label="작가명" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-2.5 text-xs uppercase" />
                   <SortableHeader label="구분" sortKey="writer_type" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
                   <SortableHeader label="용역 요율(%)" sortKey="fee_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
-                  {isAdmin && <th className="px-6 py-2.5 text-center font-semibold text-foreground text-xs uppercase w-24">액션</th>}
+                  {isAdmin && <th className="px-6 py-2.5 text-center font-bold text-foreground text-xs uppercase w-24">액션</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

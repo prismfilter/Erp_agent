@@ -1,7 +1,8 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { CommandPalette } from '@/components/search/CommandPalette';
 
 interface SiteHeaderProps {
   onMenuClick?: () => void;
@@ -19,9 +20,21 @@ const pageLabels: Record<string, string> = {
 
 export function SiteHeader({ onMenuClick }: SiteHeaderProps) {
   const pathname = usePathname();
-  const [searchValue, setSearchValue] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const pageTitle = useMemo(() => pageLabels[pathname] || '페이지', [pathname]);
+
+  // Cmd/Ctrl + K 로 검색 팔레트 토글
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
     <header className="flex h-16 items-center justify-between gap-4 px-6 bg-background border-b border-border sticky top-0 z-10">
@@ -37,7 +50,7 @@ export function SiteHeader({ onMenuClick }: SiteHeaderProps) {
 
         {/* 브레드크럼 */}
         <div className="hidden md:flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">PRISM FILTER</span>
+          <span className="text-muted-foreground">PRISMFILTER MUSIC GROUP</span>
           <span className="text-muted-foreground">/</span>
           <span className="text-foreground font-medium">{pageTitle}</span>
         </div>
@@ -45,18 +58,16 @@ export function SiteHeader({ onMenuClick }: SiteHeaderProps) {
 
       {/* 오른쪽: 검색 + 아이콘들 */}
       <div className="flex items-center gap-3">
-        {/* 검색 입력창 */}
-        <div className="hidden lg:flex items-center gap-2 px-3 py-2 bg-card border border-border rounded-lg">
-          <span className="text-muted-foreground">🔍</span>
-          <input
-            type="text"
-            placeholder="검색"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            className="bg-transparent text-foreground text-sm placeholder-muted-foreground outline-none w-48"
-          />
-          <span className="text-xs text-muted-foreground">⌘K</span>
-        </div>
+        {/* 검색 — 클릭 시 커맨드 팔레트 오픈 */}
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          className="hidden lg:flex items-center gap-2 px-3 py-2 bg-card border border-border rounded-lg text-sm text-muted-foreground hover:border-primary/50 transition cursor-pointer w-64"
+          aria-label="검색 열기"
+        >
+          <span>🔍</span>
+          <span className="flex-1 text-left">검색</span>
+        </button>
 
         {/* 알림 아이콘 */}
         <button className="relative p-2 rounded-lg hover:bg-blue-600/10 text-foreground transition" title="알림">
@@ -69,6 +80,8 @@ export function SiteHeader({ onMenuClick }: SiteHeaderProps) {
           ⚙️
         </button>
       </div>
+
+      <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   );
 }

@@ -1,3 +1,6 @@
+/* Pretendard 가변 폰트(동적 서브셋) — 전역 기본 글꼴. @import는 최상단이어야 하므로 tailwindcss보다 먼저.
+   버전 고정(@v1.3.9)·min으로 캐시 안정화(jsDelivr @latest 회피) */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
 @import "tailwindcss";
 
 /* 실제 CSS 변수: --color- 없이 정의 (와일드카드 생성 방지) */
@@ -73,7 +76,8 @@
   html,
   body {
     height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", "Helvetica Neue", sans-serif;
     margin: 0;
     padding: 0;
     background-color: var(--background);
@@ -163,12 +167,12 @@
 
 /*
   문서(청구서·내부지급서·용역정산서) 폰트 — 화면 미리보기/인쇄 공통.
-  Roboto(영문·숫자) → 한글은 시스템 한글 폰트로 폴백. 금액 가독성↑
+  전역과 동일하게 Pretendard 사용(영문·숫자·한글 일관, 금액 가독성↑).
 */
 .invoice-print-area,
 .settlement-print-area {
-  font-family: var(--font-roboto), "Noto Sans KR", "Malgun Gothic",
-    "Apple SD Gothic Neo", "Pretendard", sans-serif;
+  font-family: "Pretendard Variable", Pretendard, -apple-system, "Segoe UI",
+    "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
 }
 
 /*
@@ -278,6 +282,77 @@
   .settlement-page:last-child {
     break-after: auto;
   }
+}
+
+/* ===== 커맨드 검색 팔레트 (cmdk) — 가운데 팝업 ===== */
+[cmdk-overlay] {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  z-index: 200;
+}
+[cmdk-dialog] {
+  position: fixed;
+  top: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 560px;
+  z-index: 201;
+}
+[cmdk-root] {
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+[cmdk-input] {
+  width: 100%;
+  padding: 16px 4px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--foreground);
+  font-size: 15px;
+}
+[cmdk-input]::placeholder {
+  color: var(--muted-foreground);
+}
+[cmdk-list] {
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 8px;
+  scroll-padding: 8px;
+}
+[cmdk-group-heading] {
+  padding: 10px 8px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+[cmdk-item] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  margin-bottom: 2px;
+  border-radius: 9px;
+  cursor: pointer;
+  color: var(--foreground);
+  font-size: 14px;
+  user-select: none;
+}
+[cmdk-item][data-selected='true'] {
+  background: color-mix(in oklch, var(--primary) 16%, transparent);
+}
+[cmdk-empty] {
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--muted-foreground);
+  font-size: 14px;
 }
 
 /* ===== react-day-picker 다크 테마 + 인디고 그라데이션 ===== */
