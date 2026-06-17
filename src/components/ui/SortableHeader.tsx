@@ -54,9 +54,22 @@ export function SortableHeader({
         }`}
         title="클릭하여 정렬"
       >
-        {/* 제목과 정렬 아이콘은 항상 한 덩어리 — 정렬 방향(좌/중/우)에 따라 함께 이동 */}
-        <span>{label}</span>
-        {arrow}
+        {align === 'center' ? (
+          // 가운데 정렬: 제목 텍스트만 정중앙 기준으로 두고, 아이콘은 제목 오른쪽에 절대배치로 붙임
+          // → 가운데 정렬 폭(글자수) 계산에서 제외되면서도 제목과 함께 이동
+          <span className="relative">
+            {label}
+            <span className="absolute left-full top-1/2 -translate-y-1/2 ml-1 flex items-center">
+              {arrow}
+            </span>
+          </span>
+        ) : (
+          // 좌/우 정렬: 제목과 아이콘을 인라인 한 덩어리로
+          <>
+            <span>{label}</span>
+            {arrow}
+          </>
+        )}
       </button>
     </th>
   );
