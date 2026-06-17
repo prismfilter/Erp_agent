@@ -26,7 +26,7 @@ export async function PATCH(
       .from('writers')
       .update(updates)
       .eq('id', id)
-      .select('id, name, writer_type, fee_rate, status, created_at')
+      .select('id, name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, status, created_at')
       .single();
 
     if (error) {

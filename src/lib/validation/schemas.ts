@@ -81,12 +81,18 @@ export const writerCreateSchema = z.object({
   name: z.string().trim().min(1, '작가명은 필수입니다.'),
   writer_type: WRITER_TYPE,
   fee_rate: z.number().min(0).max(100),
+  permanent_rate: z.number().min(0).max(100).nullable().optional(), // 영구 저작물 요율(%), null=미지정
+  general_rate: z.number().min(0).max(100).nullable().optional(),   // 일반 저작물 요율(%), null=미지정
+  recontract_date: z.string().nullable().optional(),                // 재계약일(YYYY-MM-DD), null=미지정
 });
 
 export const writerUpdateSchema = z.object({
   name: z.string().trim().min(1).optional(),
   writer_type: WRITER_TYPE.optional(),
   fee_rate: z.number().min(0).max(100).optional(),
+  permanent_rate: z.number().min(0).max(100).nullable().optional(),
+  general_rate: z.number().min(0).max(100).nullable().optional(),
+  recontract_date: z.string().nullable().optional(),
 });
 
 // ── 저작물 DB ─────────────────────────────────────────────────────────────

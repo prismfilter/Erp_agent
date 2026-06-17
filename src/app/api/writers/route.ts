@@ -13,7 +13,7 @@ export async function GET() {
 
     const { data, error } = await auth.adminClient
       .from('writers')
-      .select('id, name, writer_type, fee_rate, status, created_at')
+      .select('id, name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, status, created_at')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -35,12 +35,19 @@ export async function POST(request: NextRequest) {
 
     const parsed = parseBody(writerCreateSchema, await request.json());
     if (!parsed.success) return parsed.response;
-    const { name, writer_type, fee_rate } = parsed.data;
+    const { name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date } = parsed.data;
 
     const { data, error } = await auth.adminClient
       .from('writers')
-      .insert({ name, writer_type, fee_rate })
-      .select('id, name, writer_type, fee_rate, status, created_at')
+      .insert({
+        name,
+        writer_type,
+        fee_rate,
+        permanent_rate: permanent_rate ?? null,
+        general_rate: general_rate ?? null,
+        recontract_date: recontract_date ?? null,
+      })
+      .select('id, name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, status, created_at')
       .single();
 
     if (error) {

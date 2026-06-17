@@ -23,7 +23,10 @@ export interface Writer {
   id: string;
   name: string;
   writer_type: string;            // '전속작가' | '일반작가'
-  fee_rate: number;               // 수수료 요율(%) 0~100
+  fee_rate: number;               // 용역 요율(%) 0~100
+  permanent_rate: number | null;  // 영구 저작물 요율(%) 0~100, null=미지정
+  general_rate: number | null;    // 일반 저작물 요율(%) 0~100, null=미지정
+  recontract_date: string | null; // 전속작가 재계약일 (YYYY-MM-DD), null=미지정
   status: string;
   created_at: string;
 }

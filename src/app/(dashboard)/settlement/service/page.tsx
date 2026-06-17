@@ -56,6 +56,9 @@ export default function ServiceSettlementPage() {
       name: n,
       writer_type: '일반작가',
       fee_rate: 0,
+      permanent_rate: null,
+      general_rate: null,
+      recontract_date: null,
       status: 'active',
       created_at: '',
     }));
