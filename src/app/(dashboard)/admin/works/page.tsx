@@ -477,26 +477,26 @@ export default function WorksPage() {
                         onContextMenu={isAdmin ? (e) => { e.preventDefault(); setContextMenu({ id: w.id, x: e.clientX, y: e.clientY }); } : undefined}
                       >
                         {/* 고유 정보 7개(NO.·KOMCA·곡명·아티스트·지분·요율)는 표시 전용 — 추가 시에만 입력 */}
-                        <td className="px-3 py-2 tabular-nums">{w.no}</td>
+                        <td className="px-3 py-3 tabular-nums">{w.no}</td>
                         {showWriterCol && (
-                          <td className="px-3 py-2 truncate" title={w.writer_name}>{w.writer_name}</td>
+                          <td className="px-3 py-3 truncate" title={w.writer_name}>{w.writer_name}</td>
                         )}
-                        <td className="px-3 py-2 tabular-nums whitespace-nowrap" title={w.komca_code ?? ''}>
+                        <td className="px-3 py-3 tabular-nums whitespace-nowrap" title={w.komca_code ?? ''}>
                           {w.komca_code ?? '-'}
                         </td>
-                        <td className="px-3 py-2 truncate" title={w.song_title}>{w.song_title}</td>
-                        <td className="px-3 py-2 truncate" title={w.artist ?? ''}>{w.artist ?? '-'}</td>
-                        <td className="px-3 py-2 tabular-nums">
+                        <td className="px-3 py-3 truncate" title={w.song_title}>{w.song_title}</td>
+                        <td className="px-3 py-3 truncate" title={w.artist ?? ''}>{w.artist ?? '-'}</td>
+                        <td className="px-3 py-3 tabular-nums">
                           {w.domestic_share != null ? `${w.domestic_share}%` : '-'}
                         </td>
-                        <td className="px-3 py-2 tabular-nums">
+                        <td className="px-3 py-3 tabular-nums">
                           {w.overseas_share != null ? `${w.overseas_share}%` : '-'}
                         </td>
-                        <td className="px-3 py-2 tabular-nums">
+                        <td className="px-3 py-3 tabular-nums">
                           {w.rate != null ? formatRatePercent(w.rate) : '-'}
                         </td>
                         {/* 재계약일만 인라인 수정 가능 (삭제는 행 우클릭 메뉴) */}
-                        <td className="px-3 py-2 tabular-nums">
+                        <td className="px-3 py-3 tabular-nums">
                           <EditableCell value={w.recontract_date} editable={isAdmin} type="date" onSave={(v) => patchWork(w.id, { recontract_date: v as string | null })} />
                         </td>
                       </tr>
