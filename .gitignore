@@ -37,6 +37,9 @@ dev-*.log
 # Supabase 임시 파일
 supabase/.temp/
 
+# shrimp-task-manager MCP 작업 데이터 저장소 — 커밋 금지
+/.shrimp/
+
 # agentmemory 런타임 저장소 (iii-engine state/stream store) — 커밋 금지
 /data/
 
