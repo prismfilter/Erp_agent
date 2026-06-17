@@ -33,11 +33,12 @@ export function SortableHeader({
 }: SortableHeaderProps) {
   const isActive = activeKey === sortKey;
 
+  // 가나다(asc, 강→최) 오름차순 = 아래화살표(↓), 역순(desc, 최→강) = 위화살표(↑) — Excel식 방향
   const arrow = isActive ? (
     dir === 'asc' ? (
-      <ArrowUp className="w-3.5 h-3.5 shrink-0" />
-    ) : (
       <ArrowDown className="w-3.5 h-3.5 shrink-0" />
+    ) : (
+      <ArrowUp className="w-3.5 h-3.5 shrink-0" />
     )
   ) : (
     <ArrowUpDown className="w-3.5 h-3.5 shrink-0 opacity-30" />
