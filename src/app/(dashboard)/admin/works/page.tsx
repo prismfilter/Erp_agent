@@ -12,6 +12,11 @@ import { SortableHeader } from '@/components/ui/SortableHeader';
 
 const PAGE_SIZE = 20;
 
+// 요율(소수 분수) → 퍼센트 표기. 0.35 → "35%". 부동소수 노이즈 제거.
+function formatRatePercent(v: number): string {
+  return `${Number((v * 100).toFixed(4))}%`;
+}
+
 // 인라인 편집 셀 — 텍스트/숫자/날짜 공용
 function EditableCell({
   value,
@@ -198,11 +203,13 @@ export default function WorksPage() {
       }),
     });
     if (res.ok) {
+      const { warning } = await res.json();
       setAdding(false);
       setForm(EMPTY_FORM);
       await loadWriters();
       await loadWorks();
-      showToast('저작물 추가 완료');
+      // 동일 (작가+KOMCA코드) 중복이면 경고 문구, 아니면 일반 완료 안내
+      showToast(warning || '저작물 추가 완료');
     } else {
       showToast((await res.json()).error || '추가 실패');
     }
@@ -414,16 +421,17 @@ export default function WorksPage() {
             </div>
           ) : (
             <div className="bg-card border border-border rounded-lg overflow-hidden">
-              <div className="px-4 py-3 border-b border-border bg-primary/5 flex items-center justify-between">
-                <h2 className="text-sm font-bold text-foreground">
+              <div className="px-4 py-3 border-b border-border bg-primary/5 grid grid-cols-3 items-center">
+                <span />
+                <h2 className="text-sm font-bold text-foreground text-center">
                   {selectedWriter ?? '전체보기'}
                 </h2>
-                <span className="text-xs text-muted-foreground tabular-nums">
+                <span className="text-xs text-muted-foreground tabular-nums text-right">
                   {selectedWriter ? `${works.length}건` : `${works.length} / ${total}건`}
                 </span>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-xs table-fixed min-w-[860px]">
+                <table className="w-full text-xs table-fixed min-w-[820px]">
                   <thead className="bg-primary/10 border-b border-border">
                     <tr>
                       <SortableHeader label="NO." sortKey="no" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-14`} />
@@ -431,42 +439,39 @@ export default function WorksPage() {
                         <SortableHeader label="작가명" sortKey="writer_name" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-20`} />
                       )}
                       <SortableHeader label="KOMCA 코드" sortKey="komca_code" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-28`} />
-                      <SortableHeader label="곡명" sortKey="song_title" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-44`} />
-                      <SortableHeader label="아티스트" sortKey="artist" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-36`} />
+                      {/* 곡명·아티스트는 유연 컬럼(고정 width 제거) — 여분 폭을 흡수해 우측 컬럼이 벌어지지 않게 함 */}
+                      <SortableHeader label="곡명" sortKey="song_title" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={TH_CLASS} />
+                      <SortableHeader label="아티스트" sortKey="artist" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={TH_CLASS} />
                       <SortableHeader label="국내지분" sortKey="domestic_share" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-20`} />
                       <SortableHeader label="국외지분" sortKey="overseas_share" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-20`} />
                       <SortableHeader label="요율" sortKey="rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-16`} />
-                      <SortableHeader label="재계약일" sortKey="recontract_date" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-28`} />
-                      {isAdmin && <th className={`${TH_CLASS} font-bold text-foreground w-16`}>삭제</th>}
+                      <SortableHeader label="재계약일" sortKey="recontract_date" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-24`} />
+                      {isAdmin && <th className={`${TH_CLASS} font-bold text-foreground w-14`}>삭제</th>}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {sorted.map((w) => (
                       <tr key={w.id} className="group hover:bg-primary/5 text-center text-foreground">
-                        <td className="px-3 py-2 tabular-nums">
-                          <EditableCell value={w.no} editable={isAdmin} type="number" onSave={(v) => patchWork(w.id, { no: v as number })} />
-                        </td>
+                        {/* 고유 정보 7개(NO.·KOMCA·곡명·아티스트·지분·요율)는 표시 전용 — 추가 시에만 입력 */}
+                        <td className="px-3 py-2 tabular-nums">{w.no}</td>
                         {showWriterCol && (
                           <td className="px-3 py-2 truncate" title={w.writer_name}>{w.writer_name}</td>
                         )}
                         <td className="px-3 py-2 tabular-nums truncate" title={w.komca_code ?? ''}>
-                          <EditableCell value={w.komca_code} editable={isAdmin} type="text" onSave={(v) => patchWork(w.id, { komca_code: v as string | null })} />
+                          {w.komca_code ?? '-'}
                         </td>
-                        <td className="px-3 py-2 truncate" title={w.song_title}>
-                          <EditableCell value={w.song_title} editable={isAdmin} type="text" onSave={(v) => patchWork(w.id, { song_title: v as string })} />
-                        </td>
-                        <td className="px-3 py-2 truncate" title={w.artist ?? ''}>
-                          <EditableCell value={w.artist} editable={isAdmin} type="text" onSave={(v) => patchWork(w.id, { artist: v as string | null })} />
+                        <td className="px-3 py-2 truncate" title={w.song_title}>{w.song_title}</td>
+                        <td className="px-3 py-2 truncate" title={w.artist ?? ''}>{w.artist ?? '-'}</td>
+                        <td className="px-3 py-2 tabular-nums">
+                          {w.domestic_share != null ? `${w.domestic_share}%` : '-'}
                         </td>
                         <td className="px-3 py-2 tabular-nums">
-                          <EditableCell value={w.domestic_share} editable={isAdmin} type="number" onSave={(v) => patchWork(w.id, { domestic_share: v as number | null })} />
+                          {w.overseas_share != null ? `${w.overseas_share}%` : '-'}
                         </td>
                         <td className="px-3 py-2 tabular-nums">
-                          <EditableCell value={w.overseas_share} editable={isAdmin} type="number" onSave={(v) => patchWork(w.id, { overseas_share: v as number | null })} />
+                          {w.rate != null ? formatRatePercent(w.rate) : '-'}
                         </td>
-                        <td className="px-3 py-2 tabular-nums">
-                          <EditableCell value={w.rate} editable={isAdmin} type="number" onSave={(v) => patchWork(w.id, { rate: v as number | null })} />
-                        </td>
+                        {/* 재계약일만 인라인 수정 가능 */}
                         <td className="px-3 py-2 tabular-nums">
                           <EditableCell value={w.recontract_date} editable={isAdmin} type="date" onSave={(v) => patchWork(w.id, { recontract_date: v as string | null })} />
                         </td>

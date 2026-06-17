@@ -5,7 +5,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import type { Writer } from '@/types/invoice';
+import type { Writer, WorkWriterGroup } from '@/types/invoice';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 import {
@@ -191,6 +191,9 @@ export default function WriterMasterPage() {
   const [newName, setNewName] = useState('');
   const [newType, setNewType] = useState<WriterType>('전속작가');
   const [newFee, setNewFee] = useState('70');
+  // 작가명 입력 방식: 저작물 DB 작가 선택(select) / 직접 입력(manual)
+  const [worksWriters, setWorksWriters] = useState<string[]>([]);
+  const [nameMode, setNameMode] = useState<'select' | 'manual'>('select');
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -209,8 +212,23 @@ export default function WriterMasterPage() {
     }
   }, []);
 
+  // 저작물 DB 작가명(중복제거·이름순) — 등록 폼 선택박스 옵션용. /api/works/writers 재사용
+  const fetchWorksWriters = useCallback(async () => {
+    try {
+      const res = await fetch('/api/works/writers');
+      if (res.ok) {
+        const { writers } = (await res.json()) as { writers: WorkWriterGroup[] };
+        setWorksWriters((writers ?? []).map((w) => w.writer_name));
+      }
+    } catch {
+      // 무시 — 직접 입력으로도 등록 가능
+    }
+  }, []);
+
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch라 setState는 마이크로태스크에서 실행 (동기 cascading render 아님)
   useEffect(() => { fetchWriters(); }, [fetchWriters]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch
+  useEffect(() => { fetchWorksWriters(); }, [fetchWorksWriters]);
 
   const handleAdd = async () => {
     if (!newName.trim()) { showToast('작가명을 입력하세요'); return; }
@@ -225,7 +243,7 @@ export default function WriterMasterPage() {
     });
     if (res.ok) {
       setAdding(false);
-      setNewName(''); setNewType('전속작가'); setNewFee('70');
+      setNewName(''); setNewType('전속작가'); setNewFee('70'); setNameMode('select');
       fetchWriters();
       showToast('작가 등록 완료');
     } else {
@@ -276,6 +294,12 @@ export default function WriterMasterPage() {
   const tabCount = (tab: WriterTab) =>
     tab === '전체' ? writers.length : writers.filter((w) => w.writer_type === tab).length;
 
+  // 저작물 DB 작가 중 아직 마스터에 미등록인 이름만 — 등록되면 자동으로 선택박스에서 사라짐
+  const availableNames = useMemo(() => {
+    const registered = new Set(writers.map((w) => w.name.trim()));
+    return worksWriters.filter((n) => !registered.has(n.trim()));
+  }, [writers, worksWriters]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -288,7 +312,10 @@ export default function WriterMasterPage() {
         </div>
         {isAdmin && (
           <button
-            onClick={() => setAdding((v) => !v)}
+            onClick={() => {
+              if (!adding) { setNewName(''); setNameMode('select'); }
+              setAdding((v) => !v);
+            }}
             className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium cursor-pointer"
           >
             + 등록
@@ -301,15 +328,46 @@ export default function WriterMasterPage() {
         <div className="bg-card border border-primary/40 rounded-lg p-4 flex flex-wrap items-end gap-3">
           <div className="w-64">
             <label className="block text-xs text-muted-foreground mb-1">작가명</label>
-            <input
-              type="text"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
-              placeholder="작가명 입력"
-              maxLength={20}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
-            />
+            {nameMode === 'select' && availableNames.length > 0 ? (
+              <select
+                value={newName}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === '__manual__') { setNameMode('manual'); setNewName(''); }
+                  else setNewName(v);
+                }}
+                className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
+              >
+                <option value="">저작물 DB에서 선택…</option>
+                {availableNames.map((name) => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+                <option value="__manual__">✏️ 직접 입력…</option>
+              </select>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
+                  placeholder="작가명 입력"
+                  maxLength={20}
+                  autoFocus
+                  className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
+                />
+                {availableNames.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => { setNameMode('select'); setNewName(''); }}
+                    title="저작물 DB 목록에서 선택"
+                    className="shrink-0 px-2 py-2 text-xs border border-border rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/10 transition cursor-pointer"
+                  >
+                    목록
+                  </button>
+                )}
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">구분</label>
