@@ -99,12 +99,11 @@
 
   /* 앱 공용 얇은 그라디언트 스크롤바 (사이드바 + 본문 콘텐츠 공통)
      — overflow-y-auto와 함께 쓰여 '내용이 넘칠 때만' 스크롤·스크롤바가 노출됨
-     — 그라디언트(인디고→accent)는 webkit 전용, Firefox는 단색 폴백
+     — webkit(Chrome/Edge/Safari): ::-webkit-scrollbar로 그라디언트.
+       ⚠️ 같은 요소에 표준 scrollbar-width/scrollbar-color를 주면 Chrome 121+가
+          ::-webkit-scrollbar를 무시하고 기본 회색 스크롤바를 그린다. 따라서 표준 속성은
+          Firefox에만(@supports not selector(::-webkit-scrollbar)) 적용한다.
      — 불투명도는 은은하게(반투명) — 배경과 조화 */
-  .gradient-scroll {
-    scrollbar-width: thin;                          /* Firefox: 얇게 */
-    scrollbar-color: color-mix(in oklch, var(--primary) 45%, transparent) transparent; /* Firefox 폴백(반투명) */
-  }
   .gradient-scroll::-webkit-scrollbar {
     width: 6px;
   }
@@ -127,6 +126,13 @@
       color-mix(in oklch, var(--primary) 65%, transparent),
       color-mix(in oklch, var(--accent) 65%, transparent)
     );
+  }
+  /* Firefox 전용(::-webkit-scrollbar 미지원 브라우저) — 표준 속성으로 얇은 반투명 스크롤바 */
+  @supports not selector(::-webkit-scrollbar) {
+    .gradient-scroll {
+      scrollbar-width: thin;
+      scrollbar-color: color-mix(in oklch, var(--primary) 45%, transparent) transparent;
+    }
   }
 
   .prism-logo {
@@ -170,10 +176,6 @@
 /* 공용 그라디언트 스크롤바: 다크/클래식다크는 활성 메뉴와 동일한 인디고→퍼리윙클 톤으로 배경과 조화
    (unlayered → @layer base의 기본 그라디언트보다 우선 적용)
    불투명도는 기존의 약 절반(50% 더 투명)으로 은은하게 */
-.dark .gradient-scroll,
-.classic-dark .gradient-scroll {
-  scrollbar-color: rgba(111, 134, 255, 0.45) transparent; /* Firefox 폴백(반투명) */
-}
 .dark .gradient-scroll::-webkit-scrollbar-thumb,
 .classic-dark .gradient-scroll::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, rgba(128, 151, 255, 0.42) 0%, rgba(74, 94, 232, 0.45) 100%);
@@ -181,6 +183,13 @@
 .dark .gradient-scroll::-webkit-scrollbar-thumb:hover,
 .classic-dark .gradient-scroll::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, rgba(128, 151, 255, 0.72) 0%, rgba(74, 94, 232, 0.78) 100%);
+}
+/* Firefox 폴백(다크/클래식다크) — 표준 속성은 webkit 미지원 브라우저에만 */
+@supports not selector(::-webkit-scrollbar) {
+  .dark .gradient-scroll,
+  .classic-dark .gradient-scroll {
+    scrollbar-color: rgba(111, 134, 255, 0.45) transparent;
+  }
 }
 
 /*
