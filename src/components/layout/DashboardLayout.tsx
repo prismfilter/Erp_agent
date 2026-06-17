@@ -68,8 +68,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         {/* 헤더 (데스크톱 + 모바일) */}
         <SiteHeader onMenuClick={() => setOpen(true)} />
 
-        {/* 콘텐츠 */}
-        <main className="flex-1 overflow-y-auto p-6">
+        {/* 콘텐츠 — 사이드바와 동일한 그라디언트 스크롤바(내용 넘칠 때만 노출) */}
+        <main className="flex-1 overflow-y-auto p-6 gradient-scroll">
           {children}
         </main>
       </div>
