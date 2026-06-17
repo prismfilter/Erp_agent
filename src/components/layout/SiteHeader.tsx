@@ -8,21 +8,49 @@ interface SiteHeaderProps {
   onMenuClick?: () => void;
 }
 
-const pageLabels: Record<string, string> = {
+// 정적 라우트 → 표시명 (브레드크럼). 신규 페이지 추가 시 이 맵에도 등록할 것.
+const PAGE_LABELS: Record<string, string> = {
   '/': '홈 피드',
-  '/writers': '작가 목록',
-  '/staff': '구성원',
   '/revenue': '매출현황',
-  '/admin/accounts': '관리자용',
+  '/invoices': '거래처 청구서',
+  '/invoices/new': '청구서 작성',
+  '/payouts': '내부 지급서',
+  '/settlement/royalty': '저작권료 정산',
+  '/settlement/service': '용역 정산',
+  '/staff': '구성원',
+  '/songs': '곡 관리',
+  '/writers': '작가 목록',
   '/writer-portal': '작가 포털',
   '/profile': '내 프로필 설정',
+  '/admin/writers': '작가 마스터',
+  '/admin/works': '저작물 DB',
+  '/admin/works/permanent': '영구 저작물 DB',
+  '/admin/works/general': '일반 저작물 DB',
+  '/admin/price-table': '프라이스 테이블',
+  '/admin/accounts': '관리자용',
 };
+
+// 동적 라우트(상세·수정 등) — 위에서부터 우선 매칭(더 구체적인 패턴 먼저)
+const DYNAMIC_LABELS: ReadonlyArray<readonly [RegExp, string]> = [
+  [/^\/invoices\/[^/]+\/edit$/, '청구서 수정'],
+  [/^\/invoices\/[^/]+$/, '청구서 상세'],
+  [/^\/settlement\/service\/[^/]+$/, '용역 정산 상세'],
+];
+
+function getPageTitle(pathname: string): string {
+  const exact = PAGE_LABELS[pathname];
+  if (exact) return exact;
+  for (const [pattern, label] of DYNAMIC_LABELS) {
+    if (pattern.test(pathname)) return label;
+  }
+  return '페이지';
+}
 
 export function SiteHeader({ onMenuClick }: SiteHeaderProps) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
 
-  const pageTitle = useMemo(() => pageLabels[pathname] || '페이지', [pathname]);
+  const pageTitle = useMemo(() => getPageTitle(pathname), [pathname]);
 
   // Cmd/Ctrl + K 로 검색 팔레트 토글
   useEffect(() => {
