@@ -18,8 +18,6 @@ const PAGE_LABELS: Record<string, string> = {
   '/settlement/royalty': '저작권료 정산',
   '/settlement/service': '용역 정산',
   '/staff': '구성원',
-  '/songs': '곡 관리',
-  '/writers': '작가 목록',
   '/writer-portal': '작가 포털',
   '/profile': '내 프로필 설정',
   '/admin/writers': '작가 마스터',
