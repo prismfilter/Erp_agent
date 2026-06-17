@@ -53,6 +53,20 @@ export async function POST(request: NextRequest) {
     const parsed = parseBody(musicWorkCreateSchema, await request.json());
     if (!parsed.success) return parsed.response;
 
+    // KOMCA코드 중복 소프트 경고: 동일 (작가명 + KOMCA코드)가 이미 있으면 안내만 (차단 X)
+    // 공동 전속작가는 작가명이 달라 같은 코드를 정상적으로 공유하므로 (작가명+코드) 복합 기준으로 판정
+    let warning: string | undefined;
+    if (parsed.data.komca_code) {
+      const { data: dup } = await auth.adminClient
+        .from('music_works')
+        .select('id')
+        .eq('komca_code', parsed.data.komca_code)
+        .eq('writer_name', parsed.data.writer_name)
+        .limit(1)
+        .maybeSingle();
+      if (dup) warning = '동일 작가에 같은 KOMCA코드가 이미 있습니다.';
+    }
+
     const { data, error } = await auth.adminClient
       .from('music_works')
       .insert(parsed.data)
@@ -67,7 +81,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ work: data }, { status: 201 });
+    return NextResponse.json({ work: data, warning }, { status: 201 });
   } catch (err) {
     console.error('저작물 등록 API 오류:', err);
     return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
