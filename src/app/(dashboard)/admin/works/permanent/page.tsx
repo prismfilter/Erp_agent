@@ -17,71 +17,6 @@ function formatRatePercent(v: number): string {
   return `${Number((v * 100).toFixed(4))}%`;
 }
 
-// 인라인 편집 셀 — 텍스트/숫자/날짜 공용
-function EditableCell({
-  value,
-  editable,
-  type,
-  onSave,
-}: {
-  value: string | number | null;
-  editable: boolean;
-  type: 'text' | 'number' | 'date';
-  onSave: (v: string | number | null) => Promise<void>;
-}) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [draft, setDraft] = useState<string>(value == null ? '' : String(value));
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      let next: string | number | null;
-      if (draft.trim() === '') next = null;
-      else if (type === 'number') next = Number(draft);
-      else next = draft.trim();
-      await onSave(next);
-      setIsEditing(false);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (!editable) {
-    return <span>{value != null && value !== '' ? String(value) : '-'}</span>;
-  }
-
-  if (isEditing) {
-    return (
-      <input
-        type={type}
-        step={type === 'number' ? 'any' : undefined}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') handleSave();
-          if (e.key === 'Escape') setIsEditing(false);
-        }}
-        onBlur={handleSave}
-        autoFocus
-        disabled={saving}
-        // bg-transparent: 수정 중·blur 시 검은 블럭 대신 배경색과 자연스럽게 어우러지게
-        className="w-full px-2 py-1 text-xs text-center bg-transparent border border-primary rounded outline-none text-foreground"
-      />
-    );
-  }
-
-  return (
-    <button
-      onClick={() => { setDraft(value == null ? '' : String(value)); setIsEditing(true); }}
-      className="hover:text-primary transition cursor-pointer"
-      title="클릭하여 수정"
-    >
-      {value != null && value !== '' ? String(value) : '-'}
-    </button>
-  );
-}
-
 interface AddForm {
   no: string;
   writer_name: string;
@@ -91,12 +26,11 @@ interface AddForm {
   domestic_share: string;
   overseas_share: string;
   rate: string;
-  recontract_date: string;
 }
 
 const EMPTY_FORM: AddForm = {
   no: '', writer_name: '', komca_code: '', song_title: '', artist: '',
-  domestic_share: '', overseas_share: '', rate: '', recontract_date: '',
+  domestic_share: '', overseas_share: '', rate: '',
 };
 
 export default function WorksPage() {
@@ -169,22 +103,6 @@ export default function WorksPage() {
     }
   };
 
-  // 인라인 수정
-  const patchWork = async (id: string, patch: Partial<MusicWork>) => {
-    const res = await fetch(`/api/works/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(patch),
-    });
-    if (res.ok) {
-      const { work } = await res.json();
-      setWorks((prev) => prev.map((w) => (w.id === id ? work : w)));
-      showToast('저장 완료');
-    } else {
-      showToast((await res.json()).error || '저장 실패');
-    }
-  };
-
   // 저작물 추가
   const handleAdd = async () => {
     if (!form.no.trim()) { showToast('NO.를 입력하세요'); return; }
@@ -203,7 +121,6 @@ export default function WorksPage() {
         domestic_share: toNum(form.domestic_share),
         overseas_share: toNum(form.overseas_share),
         rate: toNum(form.rate),
-        recontract_date: form.recontract_date || null,
       }),
     });
     if (res.ok) {
@@ -259,7 +176,6 @@ export default function WorksPage() {
     domestic_share: (w) => w.domestic_share,
     overseas_share: (w) => w.overseas_share,
     rate: (w) => w.rate,
-    recontract_date: (w) => w.recontract_date,
   }, 'pf_sort_works');
 
   const sorted = useMemo(() => sortRows(works), [works, sortRows]);
@@ -388,15 +304,6 @@ export default function WorksPage() {
               className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
             />
           </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">재계약일</label>
-            <input
-              type="date"
-              value={form.recontract_date}
-              onChange={(e) => setForm((f) => ({ ...f, recontract_date: e.target.value }))}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
-            />
-          </div>
           <div className="col-span-2 md:col-span-3 lg:col-span-4 flex justify-end gap-2">
             <button
               onClick={() => { setAdding(false); setForm(EMPTY_FORM); }}
@@ -452,7 +359,7 @@ export default function WorksPage() {
                 </span>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-xs table-fixed min-w-[880px]">
+                <table className="w-full text-xs table-fixed min-w-[720px]">
                   <thead className="bg-primary/10 border-b border-border">
                     <tr>
                       <SortableHeader label="NO." sortKey="no" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-14`} />
@@ -466,7 +373,6 @@ export default function WorksPage() {
                       <SortableHeader label="국내지분" sortKey="domestic_share" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-20`} />
                       <SortableHeader label="국외지분" sortKey="overseas_share" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-20`} />
                       <SortableHeader label="요율" sortKey="rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-16`} />
-                      <SortableHeader label="재계약일" sortKey="recontract_date" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-40`} />
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -494,10 +400,6 @@ export default function WorksPage() {
                         </td>
                         <td className="px-3 py-3 tabular-nums">
                           {w.rate != null ? formatRatePercent(w.rate) : '-'}
-                        </td>
-                        {/* 재계약일만 인라인 수정 가능 (삭제는 행 우클릭 메뉴) */}
-                        <td className="px-3 py-3 tabular-nums">
-                          <EditableCell value={w.recontract_date} editable={isAdmin} type="date" onSave={(v) => patchWork(w.id, { recontract_date: v as string | null })} />
                         </td>
                       </tr>
                     ))}

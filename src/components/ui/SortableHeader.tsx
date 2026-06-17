@@ -35,12 +35,12 @@ export function SortableHeader({
 
   const arrow = isActive ? (
     dir === 'asc' ? (
-      <ArrowUp className="w-3.5 h-3.5 flex-shrink-0" />
+      <ArrowUp className="w-3.5 h-3.5 shrink-0" />
     ) : (
-      <ArrowDown className="w-3.5 h-3.5 flex-shrink-0" />
+      <ArrowDown className="w-3.5 h-3.5 shrink-0" />
     )
   ) : (
-    <ArrowUpDown className="w-3.5 h-3.5 flex-shrink-0 opacity-30" />
+    <ArrowUpDown className="w-3.5 h-3.5 shrink-0 opacity-30" />
   );
 
   return (

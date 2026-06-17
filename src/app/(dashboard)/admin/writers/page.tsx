@@ -175,6 +175,127 @@ function FeeRateCell({
   );
 }
 
+// 저작물 요율(%) 인라인 편집 셀 — null이면 '미지정', 입력을 비우면 미지정으로 저장
+function NullableRateCell({
+  value,
+  editable,
+  onSave,
+}: {
+  value: number | null;
+  editable: boolean;
+  onSave: (v: number | null) => Promise<void>;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(value == null ? '' : String(value));
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    const next = draft.trim() === '' ? null : Math.min(100, Math.max(0, Number(draft) || 0));
+    setSaving(true);
+    try {
+      await onSave(next);
+      setIsEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!editable) {
+    return value == null
+      ? <span className="text-muted-foreground text-xs">미지정</span>
+      : <span className="tabular-nums text-foreground">{value}%</span>;
+  }
+
+  if (isEditing) {
+    return (
+      <input
+        type="number"
+        min={0}
+        max={100}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleSave();
+          if (e.key === 'Escape') { setDraft(value == null ? '' : String(value)); setIsEditing(false); }
+        }}
+        onBlur={handleSave}
+        autoFocus
+        disabled={saving}
+        placeholder="미지정"
+        className="w-20 px-2 py-1 text-xs text-center bg-background border border-primary rounded outline-none text-foreground tabular-nums"
+      />
+    );
+  }
+
+  return (
+    <button
+      onClick={() => { setDraft(value == null ? '' : String(value)); setIsEditing(true); }}
+      className={`transition cursor-pointer hover:text-primary ${value == null ? 'text-muted-foreground text-xs' : 'tabular-nums text-foreground'}`}
+      title="클릭하여 수정 (비우면 미지정)"
+    >
+      {value == null ? '미지정' : `${value}%`}
+    </button>
+  );
+}
+
+// 재계약일 인라인 편집 셀(날짜) — null이면 '-', 클릭→date 입력, 비우면 미지정(null)로 저장
+function DateCell({
+  value,
+  editable,
+  onSave,
+}: {
+  value: string | null;
+  editable: boolean;
+  onSave: (v: string | null) => Promise<void>;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(value ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await onSave(draft.trim() === '' ? null : draft);
+      setIsEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!editable) {
+    return <span className={value ? 'tabular-nums text-foreground' : 'text-muted-foreground text-xs'}>{value ?? '-'}</span>;
+  }
+
+  if (isEditing) {
+    return (
+      <input
+        type="date"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleSave();
+          if (e.key === 'Escape') { setDraft(value ?? ''); setIsEditing(false); }
+        }}
+        onBlur={handleSave}
+        autoFocus
+        disabled={saving}
+        // bg-transparent: 수정 중·blur 시 검은 블럭 대신 배경색과 어우러지게
+        className="w-full max-w-[150px] px-2 py-1 text-xs text-center bg-transparent border border-primary rounded outline-none text-foreground tabular-nums"
+      />
+    );
+  }
+
+  return (
+    <button
+      onClick={() => { setDraft(value ?? ''); setIsEditing(true); }}
+      className={`transition cursor-pointer hover:text-primary ${value ? 'tabular-nums text-foreground' : 'text-muted-foreground text-xs'}`}
+      title="클릭하여 수정 (비우면 미지정)"
+    >
+      {value ?? '-'}
+    </button>
+  );
+}
+
 export default function WriterMasterPage() {
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN';
@@ -191,6 +312,9 @@ export default function WriterMasterPage() {
   const [newName, setNewName] = useState('');
   const [newType, setNewType] = useState<WriterType>('전속작가');
   const [newFee, setNewFee] = useState('70');
+  const [newPermanent, setNewPermanent] = useState(''); // 영구 저작물 요율(%) — 빈값=미지정
+  const [newGeneral, setNewGeneral] = useState('');     // 일반 저작물 요율(%) — 빈값=미지정
+  const [newRecontract, setNewRecontract] = useState(''); // 재계약일 — 빈값=미지정
   // 작가명 입력 방식: 저작물 DB 작가 선택(select) / 직접 입력(manual)
   const [worksWriters, setWorksWriters] = useState<string[]>([]);
   const [nameMode, setNameMode] = useState<'select' | 'manual'>('select');
@@ -232,6 +356,7 @@ export default function WriterMasterPage() {
 
   const handleAdd = async () => {
     if (!newName.trim()) { showToast('작가명을 입력하세요'); return; }
+    const toRate = (s: string) => (s.trim() === '' ? null : Math.min(100, Math.max(0, Number(s) || 0)));
     const res = await fetch('/api/writers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -239,11 +364,15 @@ export default function WriterMasterPage() {
         name: newName.trim(),
         writer_type: newType,
         fee_rate: Math.min(100, Math.max(0, Number(newFee) || 0)),
+        permanent_rate: toRate(newPermanent),
+        general_rate: toRate(newGeneral),
+        recontract_date: newRecontract || null,
       }),
     });
     if (res.ok) {
       setAdding(false);
-      setNewName(''); setNewType('전속작가'); setNewFee('70'); setNameMode('select');
+      setNewName(''); setNewType('전속작가'); setNewFee('70');
+      setNewPermanent(''); setNewGeneral(''); setNewRecontract(''); setNameMode('select');
       fetchWriters();
       showToast('작가 등록 완료');
     } else {
@@ -251,7 +380,7 @@ export default function WriterMasterPage() {
     }
   };
 
-  const patchWriter = async (id: string, patch: Partial<Pick<Writer, 'name' | 'writer_type' | 'fee_rate'>>) => {
+  const patchWriter = async (id: string, patch: Partial<Pick<Writer, 'name' | 'writer_type' | 'fee_rate' | 'permanent_rate' | 'general_rate' | 'recontract_date'>>) => {
     const res = await fetch(`/api/writers/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -281,7 +410,10 @@ export default function WriterMasterPage() {
   const { sortKey, dir, toggle, sortRows } = useTableSort<Writer>({
     name: (w) => w.name,
     writer_type: (w) => w.writer_type,
+    permanent_rate: (w) => w.permanent_rate,
+    general_rate: (w) => w.general_rate,
     fee_rate: (w) => w.fee_rate,
+    recontract_date: (w) => w.recontract_date,
   }, 'pf_sort_writers');
 
   const filtered = useMemo(() => {
@@ -327,7 +459,7 @@ export default function WriterMasterPage() {
       {adding && (
         <div className="bg-card border border-primary/40 rounded-lg p-4 flex flex-wrap items-end gap-3">
           <div className="w-64">
-            <label className="block text-xs text-muted-foreground mb-1">작가명</label>
+            <label className="block text-xs text-muted-foreground mb-1 text-center">작가명</label>
             {nameMode === 'select' && availableNames.length > 0 ? (
               <select
                 value={newName}
@@ -336,7 +468,7 @@ export default function WriterMasterPage() {
                   if (v === '__manual__') { setNameMode('manual'); setNewName(''); }
                   else setNewName(v);
                 }}
-                className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
+                className="w-full px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
               >
                 <option value="">저작물 DB에서 선택…</option>
                 {availableNames.map((name) => (
@@ -354,7 +486,7 @@ export default function WriterMasterPage() {
                   placeholder="작가명 입력"
                   maxLength={20}
                   autoFocus
-                  className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
+                  className="w-full px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
                 />
                 {availableNames.length > 0 && (
                   <button
@@ -370,18 +502,51 @@ export default function WriterMasterPage() {
             )}
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1">구분</label>
+            <label className="block text-xs text-muted-foreground mb-1 text-center">구분</label>
             <WriterTypeSelect value={newType} onChange={setNewType} />
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1">용역 요율(%)</label>
+            <label className="block text-xs text-muted-foreground mb-1 text-center">영구 저작물(%)</label>
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={newPermanent}
+              onChange={(e) => setNewPermanent(e.target.value)}
+              placeholder="미지정"
+              className="w-28 px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1 text-center">일반 저작물(%)</label>
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={newGeneral}
+              onChange={(e) => setNewGeneral(e.target.value)}
+              placeholder="미지정"
+              className="w-28 px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1 text-center">용역 요율(%)</label>
             <input
               type="number"
               min={0}
               max={100}
               value={newFee}
               onChange={(e) => setNewFee(e.target.value)}
-              className="w-28 px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
+              className="w-28 px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1 text-center">재계약일</label>
+            <input
+              type="date"
+              value={newRecontract}
+              onChange={(e) => setNewRecontract(e.target.value)}
+              className="w-40 px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
             />
           </div>
           <button
@@ -411,7 +576,7 @@ export default function WriterMasterPage() {
       </div>
 
       {/* 테이블 — 컬럼 4개라 전체 폭을 채우면 과하게 벌어져, 표 카드만 적정 폭으로 제한하고 가운데 정렬(프라이스 테이블과 동일 방식) */}
-      <div className="bg-card border border-border rounded-lg overflow-hidden w-full max-w-3xl mx-auto">
+      <div className="bg-card border border-border rounded-lg overflow-hidden w-full max-w-6xl mx-auto">
         {isLoading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-6 w-6 border-2 border-border border-t-primary mx-auto mb-3" />
@@ -432,7 +597,10 @@ export default function WriterMasterPage() {
                 <tr>
                   <SortableHeader label="작가명" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-2.5 text-xs uppercase" />
                   <SortableHeader label="구분" sortKey="writer_type" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
+                  <SortableHeader label="영구 저작물(%)" sortKey="permanent_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
+                  <SortableHeader label="일반 저작물(%)" sortKey="general_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
                   <SortableHeader label="용역 요율(%)" sortKey="fee_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
+                  <SortableHeader label="재계약일" sortKey="recontract_date" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
                   {isAdmin && <th className="px-6 py-2.5 text-center font-bold text-foreground text-xs uppercase w-24">액션</th>}
                 </tr>
               </thead>
@@ -456,7 +624,16 @@ export default function WriterMasterPage() {
                       )}
                     </td>
                     <td className="px-6 py-2.5 text-center">
+                      <NullableRateCell value={w.permanent_rate} editable={isAdmin} onSave={(v) => patchWriter(w.id, { permanent_rate: v })} />
+                    </td>
+                    <td className="px-6 py-2.5 text-center">
+                      <NullableRateCell value={w.general_rate} editable={isAdmin} onSave={(v) => patchWriter(w.id, { general_rate: v })} />
+                    </td>
+                    <td className="px-6 py-2.5 text-center">
                       <FeeRateCell value={w.fee_rate} editable={isAdmin} onSave={(v) => patchWriter(w.id, { fee_rate: v })} />
+                    </td>
+                    <td className="px-6 py-2.5 text-center">
+                      <DateCell value={w.recontract_date} editable={isAdmin} onSave={(v) => patchWriter(w.id, { recontract_date: v })} />
                     </td>
                     {isAdmin && (
                       <td className="px-6 py-2.5 text-center">
