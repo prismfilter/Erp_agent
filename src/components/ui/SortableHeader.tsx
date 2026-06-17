@@ -49,18 +49,14 @@ export function SortableHeader({
       <button
         type="button"
         onClick={() => onSort(sortKey)}
-        className={`relative flex items-center gap-1 w-full whitespace-nowrap cursor-pointer transition hover:text-primary ${JUSTIFY[align]} ${
+        className={`flex items-center gap-1 w-full whitespace-nowrap cursor-pointer transition hover:text-primary ${JUSTIFY[align]} ${
           isActive ? 'text-primary' : ''
         }`}
         title="클릭하여 정렬"
       >
+        {/* 제목과 정렬 아이콘은 항상 한 덩어리 — 정렬 방향(좌/중/우)에 따라 함께 이동 */}
         <span>{label}</span>
-        {/* 가운데 정렬: 화살표를 우측에 절대배치해 제목이 칼럼 정중앙에 오도록(본문 text-center와 정렬 일치) */}
-        {align === 'center' ? (
-          <span className="absolute right-1 top-1/2 -translate-y-1/2">{arrow}</span>
-        ) : (
-          arrow
-        )}
+        {arrow}
       </button>
     </th>
   );
