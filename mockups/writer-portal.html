@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>전속작가 포털 — 미리보기 v2 (목업)</title>
+  <style>
+    :root {
+      --bg: #070b1a;
+      --sidebar: linear-gradient(180deg, #0f1232 0%, #09091e 100%);
+      --card: linear-gradient(160deg, #1f2452 0%, #131530 100%);
+      --primary: #5c6cff; --accent: #4a54e8; --peri: #8097ff;
+      --active: linear-gradient(135deg, #4a5ee8 0%, #8097ff 100%);
+      --text: #e7eaf6; --muted: #98a1c9; --border: rgba(255,255,255,.08);
+      --good: #34d399; --warn: #fbbf24;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Pretendard", -apple-system, "Segoe UI", "Malgun Gothic", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+    /* 사이드바 */
+    .sidebar { width: 240px; flex-shrink: 0; background: var(--sidebar); border-right: 1px solid var(--border); padding: 16px; display: flex; flex-direction: column; }
+    .brand { display: flex; align-items: center; gap: 10px; padding: 8px 6px 18px; }
+    .brand .logo { width: 38px; height: 38px; border-radius: 9px; background: var(--active); display: grid; place-items: center; font-weight: 800; color: #fff; }
+    .brand b { font-size: 14px; } .brand small { display: block; color: var(--muted); font-size: 11px; }
+    .navlabel { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin: 14px 6px 8px; }
+    .navitem { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; color: #c7cdf0; font-size: 14px; }
+    .navitem.active { background: var(--active); color: #fff; box-shadow: 0 4px 18px rgba(74,94,232,.4); font-weight: 600; }
+    .profile { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px; border-top: 1px solid var(--border); }
+    .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--active); display: grid; place-items: center; font-weight: 700; }
+    /* 메인 */
+    .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .topbar { height: 60px; display: flex; align-items: center; gap: 8px; padding: 0 28px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--muted); }
+    .topbar b { color: var(--text); }
+    .content { padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 30px rgba(4,6,18,.35); }
+    .head { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .head h2 { font-size: 15px; } .head a { color: var(--peri); font-size: 12px; text-decoration: none; }
+    .tag { font-size: 11px; color: var(--muted); }
+    .btn { font-size: 12px; font-weight: 600; padding: 7px 13px; border-radius: 9px; border: 1px solid var(--border); color: var(--text); background: rgba(255,255,255,.04); cursor: pointer; }
+    .btn.primary { background: var(--active); border: none; box-shadow: 0 4px 16px rgba(74,94,232,.35); }
+    /* Hero */
+    .hero { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 24px 26px; display: flex; align-items: center; justify-content: space-between; gap: 16px; overflow: hidden; position: relative; }
+    .hero::after { content: ""; position: absolute; right: -40px; top: -50px; width: 260px; height: 260px; background: radial-gradient(circle, rgba(128,151,255,.22), transparent 70%); }
+    .hero h1 { font-size: 26px; margin-bottom: 6px; }
+    .hero p { color: var(--muted); font-size: 13px; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .badge.peri { background: rgba(128,151,255,.16); color: var(--peri); border: 1px solid rgba(128,151,255,.3); }
+    .badge.good { background: rgba(52,211,153,.15); color: var(--good); }
+    .hero .actions { display: flex; flex-direction: column; gap: 8px; position: relative; align-items: flex-end; }
+    /* KPI */
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
+    .kpi.hl { background: linear-gradient(135deg, #3a48c9 0%, #5566f0 55%, #7d92ff 100%); border: none; box-shadow: 0 10px 30px rgba(74,94,232,.45); }
+    .kpi.hl .label, .kpi.hl .sub { color: rgba(255,255,255,.85); }
+    .kpi.hl .ic { background: rgba(255,255,255,.2); }
+    .kpi .label { font-size: 12px; color: var(--muted); display: flex; align-items: center; justify-content: space-between; }
+    .kpi .value { font-size: 24px; font-weight: 800; margin-top: 10px; letter-spacing: -.02em; }
+    .kpi .sub { font-size: 11px; color: var(--good); margin-top: 6px; }
+    .kpi .ic { width: 30px; height: 30px; border-radius: 9px; background: rgba(128,151,255,.14); display: grid; place-items: center; }
+    /* 분기 차트 */
+    .quarters { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; padding: 18px 20px; }
+    .q { background: rgba(255,255,255,.02); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+    .q .qh { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; }
+    .q .pct { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(128,151,255,.18); color: var(--peri); }
+    .bar { height: 7px; border-radius: 999px; background: rgba(255,255,255,.08); margin: 12px 0 10px; overflow: hidden; }
+    .bar > span { display: block; height: 100%; background: var(--active); border-radius: 999px; }
+    .q .amt { font-size: 13px; font-weight: 700; } .q .amtl { font-size: 11px; color: var(--muted); }
+    /* 표 */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 11px 20px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; background: rgba(255,255,255,.02); }
+    td { padding: 12px 20px; border-top: 1px solid var(--border); }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    td.c, th.c { text-align: center; }
+    .pill { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
+    .pill.done { background: rgba(52,211,153,.15); color: var(--good); }
+    .pill.wait { background: rgba(251,191,36,.15); color: var(--warn); }
+    .pill.type { background: rgba(128,151,255,.15); color: var(--peri); }
+    .dl { font-size: 11px; color: var(--peri); border: 1px solid rgba(128,151,255,.3); padding: 4px 9px; border-radius: 8px; cursor: pointer; background: rgba(128,151,255,.08); }
+    .dl.off { color: var(--muted); border-color: var(--border); background: transparent; cursor: not-allowed; }
+    .grid2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; }
+    /* 계약 정보 */
+    .info { padding: 6px 20px 16px; }
+    .info .row { display: flex; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .info .row:last-child { border-bottom: none; }
+    .info .row .k { color: var(--muted); } .info .row .v { font-weight: 600; }
+    @media (max-width: 1100px) { .kpis, .quarters { grid-template-columns: repeat(2,1fr); } .grid2 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">PF</div><div><b>PRISMFILTER ERP</b><small>정산 자동화</small></div></div>
+    <div class="navlabel">메뉴</div>
+    <div class="navitem active">🎤 작가 포털</div>
+    <div class="navitem">📄 내 정산서</div>
+    <div class="navitem">🎵 내 저작물</div>
+    <div class="navitem">👤 내 정보</div>
+    <div class="profile"><div class="avatar">김</div><div><div style="font-size:13px;font-weight:600">김경환</div><div style="font-size:11px;color:var(--muted)">전속작가</div></div></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">PRISMFILTER MUSIC GROUP <span>/</span> <b>작가 포털</b></div>
+    <div class="content">
+
+      <!-- Hero -->
+      <section class="hero">
+        <div>
+          <h1>안녕하세요, 김경환 작가님 👋</h1>
+          <p>내 정산 내역과 관리 저작물을 한눈에 확인하세요.</p>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <span class="badge peri">✍️ 전속작가</span><span class="badge good">계약 활성</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn primary">⬇ 최신 정산서 PDF</button>
+          <button class="btn">✉ 정산팀 문의</button>
+        </div>
+      </section>
+
+      <!-- KPI -->
+      <section class="kpis">
+        <div class="kpi hl">
+          <div class="label">이번 분기 정산액 <span class="ic">💰</span></div>
+          <div class="value">2,300,000원</div>
+          <div class="sub">2026 Q1 · 지급 완료</div>
+        </div>
+        <div class="kpi">
+          <div class="label">누적 정산액(YTD) <span class="ic">📈</span></div>
+          <div class="value">8,750,000원</div>
+          <div class="sub">최근 12개월</div>
+        </div>
+        <div class="kpi">
+          <div class="label">관리 저작물 <span class="ic">🎵</span></div>
+          <div class="value">6곡</div>
+          <div class="sub" style="color:var(--muted)">영구 관리 대상</div>
+        </div>
+        <div class="kpi">
+          <div class="label">다음 정산 예정 <span class="ic">🗓</span></div>
+          <div class="value">2026 Q2</div>
+          <div class="sub" style="color:var(--warn)">집계 진행중 · 35%</div>
+        </div>
+      </section>
+
+      <!-- 분기별 정산 현황 -->
+      <section class="panel">
+        <div class="head"><h2>분기별 정산 현황 <span class="tag">· 2026</span></h2><a href="#">정산서 전체 →</a></div>
+        <div class="quarters">
+          <div class="q"><div class="qh">2026 Q1 <span class="pct">100%</span></div><div class="bar"><span style="width:100%"></span></div><div class="amt">2,300,000원</div><div class="amtl">지급 완료</div></div>
+          <div class="q"><div class="qh">2026 Q2 <span class="pct">35%</span></div><div class="bar"><span style="width:35%"></span></div><div class="amt">집계중</div><div class="amtl">진행중</div></div>
+          <div class="q"><div class="qh">2026 Q3 <span class="pct" style="background:rgba(255,255,255,.08);color:var(--muted)">0%</span></div><div class="bar"><span style="width:0%"></span></div><div class="amt">—</div><div class="amtl">예정</div></div>
+          <div class="q"><div class="qh">2026 Q4 <span class="pct" style="background:rgba(255,255,255,.08);color:var(--muted)">0%</span></div><div class="bar"><span style="width:0%"></span></div><div class="amt">—</div><div class="amtl">예정</div></div>
+        </div>
+      </section>
+
+      <!-- 정산 내역 + 계약 정보 -->
+      <section class="grid2">
+        <div class="panel">
+          <div class="head"><h2>최근 정산 내역</h2><a href="#">전체 보기 →</a></div>
+          <table>
+            <thead><tr><th>종류</th><th>기간</th><th class="num">지급액</th><th class="c">상태</th><th class="c">정산서</th></tr></thead>
+            <tbody>
+              <tr><td><span class="pill type">저작권료</span></td><td>2026 Q1</td><td class="num">2,300,000원</td><td class="c"><span class="pill done">완료</span></td><td class="c"><span class="dl">⬇ PDF</span></td></tr>
+              <tr><td><span class="pill type">용역</span></td><td>2025 Q4</td><td class="num">1,500,000원</td><td class="c"><span class="pill done">완료</span></td><td class="c"><span class="dl">⬇ PDF</span></td></tr>
+              <tr><td><span class="pill type">저작권료</span></td><td>2026 Q2</td><td class="num">— 집계중</td><td class="c"><span class="pill wait">진행중</span></td><td class="c"><span class="dl off">대기</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel">
+          <div class="head"><h2>전속계약 정보</h2></div>
+          <div class="info">
+            <div class="row"><span class="k">계약 구분</span><span class="v">전속작가</span></div>
+            <div class="row"><span class="k">재계약일</span><span class="v">2026-04-17</span></div>
+            <div class="row"><span class="k">기본 요율</span><span class="v">35%</span></div>
+            <div class="row"><span class="k">담당</span><span class="v">정산팀 (내선 102)</span></div>
+            <div class="row"><span class="k">상태</span><span class="v" style="color:var(--good)">● 활성</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 내 저작물 -->
+      <section class="panel">
+        <div class="head"><h2>내 저작물 <span class="tag">· 영구 관리 대상 6곡</span></h2><a href="#">전체 보기 →</a></div>
+        <table>
+          <thead><tr><th>곡명</th><th>아티스트</th><th>KOMCA 코드</th><th class="c">국내지분</th><th class="c">국외지분</th><th class="c">요율</th><th class="c">재계약일</th></tr></thead>
+          <tbody>
+            <tr><td>ERROR 405</td><td>JD1 외 1명</td><td class="tag">100005844512</td><td class="c">33.33%</td><td class="c">30%</td><td class="c">35%</td><td class="c">2026-04-17</td></tr>
+            <tr><td>HONEYHEART</td><td>HONEYZ 외 1명</td><td class="tag">100006641935</td><td class="c">35.83%</td><td class="c">33%</td><td class="c">35%</td><td class="c">2026-04-17</td></tr>
+            <tr><td>MY BRIGHT LIGHT</td><td>LEO LIM</td><td class="tag">100007208339</td><td class="c">19.16%</td><td class="c">15%</td><td class="c">35%</td><td class="c">2026-04-17</td></tr>
+            <tr><td>MY BRIGHT LIGHT (INSTRUMENTAL)</td><td>LEO LIM</td><td class="tag">100007246019</td><td class="c">31.66%</td><td class="c">30%</td><td class="c">35%</td><td class="c">2026-04-17</td></tr>
+            <tr><td>SLOWDANCE</td><td>HOANG MY AN 외 1명</td><td class="tag">100006429633</td><td class="c">5.55%</td><td class="c">0%</td><td class="c">35%</td><td class="c">2026-04-17</td></tr>
+            <tr><td>나의여름설명서</td><td>JAESSBEE 외 2명</td><td class="tag">100007174574</td><td class="c">29.17%</td><td class="c">25%</td><td class="c">35%</td><td class="c">2026-04-17</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <p style="text-align:center;color:var(--muted);font-size:11px">— 미리보기 목업 v2 (실데이터 예시: 김경환 작가) · 실제 기능은 미구현 —</p>
+    </div>
+  </div>
+</body>
+</html>
