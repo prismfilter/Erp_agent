@@ -65,7 +65,8 @@ function EditableCell({
         onBlur={handleSave}
         autoFocus
         disabled={saving}
-        className="w-full max-w-[160px] px-2 py-1 text-xs text-center bg-background border border-primary rounded outline-none text-foreground"
+        // bg-transparent: 수정 중·blur 시 검은 블럭 대신 배경색과 자연스럽게 어우러지게
+        className="w-full px-2 py-1 text-xs text-center bg-transparent border border-primary rounded outline-none text-foreground"
       />
     );
   }
@@ -111,6 +112,9 @@ export default function WorksPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState<AddForm>(EMPTY_FORM);
+  // 우클릭 삭제 컨텍스트 메뉴 위치/대상 + 삭제 확인 다이얼로그 대상
+  const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -215,9 +219,9 @@ export default function WorksPage() {
     }
   };
 
-  // 행 삭제
-  const handleDelete = async (id: string) => {
-    if (!confirm('이 저작물을 삭제하시겠습니까?')) return;
+  // 행 삭제 (우클릭 메뉴 → 확인 다이얼로그 → 실행)
+  const performDelete = async (id: string) => {
+    setConfirmDeleteId(null);
     const res = await fetch(`/api/works/${id}`, { method: 'DELETE' });
     if (res.ok) {
       await loadWriters();
@@ -227,6 +231,23 @@ export default function WorksPage() {
       showToast((await res.json()).error || '삭제 실패');
     }
   };
+
+  // 컨텍스트 메뉴: 외부 클릭·스크롤·Esc 시 닫기
+  useEffect(() => {
+    if (!contextMenu) return;
+    const close = () => setContextMenu(null);
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setContextMenu(null); };
+    window.addEventListener('click', close);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('click', close);
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [contextMenu]);
 
   // 정렬 (로드된 행 대상)
   const { sortKey, dir, toggle, sortRows } = useTableSort<MusicWork>({
@@ -431,33 +452,36 @@ export default function WorksPage() {
                 </span>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-xs table-fixed min-w-[820px]">
+                <table className="w-full text-xs table-fixed min-w-[880px]">
                   <thead className="bg-primary/10 border-b border-border">
                     <tr>
                       <SortableHeader label="NO." sortKey="no" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-14`} />
                       {showWriterCol && (
                         <SortableHeader label="작가명" sortKey="writer_name" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-20`} />
                       )}
-                      <SortableHeader label="KOMCA 코드" sortKey="komca_code" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-28`} />
+                      <SortableHeader label="KOMCA 코드" sortKey="komca_code" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-36`} />
                       {/* 곡명·아티스트는 유연 컬럼(고정 width 제거) — 여분 폭을 흡수해 우측 컬럼이 벌어지지 않게 함 */}
                       <SortableHeader label="곡명" sortKey="song_title" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={TH_CLASS} />
                       <SortableHeader label="아티스트" sortKey="artist" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={TH_CLASS} />
                       <SortableHeader label="국내지분" sortKey="domestic_share" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-20`} />
                       <SortableHeader label="국외지분" sortKey="overseas_share" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-20`} />
                       <SortableHeader label="요율" sortKey="rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-16`} />
-                      <SortableHeader label="재계약일" sortKey="recontract_date" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-24`} />
-                      {isAdmin && <th className={`${TH_CLASS} font-bold text-foreground w-14`}>삭제</th>}
+                      <SortableHeader label="재계약일" sortKey="recontract_date" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-40`} />
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {sorted.map((w) => (
-                      <tr key={w.id} className="group hover:bg-primary/5 text-center text-foreground">
+                      <tr
+                        key={w.id}
+                        className="hover:bg-primary/5 text-center text-foreground"
+                        onContextMenu={isAdmin ? (e) => { e.preventDefault(); setContextMenu({ id: w.id, x: e.clientX, y: e.clientY }); } : undefined}
+                      >
                         {/* 고유 정보 7개(NO.·KOMCA·곡명·아티스트·지분·요율)는 표시 전용 — 추가 시에만 입력 */}
                         <td className="px-3 py-2 tabular-nums">{w.no}</td>
                         {showWriterCol && (
                           <td className="px-3 py-2 truncate" title={w.writer_name}>{w.writer_name}</td>
                         )}
-                        <td className="px-3 py-2 tabular-nums truncate" title={w.komca_code ?? ''}>
+                        <td className="px-3 py-2 tabular-nums whitespace-nowrap" title={w.komca_code ?? ''}>
                           {w.komca_code ?? '-'}
                         </td>
                         <td className="px-3 py-2 truncate" title={w.song_title}>{w.song_title}</td>
@@ -471,20 +495,10 @@ export default function WorksPage() {
                         <td className="px-3 py-2 tabular-nums">
                           {w.rate != null ? formatRatePercent(w.rate) : '-'}
                         </td>
-                        {/* 재계약일만 인라인 수정 가능 */}
+                        {/* 재계약일만 인라인 수정 가능 (삭제는 행 우클릭 메뉴) */}
                         <td className="px-3 py-2 tabular-nums">
                           <EditableCell value={w.recontract_date} editable={isAdmin} type="date" onSave={(v) => patchWork(w.id, { recontract_date: v as string | null })} />
                         </td>
-                        {isAdmin && (
-                          <td className="px-3 py-2">
-                            <button
-                              onClick={() => handleDelete(w.id)}
-                              className="px-2 py-1 rounded text-[11px] font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition opacity-0 group-hover:opacity-100"
-                            >
-                              삭제
-                            </button>
-                          </td>
-                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -506,6 +520,54 @@ export default function WorksPage() {
           )}
         </div>
       </div>
+
+      {/* 우클릭 컨텍스트 메뉴 — 삭제 (ADMIN) */}
+      {contextMenu && (
+        <div
+          className="fixed z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[128px]"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => { setConfirmDeleteId(contextMenu.id); setContextMenu(null); }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+            </svg>
+            삭제
+          </button>
+        </div>
+      )}
+
+      {/* 삭제 확인 다이얼로그 */}
+      {confirmDeleteId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setConfirmDeleteId(null)}
+        >
+          <div
+            className="bg-card border border-border rounded-xl shadow-xl p-6 w-[320px] text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-sm text-foreground mb-5">정말로 삭제하시겠습니까?</p>
+            <div className="flex justify-center gap-2">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="px-4 py-2 text-sm border border-border text-foreground rounded-lg hover:bg-muted transition cursor-pointer"
+              >
+                취소
+              </button>
+              <button
+                onClick={() => performDelete(confirmDeleteId)}
+                className="px-4 py-2 text-sm bg-red-500/90 text-white rounded-lg hover:bg-red-500 transition cursor-pointer"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-foreground text-background text-sm px-4 py-2 rounded-full shadow-lg z-50 pointer-events-none">
