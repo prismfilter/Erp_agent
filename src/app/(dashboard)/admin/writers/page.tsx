@@ -410,8 +410,8 @@ export default function WriterMasterPage() {
         ))}
       </div>
 
-      {/* 테이블 */}
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
+      {/* 테이블 — 컬럼 4개라 전체 폭을 채우면 과하게 벌어져, 표 카드만 적정 폭으로 제한하고 가운데 정렬(프라이스 테이블과 동일 방식) */}
+      <div className="bg-card border border-border rounded-lg overflow-hidden w-full max-w-3xl mx-auto">
         {isLoading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-6 w-6 border-2 border-border border-t-primary mx-auto mb-3" />
