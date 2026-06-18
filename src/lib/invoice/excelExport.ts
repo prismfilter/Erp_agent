@@ -14,14 +14,19 @@ import {
 } from './calculator';
 import {
   loadLogo,
+  setupSheet,
   drawHeader,
   infoRow,
   tableHead,
   tableRow,
   totalRow,
+  fillerRows,
   drawFooter,
   downloadWorkbook,
 } from '@/lib/excel/excelDoc';
+
+// PDF 미리보기와 동일하게 표 아래를 채우는 최소 표시 행 수
+const MIN_ROWS = 12;
 
 function setWidths(ws: Worksheet, widths: number[]): void {
   widths.forEach((w, i) => {
@@ -56,6 +61,7 @@ export async function exportInvoiceExcel(invoice: Invoice): Promise<void> {
   // ── 시트 1: 거래처 청구서 (외부용) — 5열 ──
   {
     const ws = wb.addWorksheet('거래처 청구서');
+    setupSheet(ws);
     const cols = 5;
     setWidths(ws, [6, 16, 50, 18, 18]);
     let r = drawHeader(wb, ws, logo, { title: '청 구 서', subtitle: 'INVOICE', cols });
@@ -70,7 +76,8 @@ export async function exportInvoiceExcel(invoice: Invoice): Promise<void> {
       { text: '세 액', align: 'right' },
     ]);
     r += 1;
-    getExternalItems(items).forEach((it, idx) => {
+    const externalItems = getExternalItems(items);
+    externalItems.forEach((it, idx) => {
       const bd = calcItemBreakdown(it);
       const desc =
         stripTitlePrefix(it.description, invoice.title) +
@@ -84,6 +91,7 @@ export async function exportInvoiceExcel(invoice: Invoice): Promise<void> {
       ]);
       r += 1;
     });
+    r += fillerRows(ws, r, Math.max(0, MIN_ROWS - externalItems.length), cols);
     r += 1; // gap
     totalRow(ws, r, cols, '총 공급가액', totals.supplyTotal);
     totalRow(ws, r + 1, cols, '총 세액', totals.taxA);
@@ -95,6 +103,7 @@ export async function exportInvoiceExcel(invoice: Invoice): Promise<void> {
   // ── 시트 2: 내부 지급서 (내부용) — 7열 ──
   {
     const ws = wb.addWorksheet('내부 지급서');
+    setupSheet(ws);
     const cols = 7;
     setWidths(ws, [6, 14, 40, 15, 13, 15, 15]);
     let r = drawHeader(wb, ws, logo, { title: '내부 지급서', subtitle: 'INTERNAL', cols });
@@ -111,7 +120,8 @@ export async function exportInvoiceExcel(invoice: Invoice): Promise<void> {
       { text: '귀속 금액', align: 'right' },
     ]);
     r += 1;
-    getInternalItems(items).forEach((it, idx) => {
+    const internalItems = getInternalItems(items);
+    internalItems.forEach((it, idx) => {
       const bd = calcItemBreakdown(it);
       tableRow(ws, r, [
         { value: idx + 1 },
@@ -124,6 +134,7 @@ export async function exportInvoiceExcel(invoice: Invoice): Promise<void> {
       ]);
       r += 1;
     });
+    r += fillerRows(ws, r, Math.max(0, MIN_ROWS - internalItems.length), cols);
     r += 1;
     totalRow(ws, r, cols, '총 공급가액 (A)', totals.supplyTotal);
     totalRow(ws, r + 1, cols, '총 작가지급액 (B)', totals.writerPayTotal);

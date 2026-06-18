@@ -30,8 +30,27 @@ export const allBorder: Partial<Borders> = {
   bottom: thin(),
   right: thin(),
 };
+// 가로줄 전용 테두리 — PDF 미리보기처럼 행 하단 가로선만(세로 구분선 없음)
+export const hLine: Partial<Borders> = { bottom: thin() };
+// 표 헤더 하단 강조선(굵은 가로선)
+const headUnderline: Partial<Borders> = {
+  bottom: { style: 'medium' as const, color: { argb: C.ink } },
+};
 export const solid = (argb: string) =>
   ({ type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb } });
+
+// 시트 기본 설정 — 눈금선 제거 + A4 인쇄 맞춤(스프레드시트가 아닌 디자인 문서처럼 보이게)
+export function setupSheet(ws: Worksheet): void {
+  ws.views = [{ showGridLines: false }];
+  ws.pageSetup = {
+    paperSize: 9, // A4
+    orientation: 'portrait',
+    fitToPage: true,
+    fitToWidth: 1,
+    fitToHeight: 0,
+    margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0, footer: 0 },
+  };
+}
 
 // public 로고를 ArrayBuffer로 — addImage(buffer)에 사용
 export async function loadLogo(): Promise<ArrayBuffer | null> {
@@ -115,22 +134,23 @@ export interface HeadCol {
   align?: 'left' | 'center' | 'right';
 }
 
-// 표 헤더 (진한 배경 + 흰 굵은 글씨 + 테두리)
+// 표 헤더 (진한 배경 + 흰 굵은 글씨 + 하단 강조 가로선) — 정렬은 전부 가운데
 export function tableHead(ws: Worksheet, row: number, headers: HeadCol[]): void {
   headers.forEach((h, i) => {
     const cell = ws.getCell(row, i + 1);
     cell.value = h.text;
     cell.font = { name: FONT, bold: true, size: 10, color: { argb: C.white } };
     cell.fill = solid(C.dark);
-    cell.alignment = { horizontal: h.align ?? 'center', vertical: 'middle' };
-    cell.border = allBorder;
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    cell.border = headUnderline;
   });
   ws.getRow(row).height = 22;
 }
 
 export type CellAlign = 'left' | 'center' | 'right';
 
-// 표 데이터 한 행 (값 + 정렬 + 통화서식 + 테두리)
+// 표 데이터 한 행 (값 + 통화서식 + 하단 가로선)
+// 디자인 확정: 금액 포함 모든 셀 가운데 정렬. align 인자는 상세/내용 열(줄바꿈 허용) 판별용으로만 사용.
 export function tableRow(
   ws: Worksheet,
   row: number,
@@ -140,14 +160,14 @@ export function tableRow(
     const cell = ws.getCell(row, i + 1);
     cell.value = c.value;
     cell.font = { name: FONT, size: 10, color: { argb: C.ink } };
-    cell.alignment = { horizontal: c.align ?? 'center', vertical: 'middle', wrapText: i === 2 };
-    cell.border = allBorder;
+    cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: c.align === 'left' };
+    cell.border = hLine;
     if (c.won) cell.numFmt = WON;
   });
   ws.getRow(row).height = 20;
 }
 
-// 합계 한 줄 (라벨 우측정렬 병합 + 값) — emph면 진한 배경 흰 글씨
+// 합계 한 줄 — PDF 미리보기처럼 우측 컴팩트 박스(라벨/값만 우측 2열에). emph면 진한 배경 흰 글씨.
 export function totalRow(
   ws: Worksheet,
   row: number,
@@ -156,15 +176,15 @@ export function totalRow(
   amount: number,
   emph = false
 ): void {
-  // 라벨: 1 ~ (cols-1) 병합, 우측 정렬
-  ws.mergeCells(row, 1, row, cols - 1);
-  const l = ws.getCell(row, 1);
+  // 좌측(1 ~ cols-2)은 비워 둠 — 눈금선이 꺼져 있어 자연스러운 여백이 된다
+  if (cols > 2) ws.mergeCells(row, 1, row, cols - 2);
+  const l = ws.getCell(row, cols - 1);
   l.value = label;
   l.alignment = { horizontal: 'right', vertical: 'middle' };
   const v = ws.getCell(row, cols);
   v.value = amount;
   v.numFmt = WON;
-  v.alignment = { horizontal: 'right', vertical: 'middle' };
+  v.alignment = { horizontal: 'center', vertical: 'middle' };
   if (emph) {
     l.font = { name: FONT, bold: true, size: 12, color: { argb: C.white } };
     v.font = { name: FONT, bold: true, size: 12, color: { argb: C.white } };
@@ -174,10 +194,22 @@ export function totalRow(
   } else {
     l.font = { name: FONT, size: 10, color: { argb: C.ink } };
     v.font = { name: FONT, size: 10, color: { argb: C.ink } };
+    l.border = hLine;
+    v.border = hLine;
     ws.getRow(row).height = 20;
   }
-  l.border = allBorder;
-  v.border = allBorder;
+}
+
+// 빈 채움 행 — PDF처럼 표 아래를 옅은 가로줄로 채워 한 장을 채운다. 추가한 행 수 반환.
+export function fillerRows(ws: Worksheet, fromRow: number, count: number, cols: number): number {
+  for (let k = 0; k < count; k++) {
+    const r = fromRow + k;
+    for (let c = 1; c <= cols; c++) {
+      ws.getCell(r, c).border = hLine;
+    }
+    ws.getRow(r).height = 18;
+  }
+  return count;
 }
 
 // 푸터 (회사 정보) — row, row+1 사용

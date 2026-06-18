@@ -6,14 +6,19 @@ import { stripTitlePrefix } from '@/lib/invoice/calculator';
 import type { ServiceSettlement } from '@/types/invoice';
 import {
   loadLogo,
+  setupSheet,
   drawHeader,
   infoRow,
   tableHead,
   tableRow,
   totalRow,
+  fillerRows,
   drawFooter,
   downloadWorkbook,
 } from '@/lib/excel/excelDoc';
+
+// PDF 미리보기(SettlementPreview PER_PAGE)와 동일하게 표 아래를 채우는 최소 표시 행 수
+const MIN_ROWS = 14;
 
 function fmtDate(s: string | null): string {
   return s ? s.slice(0, 10) : '-';
@@ -34,6 +39,7 @@ export async function exportSettlementExcel(settlement: ServiceSettlement): Prom
   wb.created = new Date();
 
   const ws = wb.addWorksheet('용역 정산서');
+  setupSheet(ws);
   const cols = 5;
   [6, 14, 18, 46, 18].forEach((w, i) => (ws.getColumn(i + 1).width = w));
 
@@ -68,6 +74,7 @@ export async function exportSettlementExcel(settlement: ServiceSettlement): Prom
     ]);
     r += 1;
   });
+  r += fillerRows(ws, r, Math.max(0, MIN_ROWS - detail.length), cols);
   r += 1; // gap
 
   totalRow(ws, r, cols, '총 작가지급액', result.totalAmount);
