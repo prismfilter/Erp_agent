@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTableSort } from '@/hooks/useTableSort';
 import { useRowFocus } from '@/hooks/useRowFocus';
 import { SortableHeader } from '@/components/ui/SortableHeader';
-import { useAuthStore } from '@/store/authStore';
+import { EmailCell } from '@/components/admin/EmailCell';
+import { RoleLabel } from '@/lib/ui/roleMeta';
 
 type MemberRole = 'ADMIN' | 'STAFF' | 'EXCLUSIVE_WRITER' | 'GENERAL_WRITER';
 
@@ -12,6 +13,7 @@ interface Member {
   id: string;
   user_id: string;
   name: string | null;
+  email: string | null;
   role: MemberRole;
   contract_date: string | null;
   created_at: string;
@@ -20,16 +22,6 @@ interface Member {
 type MemberTab = '전체' | MemberRole;
 
 const MEMBER_ROLES: MemberRole[] = ['ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'];
-
-function roleLabel(role: string) {
-  switch (role) {
-    case 'ADMIN':            return '👑 관리자';
-    case 'STAFF':            return '💼 직원';
-    case 'EXCLUSIVE_WRITER': return '✍️ 전속 작가';
-    case 'GENERAL_WRITER':   return '📝 일반 작가';
-    default:                 return role;
-  }
-}
 
 function tabLabel(tab: MemberTab) {
   switch (tab) {
@@ -80,7 +72,7 @@ function NameCell({
 
   if (isEditing) {
     return (
-      <div className="flex items-center gap-1">
+      <div className="inline-flex items-center gap-1">
         <input
           type="text"
           value={value}
@@ -90,7 +82,7 @@ function NameCell({
             if (e.key === 'Escape') handleCancel();
           }}
           autoFocus
-          className="w-24 px-2 py-1 text-xs bg-background border border-primary rounded outline-none text-foreground"
+          className="w-24 px-2 py-1 text-xs bg-background border border-primary rounded outline-none text-foreground text-center"
           placeholder="이름 입력"
         />
         <button onClick={handleSave} disabled={saving} className="p-1 text-green-400 hover:text-green-300 transition disabled:opacity-50" title="저장">
@@ -108,49 +100,24 @@ function NameCell({
   }
 
   return (
-    <div className="flex items-center gap-1.5 group">
+    <span className="relative inline-block group">
       <span className={currentName ? 'text-foreground' : 'text-muted-foreground italic text-xs'}>
         {currentName ?? '미등록'}
       </span>
       <button
         onClick={() => { setValue(currentName ?? ''); setIsEditing(true); }}
-        className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-blue-600/10"
+        className="absolute left-full top-1/2 -translate-y-1/2 ml-1 opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-blue-600/10"
         title="이름 수정"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
         </svg>
       </button>
-    </div>
-  );
-}
-
-// 사용자 ID 셀 — 전체 ID 표시(title)와 복사는 관리자만
-function UserIdCell({ userId, onCopy, isAdmin }: { userId: string; onCopy: (id: string) => void; isAdmin: boolean }) {
-  return (
-    <div className="flex items-center gap-1.5 group">
-      <span className="text-foreground font-mono text-xs cursor-default" title={isAdmin ? userId : undefined}>
-        {userId.substring(0, 8)}...
-      </span>
-      {isAdmin && (
-        <button
-          onClick={() => onCopy(userId)}
-          className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-blue-600/10"
-          title="ID 복사"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-          </svg>
-        </button>
-      )}
-    </div>
+    </span>
   );
 }
 
 export default function StaffPage() {
-  const { user } = useAuthStore();
-  const isAdmin = user?.role === 'ADMIN';
   const [members, setMembers] = useState<Member[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -191,6 +158,7 @@ export default function StaffPage() {
   // 정렬: 이름·역할·등록일
   const { sortKey, dir, toggle, sortRows } = useTableSort<Member>({
     name: (m) => m.name,
+    email: (m) => m.email,
     role: (m) => m.role,
     created_at: (m) => m.created_at,
   }, 'pf_sort_staff');
@@ -252,27 +220,27 @@ export default function StaffPage() {
             <table className="w-full text-sm">
               <thead className="bg-primary/10 border-b border-border">
                 <tr>
-                  <SortableHeader label="이름" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
-                  <th className="px-6 py-3 text-left font-bold text-foreground text-xs uppercase">사용자 ID</th>
-                  <SortableHeader label="역할" sortKey="role" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
-                  <SortableHeader label="등록일" sortKey="created_at" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
+                  <SortableHeader label="이름" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
+                  <SortableHeader label="이메일" sortKey="email" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
+                  <SortableHeader label="역할" sortKey="role" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
+                  <SortableHeader label="등록일" sortKey="created_at" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {filtered.map((m) => (
                   <tr key={m.id} id={`row-${m.user_id}`} className="hover:bg-primary/5">
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-center">
                       <NameCell userId={m.user_id} currentName={m.name} onSaved={handleNameSaved} />
                     </td>
-                    <td className="px-6 py-4">
-                      <UserIdCell userId={m.user_id} onCopy={handleCopy} isAdmin={isAdmin} />
+                    <td className="px-6 py-4 text-center">
+                      <EmailCell email={m.email} onCopy={handleCopy} />
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded text-xs font-medium">
-                        {roleLabel(m.role)}
+                    <td className="px-6 py-4 text-center">
+                      <span className="inline-flex items-center bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded text-xs font-medium leading-none">
+                        <RoleLabel role={m.role} />
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-muted-foreground text-xs">
+                    <td className="px-6 py-4 text-center text-muted-foreground text-xs">
                       {new Date(m.created_at).toLocaleDateString('ko-KR')}
                     </td>
                   </tr>
