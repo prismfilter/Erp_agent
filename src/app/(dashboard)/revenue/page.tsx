@@ -4,6 +4,7 @@
 // 집계 기준: 입금완료(paid) 청구서의 내부 지급서 총 귀속금액(C)
 
 import { useEffect, useState, useMemo, useRef } from 'react';
+import { BarChart3 } from 'lucide-react';
 import type { Invoice, PriceItem } from '@/types/invoice';
 import { aggregateRevenue, getQuarter, calcYoY } from '@/lib/revenue/aggregator';
 import { formatWon } from '@/lib/settlement/calculator';
@@ -219,7 +220,7 @@ export default function RevenuePage() {
       {/* 데이터 없음 안내 */}
       {invoices.length === 0 ? (
         <div className="bg-card border border-border rounded-lg p-10 text-center">
-          <div className="text-4xl mb-3">📊</div>
+          <BarChart3 className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
           <h2 className="text-lg font-bold text-foreground mb-1">입금완료된 청구서가 없습니다</h2>
           <p className="text-sm text-muted-foreground">
             거래처 청구서에서 상태를 &lsquo;입금완료&rsquo;로 변경하면 매출에 집계됩니다.

@@ -3,24 +3,16 @@
 import { useState, useCallback } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { UserRole } from '@/types';
+import { RoleLabel, ROLE_META } from '@/lib/ui/roleMeta';
+import { CheckCircle2, AlertTriangle, ShieldCheck, SquarePen, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
 // 본인이 직접 설정 가능한 역할은 작가 역할로만 제한 (권한 상승 방지)
 // 직원·관리자 역할은 관리자가 계정 관리에서만 부여한다.
-const ROLE_OPTIONS: { value: UserRole; label: string; icon: string }[] = [
-  { value: 'EXCLUSIVE_WRITER', label: '전속 작가', icon: '✍️' },
-  { value: 'GENERAL_WRITER',   label: '일반 작가', icon: '📝' },
+const ROLE_OPTIONS: { value: UserRole; label: string; Icon: LucideIcon }[] = [
+  { value: 'EXCLUSIVE_WRITER', label: ROLE_META.EXCLUSIVE_WRITER.label, Icon: ROLE_META.EXCLUSIVE_WRITER.Icon },
+  { value: 'GENERAL_WRITER',   label: ROLE_META.GENERAL_WRITER.label, Icon: ROLE_META.GENERAL_WRITER.Icon },
 ];
-
-function getRoleLabel(role: UserRole | null | undefined) {
-  switch (role) {
-    case 'ADMIN':            return '👑 관리자';
-    case 'STAFF':            return '💼 직원';
-    case 'EXCLUSIVE_WRITER': return '✍️ 전속 작가';
-    case 'GENERAL_WRITER':   return '📝 일반 작가';
-    default: return '미지정';
-  }
-}
 
 export default function ProfilePage() {
   const user = useAuthStore((state) => state.user);
@@ -106,8 +98,8 @@ export default function ProfilePage() {
       </div>
 
       {saveSuccess && (
-        <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3 text-sm text-green-400">
-          ✅ 프로필이 성공적으로 저장되었습니다.
+        <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3 text-sm text-green-400 flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 shrink-0" /> 프로필이 성공적으로 저장되었습니다.
         </div>
       )}
 
@@ -118,9 +110,9 @@ export default function ProfilePage() {
           {!isEditing ? (
             <button
               onClick={handleEditStart}
-              className="px-4 py-1.5 text-sm border border-border rounded-lg text-foreground hover:bg-blue-600/10 transition"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm border border-border rounded-lg text-foreground hover:bg-blue-600/10 transition"
             >
-              ✏️ 수정하기
+              <SquarePen className="w-4 h-4" /> 수정하기
             </button>
           ) : (
             <div className="flex gap-2">
@@ -191,7 +183,7 @@ export default function ProfilePage() {
                   {user.role === null || user.role === undefined ? (
                     <span className="text-muted-foreground italic">미지정</span>
                   ) : (
-                    getRoleLabel(user.role)
+                    <RoleLabel role={user.role} />
                   )}
                 </p>
                 {isEditing && isPrivileged && (
@@ -202,19 +194,22 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="mt-2 flex flex-wrap gap-2">
-                {ROLE_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setSelectedRole(opt.value)}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border transition ${
-                      selectedRole === opt.value
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'border-border text-foreground hover:bg-blue-600/10'
-                    }`}
-                  >
-                    {opt.icon} {opt.label}
-                  </button>
-                ))}
+                {ROLE_OPTIONS.map((opt) => {
+                  const { Icon } = opt;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => setSelectedRole(opt.value)}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border transition ${
+                        selectedRole === opt.value
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'border-border text-foreground hover:bg-blue-600/10'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" /> {opt.label}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -256,7 +251,7 @@ export default function ProfilePage() {
           </div>
 
           {saveError && (
-            <p className="text-sm text-red-400">⚠️ {saveError}</p>
+            <p className="text-sm text-red-400 flex items-center gap-1.5"><AlertTriangle className="w-4 h-4 shrink-0" /> {saveError}</p>
           )}
         </div>
       </div>
@@ -265,7 +260,7 @@ export default function ProfilePage() {
       <div className="bg-card border border-border rounded-lg p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">보안 설정</h2>
         <div className="flex gap-3 p-4 bg-blue-500/5 border border-blue-500/20 rounded-lg">
-          <span className="text-xl flex-shrink-0 mt-0.5">🔐</span>
+          <ShieldCheck className="w-5 h-5 flex-shrink-0 mt-0.5 text-primary" />
           <div className="space-y-1.5">
             <p className="text-sm font-medium text-foreground">구글 계정과 연동되어 있습니다</p>
             <p className="text-sm text-muted-foreground leading-relaxed">

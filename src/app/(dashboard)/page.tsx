@@ -5,6 +5,7 @@
 // 정산/청구서가 아직 없으면 0·빈 상태로 정직하게 표시하고, 데이터가 생기면 자동 반영된다.
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { Users, Music, ClipboardList, Wallet, ReceiptText } from 'lucide-react';
 import type { ServiceSettlement, Writer, Invoice, InvoiceItem, WorkWriterGroup } from '@/types/invoice';
 import { formatWon } from '@/lib/settlement/calculator';
 import { calcInvoiceTotals } from '@/lib/invoice/calculator';
@@ -94,10 +95,10 @@ export default function HomePage() {
   );
 
   const overview = [
-    { label: '등록 작가', value: `${writers.length}`, icon: '👥' },
-    { label: '관리 저작물', value: `${workCount.toLocaleString()}곡`, icon: '🎵' },
-    { label: '처리 정산', value: `${settlements.length}`, icon: '📋' },
-    { label: '이달 수입', value: formatWon(stats.thisMonthRevenue), icon: '💰' },
+    { label: '등록 작가', value: `${writers.length}`, Icon: Users, color: 'text-teal-500' },
+    { label: '관리 저작물', value: `${workCount.toLocaleString()}곡`, Icon: Music, color: 'text-fuchsia-500' },
+    { label: '처리 정산', value: `${settlements.length}`, Icon: ClipboardList, color: 'text-violet-500' },
+    { label: '이달 수입', value: formatWon(stats.thisMonthRevenue), Icon: Wallet, color: 'text-emerald-500' },
   ];
 
   return (
@@ -133,17 +134,20 @@ export default function HomePage() {
       <div>
         <h2 className="text-sm font-bold text-foreground mb-4">현황 개요</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {overview.map((item) => (
-            <div key={item.label} className="bg-card border border-border rounded-lg p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-2">{item.label}</p>
-                  <p className="text-2xl font-bold text-foreground tabular-nums">{loading ? '—' : item.value}</p>
+          {overview.map((item) => {
+            const Icon = item.Icon;
+            return (
+              <div key={item.label} className="bg-card border border-border rounded-lg p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">{item.label}</p>
+                    <p className="text-2xl font-bold text-foreground tabular-nums">{loading ? '—' : item.value}</p>
+                  </div>
+                  <Icon className={`w-6 h-6 shrink-0 ${item.color}`} />
                 </div>
-                <span className="text-2xl">{item.icon}</span>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -190,7 +194,7 @@ export default function HomePage() {
           <div className="p-8 text-center text-sm text-muted-foreground">데이터 로딩 중...</div>
         ) : recent.length === 0 ? (
           <div className="p-10 text-center">
-            <div className="text-3xl mb-2" aria-hidden="true">🧾</div>
+            <ReceiptText className="w-8 h-8 mx-auto mb-2 text-muted-foreground" aria-hidden="true" />
             <p className="text-muted-foreground text-sm">아직 정산 내역이 없습니다.</p>
           </div>
         ) : (

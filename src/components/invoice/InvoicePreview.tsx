@@ -4,6 +4,7 @@
 // A4 세로 + 현대적 인보이스 레이아웃. 외부 문서엔 실명·작가지급액·귀속금액·비고 절대 미노출
 
 import { useMemo } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import type { Invoice } from '@/types/invoice';
 import {
   calcInvoiceTotals,
@@ -212,7 +213,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
       {!totals.isValid && (
         <div className="print:hidden mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-1">
           {totals.warnings.map((w, i) => (
-            <p key={i} className="text-xs text-amber-700">⚠️ {w}</p>
+            <p key={i} className="text-xs text-amber-700 flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 shrink-0" /> {w}</p>
           ))}
         </div>
       )}

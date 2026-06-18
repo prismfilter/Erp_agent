@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { AlertTriangle } from 'lucide-react';
 import type { PriceItem, Client, CompanyAccount, Invoice, InvoiceItem, Writer } from '@/types/invoice';
 import { calcInvoiceTotals, calcItemBreakdown } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
@@ -525,7 +526,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
         {totals.warnings.length > 0 && (
           <div className="mt-4 bg-amber-500/10 border border-amber-500/40 rounded-lg p-3 space-y-1">
             {totals.warnings.map((w, i) => (
-              <p key={i} className="text-xs text-amber-400">⚠️ {w}</p>
+              <p key={i} className="text-xs text-amber-400 flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 shrink-0" /> {w}</p>
             ))}
           </div>
         )}

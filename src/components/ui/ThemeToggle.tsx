@@ -13,12 +13,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
-
-const THEME_ICON: Record<string, string> = {
-  light: '☀️',
-  dark: '🌙',
-  'classic-dark': '🖤',
-};
+import { THEME_META, THEME_GROUP_ICON, THEME_GROUP_COLOR, themeMetaOf } from '@/lib/ui/themeMeta';
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
@@ -37,32 +32,31 @@ export function ThemeToggle({ className }: { className?: string }) {
     );
   }
 
-  const current = THEME_ICON[theme ?? 'dark'] ?? THEME_ICON.dark;
+  const currentTheme = themeMetaOf(theme);
+  const CurrentIcon = currentTheme.Icon;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="테마 변경"
         title="테마 변경"
-        className={`h-9 w-9 flex items-center justify-center rounded-lg border border-border bg-card text-base hover:bg-muted transition cursor-pointer ${className ?? ''}`}
+        className={`h-9 w-9 flex items-center justify-center rounded-lg border border-border bg-card text-foreground hover:bg-muted transition cursor-pointer ${className ?? ''}`}
       >
-        {current}
+        <CurrentIcon className={`w-5 h-5 ${currentTheme.color}`} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44 bg-card border border-border">
-        <DropdownMenuLabel className="text-foreground text-xs font-semibold">🎨 테마</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-foreground text-xs font-semibold flex items-center gap-1.5">
+          <THEME_GROUP_ICON className={`w-3.5 h-3.5 ${THEME_GROUP_COLOR}`} /> 테마
+        </DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={theme ?? 'dark'}
           onValueChange={(v) => setTheme(String(v))}
         >
-          <DropdownMenuRadioItem value="light" className="text-foreground cursor-pointer">
-            ☀️ 라이트
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="dark" className="text-foreground cursor-pointer">
-            🌙 다크
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="classic-dark" className="text-foreground cursor-pointer">
-            🖤 Classic 다크
-          </DropdownMenuRadioItem>
+          {THEME_META.map(({ key, label, Icon, color }) => (
+            <DropdownMenuRadioItem key={key} value={key} className="text-foreground cursor-pointer gap-2">
+              <Icon className={`w-4 h-4 ${color}`} /> {label}
+            </DropdownMenuRadioItem>
+          ))}
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
