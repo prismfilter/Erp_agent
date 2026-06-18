@@ -7,6 +7,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import type { Writer, WorkWriterGroup } from '@/types/invoice';
 import { useTableSort } from '@/hooks/useTableSort';
+import { useRowFocus } from '@/hooks/useRowFocus';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 import {
   DropdownMenu,
@@ -426,6 +427,9 @@ export default function WriterMasterPage() {
   const tabCount = (tab: WriterTab) =>
     tab === '전체' ? writers.length : writers.filter((w) => w.writer_type === tab).length;
 
+  // 검색으로 진입 시 해당 작가 행으로 스크롤 + 하이라이트
+  useRowFocus(!isLoading && filtered.length > 0);
+
   // 저작물 DB 작가 중 아직 마스터에 미등록인 이름만 — 등록되면 자동으로 선택박스에서 사라짐
   const availableNames = useMemo(() => {
     const registered = new Set(writers.map((w) => w.name.trim()));
@@ -606,7 +610,7 @@ export default function WriterMasterPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {filtered.map((w) => (
-                  <tr key={w.id} className="hover:bg-primary/5">
+                  <tr key={w.id} id={`row-${w.id}`} className="hover:bg-primary/5">
                     <td className="px-6 py-2.5">
                       <NameCell value={w.name} editable={isAdmin} onSave={(v) => patchWriter(w.id, { name: v })} />
                     </td>
