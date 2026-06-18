@@ -93,6 +93,8 @@ export const writerUpdateSchema = z.object({
   permanent_rate: z.number().min(0).max(100).nullable().optional(),
   general_rate: z.number().min(0).max(100).nullable().optional(),
   recontract_date: z.string().nullable().optional(),
+  // 계약 상태(활성화/해지). writer_code는 직접 수정 불가하므로 스키마에 포함하지 않는다.
+  status: z.enum(['active', 'terminated']).optional(),
 });
 
 // ── 저작물 DB ─────────────────────────────────────────────────────────────

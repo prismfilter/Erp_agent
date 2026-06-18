@@ -8,6 +8,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import type { MusicWork, WorkWriterGroup } from '@/types/invoice';
 import { useTableSort } from '@/hooks/useTableSort';
+import { useRowFocus } from '@/hooks/useRowFocus';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 
 const PAGE_SIZE = 20;
@@ -38,7 +39,10 @@ export default function WorksPage() {
   const isAdmin = user?.role === 'ADMIN';
 
   const [writers, setWriters] = useState<WorkWriterGroup[]>([]);
-  const [selectedWriter, setSelectedWriter] = useState<string | null>(null); // null = 전체보기
+  // null = 전체보기. 검색으로 진입(?writer=)하면 해당 작가를 선택해 그 작가의 전 행을 로드한다.
+  const [selectedWriter, setSelectedWriter] = useState<string | null>(
+    () => (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('writer') : null)
+  );
   const [works, setWorks] = useState<MusicWork[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -180,6 +184,9 @@ export default function WorksPage() {
 
   const sorted = useMemo(() => sortRows(works), [works, sortRows]);
   const showWriterCol = selectedWriter === null; // 전체보기일 때만 작가명 컬럼 노출
+
+  // 검색으로 진입 시 해당 저작물 행으로 스크롤 + 하이라이트
+  useRowFocus(!isLoading && works.length > 0);
   const allCount = writers.reduce((s, w) => s + w.count, 0);
 
   // 작가 패널 항목
@@ -379,6 +386,7 @@ export default function WorksPage() {
                     {sorted.map((w) => (
                       <tr
                         key={w.id}
+                        id={`row-${w.id}`}
                         className="hover:bg-primary/5 text-center text-foreground"
                         onContextMenu={isAdmin ? (e) => { e.preventDefault(); setContextMenu({ id: w.id, x: e.clientX, y: e.clientY }); } : undefined}
                       >

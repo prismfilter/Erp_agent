@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTableSort } from '@/hooks/useTableSort';
+import { useRowFocus } from '@/hooks/useRowFocus';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 import { useAuthStore } from '@/store/authStore';
 
@@ -204,6 +205,9 @@ export default function StaffPage() {
   const tabCount = (tab: MemberTab) =>
     tab === '전체' ? members.length : members.filter((m) => m.role === tab).length;
 
+  // 검색으로 진입 시 해당 구성원 행으로 스크롤 + 하이라이트
+  useRowFocus(!isLoading && filtered.length > 0);
+
   return (
     <div className="space-y-6">
       <div>
@@ -256,7 +260,7 @@ export default function StaffPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {filtered.map((m) => (
-                  <tr key={m.id} className="hover:bg-primary/5">
+                  <tr key={m.id} id={`row-${m.user_id}`} className="hover:bg-primary/5">
                     <td className="px-6 py-4">
                       <NameCell userId={m.user_id} currentName={m.name} onSaved={handleNameSaved} />
                     </td>

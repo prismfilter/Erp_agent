@@ -21,6 +21,7 @@ export interface PriceItem {
 // 작가 마스터 (로그인 계정과 무관한 작가/작업자 레지스트리)
 export interface Writer {
   id: string;
+  writer_code: string;            // 고유 코드 EX-001(전속)/GN-001(일반), 수정 불가
   name: string;
   writer_type: string;            // '전속작가' | '일반작가'
   fee_rate: number;               // 용역 요율(%) 0~100

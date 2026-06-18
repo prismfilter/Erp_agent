@@ -5,6 +5,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { useRowFocus } from '@/hooks/useRowFocus';
 import type { PriceItem } from '@/types/invoice';
 import { calcFee, calcWriterNet } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
@@ -225,6 +226,9 @@ export default function PriceTablePage() {
     );
   }, [items, showInactive, viewTrash, sortRows]);
 
+  // 검색으로 진입 시 해당 프라이스 항목 행으로 스크롤 + 하이라이트
+  useRowFocus(!isLoading && items.length > 0);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -439,7 +443,7 @@ export default function PriceTablePage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {categoryItems.map((it) => (
-                    <tr key={it.id} className={`group hover:bg-primary/5 ${!it.is_active && !viewTrash ? 'opacity-40' : ''} ${selected.has(it.id) ? 'bg-primary/5' : ''}`}>
+                    <tr key={it.id} id={`row-${it.id}`} className={`group hover:bg-primary/5 ${!it.is_active && !viewTrash ? 'opacity-40' : ''} ${selected.has(it.id) ? 'bg-primary/5' : ''}`}>
                       {isAdmin && (
                         <td className="px-3 py-2 text-center">
                           <input

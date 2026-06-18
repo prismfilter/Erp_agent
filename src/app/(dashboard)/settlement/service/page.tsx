@@ -53,6 +53,7 @@ export default function ServiceSettlementPage() {
 
     const extras: Writer[] = Array.from(extraNames).map((n) => ({
       id: `worker-${n}`,
+      writer_code: '', // 마스터 미등록 작업자(드롭다운 옵션 전용) — 코드 없음
       name: n,
       writer_type: '일반작가',
       fee_rate: 0,

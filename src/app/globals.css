@@ -502,3 +502,12 @@
   color: var(--muted-foreground);
   font-size: 0.7rem;
 }
+
+/* ===== 검색 진입 행 하이라이트 — primary 틴트로 번쩍였다 사라짐(호버 느낌) ===== */
+@keyframes rowFocusPulse {
+  0% { background-color: color-mix(in oklch, var(--primary) 22%, transparent); }
+  100% { background-color: transparent; }
+}
+.row-focus-highlight {
+  animation: rowFocusPulse 2.2s ease-out forwards;
+}
