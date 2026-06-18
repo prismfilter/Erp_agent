@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/authStore';
 import type { Writer, WorkWriterGroup } from '@/types/invoice';
 import { useTableSort } from '@/hooks/useTableSort';
 import { useRowFocus } from '@/hooks/useRowFocus';
+import { nextWriterCode } from '@/lib/writers/writerCode';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 import {
   DropdownMenu,
@@ -19,7 +20,8 @@ import {
 
 const WRITER_TYPES = ['전속작가', '일반작가'] as const;
 type WriterType = (typeof WRITER_TYPES)[number];
-type WriterTab = '전체' | WriterType;
+const TERMINATED_TAB = '계약 해지' as const;
+type WriterTab = '전체' | WriterType | typeof TERMINATED_TAB;
 
 function typeBadge(type: string) {
   return type === '전속작가' ? '✍️ 전속작가' : '📝 일반작가';
@@ -297,6 +299,47 @@ function DateCell({
   );
 }
 
+// 계약 상태 토글 셀 — active=활성화(초록)/terminated=해지(빨강). ADMIN만 변경.
+function ContractStatusCell({
+  value,
+  editable,
+  onSave,
+}: {
+  value: string;
+  editable: boolean;
+  onSave: (v: 'active' | 'terminated') => Promise<void>;
+}) {
+  const isActive = value !== 'terminated';
+
+  if (!editable) {
+    return (
+      <span
+        className={`inline-block px-3 py-1 rounded-md text-xs font-medium ${
+          isActive ? 'bg-green-500/15 text-green-500' : 'bg-red-500/15 text-red-400'
+        }`}
+      >
+        {isActive ? '활성화' : '해지'}
+      </span>
+    );
+  }
+
+  // 단일 토글: 현재 상태 버튼을 누르면 반대 상태로 전환(활성화↔해지)
+  return (
+    <button
+      type="button"
+      onClick={() => onSave(isActive ? 'terminated' : 'active')}
+      title={isActive ? '클릭하면 계약 해지' : '클릭하면 활성화'}
+      className={`inline-block px-3 py-1 rounded-md text-xs font-medium transition cursor-pointer ${
+        isActive
+          ? 'bg-green-500/20 text-green-500 hover:bg-green-500/30'
+          : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+      }`}
+    >
+      {isActive ? '활성화' : '해지'}
+    </button>
+  );
+}
+
 export default function WriterMasterPage() {
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN';
@@ -381,7 +424,7 @@ export default function WriterMasterPage() {
     }
   };
 
-  const patchWriter = async (id: string, patch: Partial<Pick<Writer, 'name' | 'writer_type' | 'fee_rate' | 'permanent_rate' | 'general_rate' | 'recontract_date'>>) => {
+  const patchWriter = async (id: string, patch: Partial<Pick<Writer, 'name' | 'writer_type' | 'fee_rate' | 'permanent_rate' | 'general_rate' | 'recontract_date' | 'status'>>) => {
     const res = await fetch(`/api/writers/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -409,26 +452,42 @@ export default function WriterMasterPage() {
 
   // 정렬: 작가명·구분·수수료율
   const { sortKey, dir, toggle, sortRows } = useTableSort<Writer>({
+    writer_code: (w) => w.writer_code,
     name: (w) => w.name,
     writer_type: (w) => w.writer_type,
     permanent_rate: (w) => w.permanent_rate,
     general_rate: (w) => w.general_rate,
     fee_rate: (w) => w.fee_rate,
     recontract_date: (w) => w.recontract_date,
+    status: (w) => w.status,
   }, 'pf_sort_writers');
 
+  // 해지 작가는 일반 탭(전체/전속/일반)에서 제외하고 '계약 해지' 탭으로 이동
   const filtered = useMemo(() => {
-    const base = selectedTab === '전체'
-      ? writers
-      : writers.filter((w) => w.writer_type === selectedTab);
+    let base: Writer[];
+    if (selectedTab === TERMINATED_TAB) {
+      base = writers.filter((w) => w.status === 'terminated');
+    } else {
+      const active = writers.filter((w) => w.status !== 'terminated');
+      base = selectedTab === '전체' ? active : active.filter((w) => w.writer_type === selectedTab);
+    }
     return sortRows(base);
   }, [writers, selectedTab, sortRows]);
 
-  const tabCount = (tab: WriterTab) =>
-    tab === '전체' ? writers.length : writers.filter((w) => w.writer_type === tab).length;
+  const tabCount = (tab: WriterTab) => {
+    if (tab === TERMINATED_TAB) return writers.filter((w) => w.status === 'terminated').length;
+    const active = writers.filter((w) => w.status !== 'terminated');
+    return tab === '전체' ? active.length : active.filter((w) => w.writer_type === tab).length;
+  };
 
   // 검색으로 진입 시 해당 작가 행으로 스크롤 + 하이라이트
   useRowFocus(!isLoading && filtered.length > 0);
+
+  // 등록 폼 작가 코드 미리보기 — 구분에 따라 다음 코드를 보여줌(서버가 최종 부여, 읽기전용)
+  const previewCode = useMemo(
+    () => nextWriterCode(writers.map((w) => w.writer_code).filter(Boolean), newType),
+    [writers, newType]
+  );
 
   // 저작물 DB 작가 중 아직 마스터에 미등록인 이름만 — 등록되면 자동으로 선택박스에서 사라짐
   const availableNames = useMemo(() => {
@@ -462,6 +521,15 @@ export default function WriterMasterPage() {
       {/* 등록 폼 */}
       {adding && (
         <div className="bg-card border border-primary/40 rounded-lg p-4 flex flex-wrap items-end gap-3">
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1 text-center">작가 코드</label>
+            <div
+              className="w-24 px-3 py-2 text-sm text-center bg-muted/50 border border-border rounded-lg text-muted-foreground font-mono tabular-nums select-none"
+              title="구분에 따라 자동 부여 (중복·수정 불가)"
+            >
+              {previewCode}
+            </div>
+          </div>
           <div className="w-64">
             <label className="block text-xs text-muted-foreground mb-1 text-center">작가명</label>
             {nameMode === 'select' && availableNames.length > 0 ? (
@@ -564,7 +632,7 @@ export default function WriterMasterPage() {
 
       {/* 탭 */}
       <div className="flex flex-wrap gap-2 border-b border-border">
-        {(['전체', ...WRITER_TYPES] as WriterTab[]).map((tab) => (
+        {(['전체', ...WRITER_TYPES, TERMINATED_TAB] as WriterTab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setSelectedTab(tab)}
@@ -599,18 +667,23 @@ export default function WriterMasterPage() {
             <table className="w-full text-sm">
               <thead className="bg-primary/10 border-b border-border">
                 <tr>
+                  <SortableHeader label="작가 코드" sortKey="writer_code" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-2.5 text-xs uppercase" />
                   <SortableHeader label="작가명" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-2.5 text-xs uppercase" />
                   <SortableHeader label="구분" sortKey="writer_type" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
                   <SortableHeader label="영구 저작물(%)" sortKey="permanent_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
                   <SortableHeader label="일반 저작물(%)" sortKey="general_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
                   <SortableHeader label="용역 요율(%)" sortKey="fee_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
                   <SortableHeader label="재계약일" sortKey="recontract_date" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
+                  <SortableHeader label="계약 상태" sortKey="status" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
                   {isAdmin && <th className="px-6 py-2.5 text-center font-bold text-foreground text-xs uppercase w-24">액션</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {filtered.map((w) => (
                   <tr key={w.id} id={`row-${w.id}`} className="hover:bg-primary/5">
+                    <td className="px-6 py-2.5">
+                      <span className="font-mono text-xs tabular-nums text-foreground">{w.writer_code}</span>
+                    </td>
                     <td className="px-6 py-2.5">
                       <NameCell value={w.name} editable={isAdmin} onSave={(v) => patchWriter(w.id, { name: v })} />
                     </td>
@@ -638,6 +711,9 @@ export default function WriterMasterPage() {
                     </td>
                     <td className="px-6 py-2.5 text-center">
                       <DateCell value={w.recontract_date} editable={isAdmin} onSave={(v) => patchWriter(w.id, { recontract_date: v })} />
+                    </td>
+                    <td className="px-6 py-2.5 text-center">
+                      <ContractStatusCell value={w.status} editable={isAdmin} onSave={(v) => patchWriter(w.id, { status: v })} />
                     </td>
                     {isAdmin && (
                       <td className="px-6 py-2.5 text-center">
