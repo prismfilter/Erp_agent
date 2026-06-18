@@ -4,6 +4,7 @@
 // 조회: ADMIN+STAFF / 수정: ADMIN only (API에서 강제)
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { Trash2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useRowFocus } from '@/hooks/useRowFocus';
 import type { PriceItem } from '@/types/invoice';
@@ -234,7 +235,7 @@ export default function PriceTablePage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            프라이스 테이블{viewTrash && ' · 휴지통'}
+            용역 단가{viewTrash && ' · 휴지통'}
           </h1>
           <p className="text-muted-foreground text-sm">
             {viewTrash
@@ -272,7 +273,7 @@ export default function PriceTablePage() {
                   : 'border-border text-foreground hover:bg-muted'
               }`}
             >
-              {viewTrash ? '← 목록으로' : '🗑 휴지통'}
+              {viewTrash ? '← 목록으로' : <span className="inline-flex items-center gap-1.5"><Trash2 className="w-4 h-4" /> 휴지통</span>}
             </button>
           )}
           {isAdmin && viewTrash && (

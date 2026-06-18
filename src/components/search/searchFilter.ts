@@ -6,7 +6,7 @@ import { formatWon } from '@/lib/settlement/calculator';
 // 빠른 액션 = 스코프. key로 데이터 소스를 분기한다.
 export type ScopeKey =
   | 'home' | 'revenue' | 'invoices' | 'payouts' | 'royalty' | 'service'
-  | 'staff' | 'writers' | 'permWorks' | 'genWorks' | 'price' | 'accounts';
+  | 'staff' | 'writers' | 'clients' | 'permWorks' | 'genWorks' | 'price' | 'accounts';
 
 // 스코프별 원본을 통일된 모양으로 정규화 → 렌더/필터/이동을 한 곳에서 처리
 export interface ScopeItem {
@@ -30,6 +30,7 @@ interface WriterLite { id: string; name: string; writer_type: string }
 interface MemberLite { user_id: string; name: string | null; role: string }
 interface WorkLite { id: string; no: number; writer_name: string; song_title: string; komca_code: string | null; artist: string | null }
 interface PriceLite { id: string; category: string; name: string }
+interface ClientLite { id: string; name: string; is_active: boolean }
 
 // 공백·대소문자 정규화 후, query의 각 토큰이 모두 haystack에 부분일치하면 true. 빈 query는 true.
 export function matchesQuery(haystack: string, query: string): boolean {
@@ -95,6 +96,13 @@ export const SCOPE_SOURCES: Partial<Record<ScopeKey, ScopeSource>> = {
       secondary: `${w.writer_name}${w.artist ? ` · ${w.artist}` : ''}`,
       href: `/admin/works/permanent?writer=${encodeURIComponent(w.writer_name)}&focus=${w.id}`,
       searchText: `${w.song_title} ${w.writer_name} ${w.komca_code ?? ''} ${w.artist ?? ''}`,
+    })),
+  },
+  clients: {
+    url: '/api/clients?all=1', jsonKey: 'clients',
+    toItems: (rows) => (rows as ClientLite[]).map((c) => ({
+      id: `cl-${c.id}`, primary: c.name, secondary: c.is_active ? undefined : '미사용',
+      href: `/admin/clients?focus=${c.id}`, searchText: c.name,
     })),
   },
   price: {

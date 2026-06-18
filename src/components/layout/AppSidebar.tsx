@@ -11,11 +11,18 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
   DropdownMenuLabel,
+  DropdownMenuGroup,
   DropdownMenuSeparator,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
+import {
+  Home, TrendingUp, ReceiptText, Calculator, Building2, Music, Receipt,
+  Users, PenSquare, Settings, User, LogOut, type LucideIcon,
+} from 'lucide-react';
+import { RoleLabel } from '@/lib/ui/roleMeta';
+import { THEME_META } from '@/lib/ui/themeMeta';
 
 // 트리형(확장 메뉴) 하위 항목
 interface NavChild {
@@ -26,7 +33,8 @@ interface NavChild {
 interface NavItem {
   label: string;
   href?: string;        // children이 있는 트리 부모는 href 없음(토글 전용)
-  icon: string;
+  icon: LucideIcon;
+  color: string;        // 비활성 시 아이콘 포인트 색(Tailwind) — 활성 시엔 흰색으로 자동 전환
   adminOnly?: boolean;
   staffOnly?: boolean;  // ADMIN + STAFF만 (작가 역할 숨김)
   section?: string;
@@ -35,37 +43,49 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   // 메뉴 섹션
-  { label: '홈 피드', href: '/', icon: '🏠', section: '메뉴' },
-  { label: '매출현황', href: '/revenue', icon: '📈', staffOnly: true, section: '메뉴' },
-  // 인보이스 섹션
-  { label: '거래처 청구서', href: '/invoices', icon: '🧾', staffOnly: true, section: '인보이스' },
-  { label: '내부 지급서', href: '/payouts', icon: '💸', staffOnly: true, section: '인보이스' },
-  // 정산 섹션 (확장형 트리)
+  { label: '홈 피드', href: '/', icon: Home, color: 'text-sky-500', section: '메뉴' },
+  { label: '매출현황', href: '/revenue', icon: TrendingUp, color: 'text-emerald-500', staffOnly: true, section: '메뉴' },
+  // 인보이스 섹션 — 청구서(트리) + 정산서(트리)
+  {
+    label: '청구서',
+    icon: ReceiptText,
+    color: 'text-indigo-500',
+    staffOnly: true,
+    section: '인보이스',
+    children: [
+      { label: '거래처 청구서', href: '/invoices' },
+      { label: '내부 지급서', href: '/payouts' },
+    ],
+  },
   {
     label: '정산서',
-    icon: '📄',
-    section: '정산',
+    icon: Calculator,
+    color: 'text-violet-500',
+    section: '인보이스',
     children: [
       { label: '저작권료 정산', href: '/settlement/royalty' },
       { label: '용역 정산', href: '/settlement/service' },
     ],
   },
-  // 관리 섹션
-  { label: '구성원', href: '/staff', icon: '👥', section: '관리' },
-  { label: '작가 마스터', href: '/admin/writers', icon: '✍️', staffOnly: true, section: '관리' },
-  // 저작물 DB — 확장형 트리(영구/일반 하위 메뉴)
+  // 데이터베이스 섹션 — 거래처 DB · 저작물 DB(트리) · 용역 단가
+  { label: '거래처 DB', href: '/admin/clients', icon: Building2, color: 'text-cyan-500', staffOnly: true, section: '데이터베이스' },
   {
     label: '저작물 DB',
-    icon: '🎵',
+    icon: Music,
+    color: 'text-fuchsia-500',
     staffOnly: true,
-    section: '관리',
+    section: '데이터베이스',
     children: [
       { label: '영구 저작물 DB', href: '/admin/works/permanent' },
       { label: '일반 저작물 DB', href: '/admin/works/general' },
     ],
   },
-  { label: '프라이스 테이블', href: '/admin/price-table', icon: '💰', staffOnly: true, section: '관리' },
-  { label: '관리자용', href: '/admin/accounts', icon: '⚙️', adminOnly: true, section: '관리' },
+  { label: '용역 단가', href: '/admin/price-table', icon: Receipt, color: 'text-amber-500', staffOnly: true, section: '데이터베이스' },
+  // 관리 섹션
+  { label: '구성원', href: '/staff', icon: Users, color: 'text-teal-500', section: '관리' },
+  { label: '작가 마스터', href: '/admin/writers', icon: PenSquare, color: 'text-rose-500', staffOnly: true, section: '관리' },
+  // 설정/관리(기어) 아이콘은 ERP 관례상 중립색 — color '' 로 두면 기본 메뉴 텍스트색(테마 적응)을 상속
+  { label: '계정 관리', href: '/admin/accounts', icon: Settings, color: '', adminOnly: true, section: '관리' },
 ];
 
 export function AppSidebar({
@@ -104,17 +124,6 @@ export function AppSidebar({
   const handleThemeChange = useCallback((newTheme: string) => {
     setTheme(newTheme);
   }, [setTheme]);
-
-  // 메모이제이션: 역할 라벨
-  const roleLabel = useMemo(() => {
-    switch (user?.role) {
-      case 'ADMIN':            return '👑 관리자';
-      case 'STAFF':            return '💼 직원';
-      case 'EXCLUSIVE_WRITER': return '✍️ 전속 작가';
-      case 'GENERAL_WRITER':   return '📝 일반 작가';
-      default:                 return '미지정';
-    }
-  }, [user?.role]);
 
   // 메모이제이션: 표시할 메뉴 아이템
   const visibleItems = useMemo(
@@ -247,6 +256,9 @@ export function AppSidebar({
                     const childActive = item.children.some((c) => isActive(c.href));
                     const open = openTree.has(item.label);
                     const showChildren = !collapsed && open; // 축소면 무조건 닫힘
+                    const Icon = item.icon;
+                    // 축소+활성(파란 블록 흰 텍스트)일 때만 흰색, 그 외엔 포인트 색
+                    const iconColorClass = collapsed && childActive ? '' : item.color;
 
                     return (
                       <div key={item.label}>
@@ -266,8 +278,8 @@ export function AppSidebar({
                           aria-current={collapsed && childActive ? 'page' : undefined}
                         >
                           {/* 아이콘 고정폭 영역 — 일반 메뉴와 동일(가운데) → 정렬 점프 방지 */}
-                          <span className="w-8 flex justify-center flex-shrink-0 text-lg" aria-hidden="true">
-                            {item.icon}
+                          <span className="w-8 flex justify-center flex-shrink-0" aria-hidden="true">
+                            <Icon className={`w-5 h-5 ${iconColorClass}`} />
                           </span>
                           {!collapsed && (
                             <>
@@ -332,6 +344,9 @@ export function AppSidebar({
 
                   // ── 일반 단일 메뉴 ──
                   const href = item.href ?? '/';
+                  const Icon = item.icon;
+                  // 활성(파란 블록 흰 텍스트)일 땐 흰색, 비활성일 땐 포인트 색
+                  const iconColorClass = isActive(href) ? '' : item.color;
                   return (
                     <Link
                       key={href}
@@ -347,8 +362,8 @@ export function AppSidebar({
                       aria-current={isActive(href) ? 'page' : undefined}
                     >
                       {/* 아이콘 고정폭 영역 — 축소/펼침에서 위치 동일(가운데) → 정렬 점프 방지 */}
-                      <span className="w-8 flex justify-center flex-shrink-0 text-lg" aria-hidden="true">
-                        {item.icon}
+                      <span className="w-8 flex justify-center flex-shrink-0" aria-hidden="true">
+                        <Icon className={`w-5 h-5 ${iconColorClass}`} />
                       </span>
                       {!collapsed && <span className="ml-1 flex-1 truncate whitespace-nowrap">{item.label}</span>}
                     </Link>
@@ -387,67 +402,69 @@ export function AppSidebar({
               </>
             )}
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start" className="w-56 bg-card border-border">
+          <DropdownMenuContent side="right" align="end" sideOffset={8} className="w-56 bg-card border-border">
             {/* 사용자 정보 */}
             <div className="px-3 py-2">
               <p className="text-xs text-muted-foreground truncate">
                 {user?.email}
               </p>
               <p className="text-xs font-medium text-foreground">
-                {roleLabel}
+                <RoleLabel role={user?.role ?? null} />
               </p>
             </div>
             <DropdownMenuSeparator className="bg-border" />
 
-            {/* 프로필 설정 */}
-            <DropdownMenuItem
-              onClick={() => {
-                router.push('/profile');
-                onClose?.();
-              }}
-              className="text-foreground cursor-pointer"
-            >
-              👤 내 프로필 설정
-            </DropdownMenuItem>
+            {/* ===== 설정 섹션 ===== (GroupLabel은 base-ui Group 안에 있어야 함) */}
+            <DropdownMenuGroup>
+              {/* 섹션명은 가운데 정렬·볼드, 헤더 아이콘은 하위 메뉴 글자보다 크게(w-5) */}
+              <DropdownMenuLabel className="flex items-center justify-center gap-1.5 text-[13px] font-bold text-foreground">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/icons/fluent-gear-color.svg" alt="" aria-hidden="true" className="w-4 h-4" /> 설정
+              </DropdownMenuLabel>
 
-            {/* 계정 관리 (ADMIN만) */}
-            {user?.role === 'ADMIN' && (
+              {/* 프로필 설정 (하위 메뉴 — 섹션명보다 작은 글자) */}
               <DropdownMenuItem
-                onClick={handleAdminAccounts}
-                className="text-foreground cursor-pointer"
+                onClick={() => {
+                  router.push('/profile');
+                  onClose?.();
+                }}
+                className="text-foreground cursor-pointer gap-2 text-xs"
               >
-                ⚙️ 계정 관리
+                <User className="w-4 h-4 text-sky-500" /> 내 프로필 설정
               </DropdownMenuItem>
-            )}
+
+              {/* 계정 관리 (ADMIN만) */}
+              {user?.role === 'ADMIN' && (
+                <DropdownMenuItem
+                  onClick={handleAdminAccounts}
+                  className="text-foreground cursor-pointer gap-2 text-xs"
+                >
+                  <Settings className="w-4 h-4" /> 계정 관리
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuGroup>
 
             <DropdownMenuSeparator className="bg-border" />
 
-            {/* 테마 섹션 */}
+            {/* ===== 테마 섹션 ===== */}
             <DropdownMenuRadioGroup
               value={theme || 'dark'}
               onValueChange={handleThemeChange}
             >
-              <DropdownMenuLabel className="text-foreground text-xs font-semibold">
-                🎨 테마
+              {/* 섹션명은 가운데 정렬·볼드, 팔레트 아이콘은 하위 메뉴 글자보다 크게(w-5) */}
+              <DropdownMenuLabel className="flex items-center justify-center gap-1.5 text-[13px] font-bold text-foreground">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/icons/fluent-palette-color.svg" alt="" aria-hidden="true" className="w-4 h-4" /> 테마
               </DropdownMenuLabel>
-              <DropdownMenuRadioItem
-                value="light"
-                className="text-foreground"
-              >
-                ☀️ 라이트
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem
-                value="dark"
-                className="text-foreground"
-              >
-                🌙 다크
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem
-                value="classic-dark"
-                className="text-foreground"
-              >
-                🖤 Classic 다크
-              </DropdownMenuRadioItem>
+              {THEME_META.map(({ key, label, Icon, color }) => (
+                <DropdownMenuRadioItem
+                  key={key}
+                  value={key}
+                  className="text-foreground gap-2 text-xs"
+                >
+                  <Icon className={`w-4 h-4 ${color}`} /> {label}
+                </DropdownMenuRadioItem>
+              ))}
             </DropdownMenuRadioGroup>
 
             <DropdownMenuSeparator className="bg-border" />
@@ -455,9 +472,9 @@ export function AppSidebar({
             {/* 로그아웃 */}
             <DropdownMenuItem
               onClick={handleLogout}
-              className="text-red-400 cursor-pointer"
+              className="text-red-400 cursor-pointer gap-2 text-xs"
             >
-              🚪 로그아웃
+              <LogOut className="w-4 h-4" /> 로그아웃
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

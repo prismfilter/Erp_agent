@@ -5,17 +5,20 @@ import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
 import { parseBody } from '@/lib/validation/parse';
 import { clientCreateSchema } from '@/lib/validation/schemas';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const auth = await requireStaff();
     if (isErrorResponse(auth)) return auth;
 
-    const { data, error } = await auth.adminClient
+    // ?all=1 → 비활성 포함 전체(관리 페이지용). 기본은 활성만(자동완성용).
+    const all = new URL(request.url).searchParams.get('all') === '1';
+    let query = auth.adminClient
       .from('clients')
-      .select('*')
-      .eq('is_active', true)
+      .select('id, name, is_active, created_at')
       .order('name');
+    if (!all) query = query.eq('is_active', true);
 
+    const { data, error } = await query;
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }

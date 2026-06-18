@@ -12,7 +12,7 @@ import { useState, useCallback, useMemo, type KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Home, TrendingUp, FileText, Wallet, Music, Briefcase, Users,
-  PenSquare, Disc, Disc3, Receipt, Settings, ChevronLeft, CornerDownRight,
+  PenSquare, Building2, Disc, Disc3, Receipt, Settings, ChevronLeft, CornerDownRight,
   type LucideIcon,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
@@ -34,12 +34,13 @@ const SCOPES: Scope[] = [
   { key: 'payouts', label: '내부 지급서', icon: Wallet, href: '/payouts', perm: 'staff' },
   { key: 'royalty', label: '저작권료 정산', icon: Music, href: '/settlement/royalty', perm: 'all' },
   { key: 'service', label: '용역 정산', icon: Briefcase, href: '/settlement/service', perm: 'all' },
-  { key: 'staff', label: '구성원', icon: Users, href: '/staff', perm: 'all' },
-  { key: 'writers', label: '작가 마스터', icon: PenSquare, href: '/admin/writers', perm: 'staff' },
+  { key: 'clients', label: '거래처 DB', icon: Building2, href: '/admin/clients', perm: 'staff' },
   { key: 'permWorks', label: '영구 저작물 DB', icon: Disc, href: '/admin/works/permanent', perm: 'staff' },
   { key: 'genWorks', label: '일반 저작물 DB', icon: Disc3, href: '/admin/works/general', perm: 'staff' },
-  { key: 'price', label: '프라이스 테이블', icon: Receipt, href: '/admin/price-table', perm: 'staff' },
-  { key: 'accounts', label: '관리자용', icon: Settings, href: '/admin/accounts', perm: 'admin' },
+  { key: 'price', label: '용역 단가', icon: Receipt, href: '/admin/price-table', perm: 'staff' },
+  { key: 'staff', label: '구성원', icon: Users, href: '/staff', perm: 'all' },
+  { key: 'writers', label: '작가 마스터', icon: PenSquare, href: '/admin/writers', perm: 'staff' },
+  { key: 'accounts', label: '계정 관리', icon: Settings, href: '/admin/accounts', perm: 'admin' },
 ];
 
 interface CommandPaletteProps {
