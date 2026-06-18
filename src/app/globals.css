@@ -5,19 +5,34 @@
 /* 실제 CSS 변수: --color- 없이 정의 (와일드카드 생성 방지) */
 :root,
 .light {
-  /* Soft Light — 부드러운 쿨 그레이 배경 + 흰 카드, 눈부심 완화 */
+  /* Soft Light — 중립 소프트 그레이 캔버스 + 흰 카드 + 바이올렛 액센트 (ERP 레퍼런스 톤) */
   color-scheme: light;
-  --background: #eef1f6;        /* 쿨 그레이 — 흰 카드와 분리, 광량 완화 */
-  --foreground: #1f2937;        /* 슬레이트 — 순흑 대비 완화 */
-  --primary: #6366f1;
+  --background: #f5f5f8;        /* 중립 소프트 그레이 — 흰 카드와 분리, 푸른끼 제거 */
+  --foreground: #1a1a22;        /* near-black 제목 */
+  --primary: #7c5cff;          /* 바이올렛 (레퍼런스 일치) */
   --primary-foreground: #ffffff;
   --sidebar: #ffffff;
-  --sidebar-foreground: #475569;
+  --sidebar-foreground: #5a5a6b;  /* 중립 그레이 */
   --card: #ffffff;
-  --border: #e2e6ee;
-  --muted: #eceff5;
-  --muted-foreground: #64748b;
-  --accent: #4f46e5;
+  --border: #ececf1;           /* 옅은 중립 보더 */
+  --muted: #f1f1f5;            /* 표 헤더·트랙용 옅은 그레이 */
+  --muted-foreground: #8a8a99;  /* 부제 회색 */
+  --accent: #6a45f4;           /* 그라디언트 짝 */
+
+  /* 라이트 전용 차트 팔레트 — 다크/클래식다크는 미정의 → 인라인 var(…, fallback)이 기존 인디고 유지 */
+  --chart-bar-from: #7c5cff;            /* 세로 막대 위(진한 바이올렛) */
+  --chart-bar-to: #e9e3fd;              /* 세로 막대 아래(파스텔) */
+  --chart-bar-dim-from: #d3d2e0;        /* 비선택 세로 막대 위 */
+  --chart-bar-dim-to: #e9eaf0;          /* 비선택 세로 막대 아래 */
+  --chart-bar-compare-from: #cdd0dc;    /* 전년 비교 세로 막대 위(그레이) */
+  --chart-bar-compare-to: #e9eaf0;      /* 전년 비교 세로 막대 아래 */
+  --chart-glow: rgba(124, 92, 255, 0.32); /* 선택 막대 글로우 */
+  --chart-hbar-from: #7c5cff;           /* 가로 막대 좌(진한 바이올렛) */
+  --chart-hbar-to: #b9a6ff;             /* 가로 막대 우(연보라) */
+  --chart-hbar-compare-from: #cdd0dc;   /* 가로 비교 막대 좌(그레이) */
+  --chart-hbar-compare-to: #e9eaf0;     /* 가로 비교 막대 우 */
+  --chart-tip-from: #7c5cff;            /* 툴팁 칩 그라디언트 */
+  --chart-tip-to: #9d86ff;
 }
 
 .dark {
@@ -193,8 +208,35 @@
 }
 
 /*
+  라이트 모드 그라데이션 오버라이드 (다크 블록의 대칭, @layer 밖)
+  — 활성 메뉴: 바이올렛 그라데이션 + 소프트 글로우
+*/
+.light [aria-current="page"] {
+  background: linear-gradient(135deg, #7c5cff 0%, #9d86ff 100%) !important;
+  box-shadow: 0 4px 14px rgba(124, 92, 255, 0.28) !important;
+}
+.light [aria-current="page"]:hover {
+  background: linear-gradient(135deg, #8b6dff 0%, #a994ff 100%) !important;
+}
+
+/* 주요 액션 버튼(solid primary): 단색 대신 은은한 바이올렛 그라데이션으로 깊이 부여
+   — 흰색(primary-foreground) 텍스트 대비 유지 */
+.light .bg-primary {
+  background: linear-gradient(135deg, #7c5cff 0%, #6a45f4 100%);
+}
+
+/* 로그인 Google 버튼 — 라이트에서만 바이올렛 그라데이션(다크는 기존 블루 유지) */
+.light .login-google-btn {
+  background: linear-gradient(135deg, #7c5cff 0%, #6a45f4 100%);
+  border-color: #6a45f4;
+}
+.light .login-google-btn:hover {
+  background: linear-gradient(135deg, #8b6dff 0%, #7657f6 100%);
+}
+
+/*
   라이트 모드 — 흰 카드에 부드러운 그림자로 분리감(눈부심 완화).
-  배경(쿨 그레이) 위에 카드가 살짝 떠 있는 느낌으로 대비를 낮춤.
+  배경(소프트 그레이) 위에 카드가 살짝 떠 있는 느낌으로 대비를 낮춤.
 */
 .light .bg-card {
   box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
@@ -501,6 +543,16 @@
   pointer-events: none;
   color: var(--muted-foreground);
   font-size: 0.7rem;
+}
+
+/* 라이트 모드 — 캘린더 액센트를 바이올렛 톤으로 보정(기본 인디고 하드코딩 오버라이드) */
+.light .rdp-popover .rdp-root {
+  --rdp-accent-color: #7c5cff;
+  --rdp-accent-background-color: color-mix(in oklch, #7c5cff 15%, transparent);
+  --rdp-today-color: #7c5cff;
+}
+.light .rdp-popover .rdp-selected .rdp-day_button {
+  background-image: linear-gradient(135deg, #6a45f4, #9d86ff);
 }
 
 /* ===== 검색 진입 행 하이라이트 — primary 틴트로 번쩍였다 사라짐(호버 느낌) ===== */

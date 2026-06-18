@@ -66,10 +66,10 @@ export function YearlyChart({ data, selectedYear, onSelectYear }: YearlyChartPro
                 style={{
                   height: h,
                   background: isSelected
-                    ? 'linear-gradient(180deg, #8097ff 0%, #4a5ee8 100%)'
-                    : 'linear-gradient(180deg, #5a6699 0%, #3a4170 100%)',
+                    ? 'linear-gradient(180deg, var(--chart-bar-from, #8097ff) 0%, var(--chart-bar-to, #4a5ee8) 100%)'
+                    : 'linear-gradient(180deg, var(--chart-bar-dim-from, #5a6699) 0%, var(--chart-bar-dim-to, #3a4170) 100%)',
                   opacity: isSelected ? 1 : 0.6,
-                  boxShadow: isSelected ? '0 0 16px rgba(74, 94, 232, 0.55)' : 'none',
+                  boxShadow: isSelected ? '0 0 16px var(--chart-glow, rgba(74, 94, 232, 0.55))' : 'none',
                 }}
               />
               <span

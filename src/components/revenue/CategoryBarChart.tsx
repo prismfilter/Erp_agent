@@ -71,7 +71,7 @@ export function CategoryBarChart({ data, year, compare }: CategoryBarChartProps)
                   className="h-full rounded-md transition-all duration-500"
                   style={{
                     width: `${widthPct(r.current)}%`,
-                    background: 'linear-gradient(90deg, #4a5ee8 0%, #8097ff 100%)',
+                    background: 'linear-gradient(90deg, var(--chart-hbar-from, #4a5ee8) 0%, var(--chart-hbar-to, #8097ff) 100%)',
                   }}
                 />
               </div>
@@ -83,7 +83,7 @@ export function CategoryBarChart({ data, year, compare }: CategoryBarChartProps)
                     className="h-full rounded-md"
                     style={{
                       width: `${widthPct(r.previous)}%`,
-                      background: 'linear-gradient(90deg, #4a5474 0%, #8896cc 100%)',
+                      background: 'linear-gradient(90deg, var(--chart-hbar-compare-from, #4a5474) 0%, var(--chart-hbar-compare-to, #8896cc) 100%)',
                       opacity: 0.4,
                     }}
                   />
