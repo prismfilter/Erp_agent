@@ -19,7 +19,7 @@
   --muted-foreground: #8a8a99;  /* 부제 회색 */
   --accent: #6a45f4;           /* 그라디언트 짝 */
 
-  /* 라이트 전용 차트 팔레트 — 다크/클래식다크는 미정의 → 인라인 var(…, fallback)이 기존 인디고 유지 */
+  /* 차트 팔레트 — 라이트(바이올렛). :root에 두지만 다크/클래식다크가 아래에서 블루로 재정의함 */
   --chart-bar-from: #7c5cff;            /* 세로 막대 위(진한 바이올렛) */
   --chart-bar-to: #e9e3fd;              /* 세로 막대 아래(파스텔) */
   --chart-bar-dim-from: #d3d2e0;        /* 비선택 세로 막대 위 */
@@ -65,6 +65,26 @@
   --muted: #1f2937;
   --muted-foreground: #9ca3af;
   --accent: #4f46e5;
+}
+
+/* 다크·클래식다크 차트 팔레트 — 블루 계열 그라디언트(바이올렛은 라이트 전용).
+   :root에 정의된 라이트(바이올렛) 변수를 동일 specificity·후순위로 덮어씀.
+   값은 차트 컴포넌트의 인라인 fallback(블루)과 일치. */
+.dark,
+.classic-dark {
+  --chart-bar-from: #8097ff;             /* 세로 막대 위(밝은 블루) */
+  --chart-bar-to: #4a5ee8;               /* 세로 막대 아래(인디고) */
+  --chart-bar-dim-from: #5a6699;         /* 비선택 세로 막대 위 */
+  --chart-bar-dim-to: #3a4170;           /* 비선택 세로 막대 아래 */
+  --chart-bar-compare-from: #8896cc;     /* 전년 비교 세로 막대 위(그레이블루) */
+  --chart-bar-compare-to: #4a5474;       /* 전년 비교 세로 막대 아래 */
+  --chart-glow: rgba(74, 94, 232, 0.55); /* 선택 막대 글로우 */
+  --chart-hbar-from: #4a5ee8;            /* 가로 막대 좌(인디고) */
+  --chart-hbar-to: #8097ff;              /* 가로 막대 우(밝은 블루) */
+  --chart-hbar-compare-from: #4a5474;    /* 가로 비교 막대 좌 */
+  --chart-hbar-compare-to: #8896cc;      /* 가로 비교 막대 우 */
+  --chart-tip-from: #4a5ee8;             /* 툴팁 칩 그라디언트 */
+  --chart-tip-to: #7c8cff;
 }
 
 /*
