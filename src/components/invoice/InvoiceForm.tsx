@@ -227,16 +227,10 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
     setError(null);
 
     try {
-      // 거래처: 이름으로 조회/생성
-      let clientId: string | null = null;
-      if (clientName.trim()) {
-        const cRes = await fetch('/api/clients', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: clientName.trim() }),
-        });
-        if (cRes.ok) clientId = (await cRes.json()).client?.id ?? null;
-      }
+      // 거래처: 거래처 DB의 기존 항목과 이름 일치로만 매칭(신규 자동 생성 안 함).
+      // 목록에 없으면 client_id=null로 저장(거래처 미지정). 신규 등록은 거래처 DB에서.
+      const matched = clients.find((c) => c.name === clientName.trim());
+      const clientId: string | null = matched?.id ?? null;
 
       // 입금계좌: "은행명 계좌번호" 문자열을 첫 공백 기준으로 분리 → 조회/등록
       let accountId: string | null = null;
@@ -301,7 +295,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
             onChange={(e) => { setClientName(e.target.value); setShowClientSuggest(true); }}
             onFocus={() => setShowClientSuggest(true)}
             onBlur={() => setTimeout(() => setShowClientSuggest(false), 150)}
-            placeholder="거래처명 (신규 자동 등록)"
+            placeholder="거래처명 선택..."
             className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
           />
           {showClientSuggest && clientSuggestions.length > 0 && (

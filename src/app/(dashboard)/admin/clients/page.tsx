@@ -9,6 +9,7 @@ import type { Client } from '@/types/invoice';
 import { useTableSort } from '@/hooks/useTableSort';
 import { useRowFocus } from '@/hooks/useRowFocus';
 import { SortableHeader } from '@/components/ui/SortableHeader';
+import { nextClientCode } from '@/lib/clients/clientCode';
 
 // 거래처명 인라인 편집 셀 (텍스트 가운데, 연필 아이콘은 절대배치로 겹침 없이 함께 이동)
 function ClientNameCell({
@@ -78,27 +79,6 @@ function ClientNameCell({
   );
 }
 
-// 사용여부 토글 — 사용중(초록)/미사용(빨강). 클릭 시 전환. ADMIN만.
-function StatusCell({ active, editable, onToggle }: { active: boolean; editable: boolean; onToggle: () => void }) {
-  const cls = active ? 'text-green-500' : 'text-red-400';
-  const label = active ? '사용중' : '미사용';
-  if (!editable) {
-    return <span className={`inline-block px-3 py-1 rounded-md text-xs font-medium ${active ? 'bg-green-500/15' : 'bg-red-500/15'} ${cls}`}>{label}</span>;
-  }
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      title={active ? '클릭하면 미사용' : '클릭하면 사용중'}
-      className={`inline-block px-3 py-1 rounded-md text-xs font-medium transition cursor-pointer ${
-        active ? 'bg-green-500/20 text-green-500 hover:bg-green-500/30' : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
-
 export default function ClientsDbPage() {
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN';
@@ -109,6 +89,7 @@ export default function ClientsDbPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -147,32 +128,34 @@ export default function ClientsDbPage() {
     }
   };
 
-  const patchClient = async (id: string, patch: { name?: string; is_active?: boolean }) => {
-    const res = await fetch(`/api/clients/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(patch),
-    });
-    if (res.ok) {
-      const { client } = await res.json();
-      setClients((prev) => prev.map((c) => (c.id === id ? client : c)));
-      showToast('저장 완료');
-    } else {
-      showToast((await res.json()).error || '저장 실패');
-    }
-  };
-
   const handleNameSaved = useCallback((id: string, name: string) => {
     setClients((prev) => prev.map((c) => (c.id === id ? { ...c, name } : c)));
   }, []);
 
+  const deleteClient = async (id: string) => {
+    const res = await fetch(`/api/clients/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      setClients((prev) => prev.filter((c) => c.id !== id));
+      showToast('삭제 완료');
+    } else {
+      showToast((await res.json()).error || '삭제 실패');
+    }
+    setConfirmingId(null);
+  };
+
   const { sortKey, dir, toggle, sortRows } = useTableSort<Client>({
+    client_code: (c) => c.client_code ?? '',
     name: (c) => c.name,
-    is_active: (c) => (c.is_active ? 1 : 0),
     created_at: (c) => c.created_at ?? '',
   }, 'pf_sort_clients');
 
   const sorted = useMemo(() => sortRows(clients), [clients, sortRows]);
+
+  // 등록 폼 거래처 코드 미리보기 — 다음 코드를 보여줌(서버가 최종 부여, 읽기전용)
+  const previewCode = useMemo(
+    () => nextClientCode(clients.map((c) => c.client_code).filter((v): v is string => !!v)),
+    [clients]
+  );
 
   useRowFocus(!isLoading && sorted.length > 0);
 
@@ -198,6 +181,15 @@ export default function ClientsDbPage() {
 
       {adding && (
         <div className="bg-card border border-primary/40 rounded-lg p-4 flex flex-wrap items-end gap-3">
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1 text-center">거래처 코드</label>
+            <div
+              className="w-24 px-3 py-2 text-sm text-center bg-muted/50 border border-border rounded-lg text-muted-foreground font-mono tabular-nums select-none"
+              title="자동 부여 (중복·수정 불가)"
+            >
+              {previewCode}
+            </div>
+          </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1 text-center">거래처명</label>
             <input
@@ -234,23 +226,54 @@ export default function ClientsDbPage() {
             <table className="w-full text-sm">
               <thead className="bg-primary/10 border-b border-border">
                 <tr>
+                  <SortableHeader label="거래처 코드" sortKey="client_code" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
                   <SortableHeader label="거래처명" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
-                  <SortableHeader label="상태" sortKey="is_active" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
                   <SortableHeader label="등록일" sortKey="created_at" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
+                  {isAdmin && <th className="px-6 py-3 text-center font-bold text-foreground text-xs uppercase w-24">액션</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {sorted.map((c) => (
                   <tr key={c.id} id={`row-${c.id}`} className="hover:bg-primary/5">
                     <td className="px-6 py-3 text-center">
-                      <ClientNameCell id={c.id} name={c.name} editable={isAdmin} onSaved={handleNameSaved} />
+                      <span className="font-mono text-xs tabular-nums text-foreground">{c.client_code}</span>
                     </td>
                     <td className="px-6 py-3 text-center">
-                      <StatusCell active={c.is_active} editable={isAdmin} onToggle={() => patchClient(c.id, { is_active: !c.is_active })} />
+                      <ClientNameCell id={c.id} name={c.name} editable={isAdmin} onSaved={handleNameSaved} />
                     </td>
                     <td className="px-6 py-3 text-center text-muted-foreground text-xs">
                       {c.created_at ? new Date(c.created_at).toLocaleDateString('ko-KR') : '-'}
                     </td>
+                    {isAdmin && (
+                      <td className="px-6 py-3 text-center">
+                        {confirmingId === c.id ? (
+                          <div className="flex items-center justify-center gap-1 whitespace-nowrap">
+                            <button
+                              onClick={() => deleteClient(c.id)}
+                              className="px-2 py-1 rounded text-[11px] font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition cursor-pointer whitespace-nowrap"
+                            >
+                              삭제
+                            </button>
+                            <button
+                              onClick={() => setConfirmingId(null)}
+                              className="px-2 py-1 rounded text-[11px] font-medium bg-gray-500/20 text-gray-400 hover:bg-gray-500/30 transition cursor-pointer whitespace-nowrap"
+                            >
+                              취소
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmingId(c.id)}
+                            className="p-1.5 text-muted-foreground hover:text-red-400 transition rounded hover:bg-red-500/10 cursor-pointer"
+                            title="삭제"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                            </svg>
+                          </button>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
