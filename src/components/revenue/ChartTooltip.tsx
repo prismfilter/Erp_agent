@@ -55,7 +55,7 @@ export function ChartTooltip({ state }: { state: TooltipState | null }) {
         left,
         top,
         pointerEvents: 'none',
-        background: 'linear-gradient(135deg, #4a5ee8 0%, #7c8cff 100%)',
+        background: 'linear-gradient(135deg, var(--chart-tip-from, #4a5ee8) 0%, var(--chart-tip-to, #7c8cff) 100%)',
       }}
       className="z-[400] rounded-lg px-3 py-2 shadow-xl text-white min-w-[120px]"
     >

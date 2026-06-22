@@ -11,7 +11,7 @@ export default async function AuthCodeErrorPage({
   const isDomain = reason === 'domain';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-violet-100 flex items-center justify-center px-4">
       <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md text-center">
         <div className="mb-6 flex justify-center">
           <PrismFilterLogo size={56} />
@@ -28,7 +28,7 @@ export default async function AuthCodeErrorPage({
 
         <Link
           href="/login"
-          className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+          className="inline-block bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-lg transition-colors"
         >
           다시 로그인하기
         </Link>

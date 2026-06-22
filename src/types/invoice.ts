@@ -56,8 +56,10 @@ export interface WorkWriterGroup {
 // 거래처
 export interface Client {
   id: string;
+  client_code?: string; // 거래처 고유 코드 CL-001 (거래처 DB에만 노출). 조인 결과엔 없을 수 있어 optional
   name: string;
   is_active: boolean;
+  created_at?: string; // 거래처 DB 관리 페이지용(테이블에 존재). 조인 결과엔 없을 수 있어 optional
 }
 
 // 회사 입금계좌

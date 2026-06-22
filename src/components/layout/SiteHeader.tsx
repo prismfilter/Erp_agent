@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
+import { Search, Bell, Settings } from 'lucide-react';
 import { CommandPalette } from '@/components/search/CommandPalette';
 
 interface SiteHeaderProps {
@@ -21,11 +22,12 @@ const PAGE_LABELS: Record<string, string> = {
   '/writer-portal': '작가 포털',
   '/profile': '내 프로필 설정',
   '/admin/writers': '작가 마스터',
+  '/admin/clients': '거래처 DB',
   '/admin/works': '저작물 DB',
   '/admin/works/permanent': '영구 저작물 DB',
   '/admin/works/general': '일반 저작물 DB',
-  '/admin/price-table': '프라이스 테이블',
-  '/admin/accounts': '관리자용',
+  '/admin/price-table': '용역 단가',
+  '/admin/accounts': '계정 관리',
 };
 
 // 동적 라우트(상세·수정 등) — 위에서부터 우선 매칭(더 구체적인 패턴 먼저)
@@ -91,19 +93,19 @@ export function SiteHeader({ onMenuClick }: SiteHeaderProps) {
           className="hidden lg:flex items-center gap-2 px-3 py-2 bg-card border border-border rounded-lg text-sm text-muted-foreground hover:border-primary/50 transition cursor-pointer w-64"
           aria-label="검색 열기"
         >
-          <span>🔍</span>
+          <Search className="w-4 h-4" />
           <span className="flex-1 text-left">검색</span>
         </button>
 
         {/* 알림 아이콘 */}
         <button className="relative p-2 rounded-lg hover:bg-blue-600/10 text-foreground transition" title="알림">
-          🔔
+          <Bell className="w-5 h-5" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
 
         {/* 설정 아이콘 */}
         <button className="p-2 rounded-lg hover:bg-blue-600/10 text-foreground transition" title="설정">
-          ⚙️
+          <Settings className="w-5 h-5" />
         </button>
       </div>
 

@@ -5,6 +5,7 @@
 import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { FileSpreadsheet, Printer, Trash2 } from 'lucide-react';
 import type { ServiceSettlement } from '@/types/invoice';
 import { SettlementPreview } from '@/components/settlement/SettlementPreview';
 import { exportSettlementExcel } from '@/lib/settlement/settlementExcel';
@@ -101,22 +102,22 @@ export default function SettlementDetailPage({ params }: { params: Promise<{ id:
           <button
             onClick={handleExcel}
             disabled={exporting}
-            className="px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
           >
-            {exporting ? '생성 중...' : '📊 엑셀 다운로드'}
+            <FileSpreadsheet className="w-3.5 h-3.5" /> {exporting ? '생성 중...' : '엑셀 다운로드'}
           </button>
           <button
             onClick={handlePrint}
-            className="px-3 py-2 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition cursor-pointer"
           >
-            🖨️ PDF 저장 / 인쇄
+            <Printer className="w-3.5 h-3.5" /> PDF 저장 / 인쇄
           </button>
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="px-3 py-2 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition font-medium cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition font-medium cursor-pointer disabled:opacity-50"
           >
-            {deleting ? '삭제 중...' : '🗑 삭제'}
+            <Trash2 className="w-3.5 h-3.5" /> {deleting ? '삭제 중...' : '삭제'}
           </button>
         </div>
       </div>

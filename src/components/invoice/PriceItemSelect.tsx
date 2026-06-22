@@ -5,6 +5,7 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { SquarePen } from 'lucide-react';
 import type { PriceItem } from '@/types/invoice';
 import { formatWon } from '@/lib/settlement/calculator';
 
@@ -151,9 +152,9 @@ export function PriceItemSelect({ priceItems, selectedId, onSelect, placeholder 
       <button
         type="button"
         onClick={() => { onSelect(null); close(); }}
-        className="w-full px-3 py-2 text-xs text-left hover:bg-primary/10 text-muted-foreground italic"
+        className="w-full px-3 py-2 text-xs text-left hover:bg-primary/10 text-muted-foreground italic inline-flex items-center gap-1.5"
       >
-        ✏️ 직접 입력 (커스텀 항목)
+        <SquarePen className="w-3.5 h-3.5" /> 직접 입력 (커스텀 항목)
       </button>
 
       {grouped.length === 0 ? (

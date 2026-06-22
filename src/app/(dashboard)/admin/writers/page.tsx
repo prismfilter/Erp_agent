@@ -9,6 +9,8 @@ import type { Writer, WorkWriterGroup } from '@/types/invoice';
 import { useTableSort } from '@/hooks/useTableSort';
 import { useRowFocus } from '@/hooks/useRowFocus';
 import { nextWriterCode } from '@/lib/writers/writerCode';
+import { WRITER_TYPE_META } from '@/lib/ui/roleMeta';
+import { Pencil } from 'lucide-react';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 import {
   DropdownMenu,
@@ -23,8 +25,16 @@ type WriterType = (typeof WRITER_TYPES)[number];
 const TERMINATED_TAB = '계약 해지' as const;
 type WriterTab = '전체' | WriterType | typeof TERMINATED_TAB;
 
+// 작가 구분 배지(아이콘 + 텍스트). lucide currentColor로 테마 적응.
 function typeBadge(type: string) {
-  return type === '전속작가' ? '✍️ 전속작가' : '📝 일반작가';
+  const meta = WRITER_TYPE_META[type];
+  const Icon = meta?.Icon ?? Pencil;
+  return (
+    <span className="inline-flex items-center gap-1">
+      <Icon className={`w-3.5 h-3.5 shrink-0 ${meta?.color ?? 'text-emerald-500'}`} />
+      {meta?.label ?? type}
+    </span>
+  );
 }
 
 // 텍스트 인라인 편집 셀 (작가명)

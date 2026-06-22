@@ -5,6 +5,7 @@
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { SquarePen, FileSpreadsheet, Printer, ReceiptText, Wallet, type LucideIcon } from 'lucide-react';
 import type { Invoice } from '@/types/invoice';
 import { InvoicePreview } from '@/components/invoice/InvoicePreview';
 import { exportInvoiceExcel } from '@/lib/invoice/excelExport';
@@ -90,22 +91,22 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/invoices/${id}/edit`}
-            className="px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition"
           >
-            ✏️ 수정
+            <SquarePen className="w-3.5 h-3.5" /> 수정
           </Link>
           <button
             onClick={handleExcel}
             disabled={exporting}
-            className="px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
           >
-            {exporting ? '생성 중...' : '📊 엑셀 다운로드'}
+            <FileSpreadsheet className="w-3.5 h-3.5" /> {exporting ? '생성 중...' : '엑셀 다운로드'}
           </button>
           <button
             onClick={handlePrint}
-            className="px-3 py-2 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
           >
-            🖨️ PDF 저장 / 인쇄
+            <Printer className="w-3.5 h-3.5" /> PDF 저장 / 인쇄
           </button>
         </div>
       </div>
@@ -114,21 +115,24 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
       <div className="print:hidden flex items-center justify-between border-b border-border">
         <div className="flex gap-2">
           {([
-            { key: 'external', label: '🧾 거래처 청구서 (외부용)' },
-            { key: 'internal', label: '💸 내부 지급서 (내부용)' },
-          ] as { key: PreviewTab; label: string }[]).map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition cursor-pointer whitespace-nowrap ${
-                tab === t.key
-                  ? 'border-b-primary text-primary'
-                  : 'border-b-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+            { key: 'external', label: '거래처 청구서 (외부용)', Icon: ReceiptText },
+            { key: 'internal', label: '내부 지급서 (내부용)', Icon: Wallet },
+          ] as { key: PreviewTab; label: string; Icon: LucideIcon }[]).map((t) => {
+            const Icon = t.Icon;
+            return (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`inline-flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition cursor-pointer whitespace-nowrap ${
+                  tab === t.key
+                    ? 'border-b-primary text-primary'
+                    : 'border-b-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Icon className="w-4 h-4" /> {t.label}
+              </button>
+            );
+          })}
         </div>
         <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer pb-1">
           <input

@@ -114,9 +114,9 @@ export function QuarterlyChart({ data, year, selectedQuarter, compare, onSelectQ
                     className="w-1/3 max-w-[44px] rounded-t-md transition-all duration-300 hover:brightness-110"
                     style={{
                       height: barHeight(cur.total, maxQuarter),
-                      background: 'linear-gradient(180deg, #8097ff 0%, #4a5ee8 100%)',
+                      background: 'linear-gradient(180deg, var(--chart-bar-from, #8097ff) 0%, var(--chart-bar-to, #4a5ee8) 100%)',
                       opacity: isSelected ? 1 : 0.4,
-                      boxShadow: selectedQuarter === q ? '0 0 16px rgba(74, 94, 232, 0.55)' : 'none',
+                      boxShadow: selectedQuarter === q ? '0 0 16px var(--chart-glow, rgba(74, 94, 232, 0.55))' : 'none',
                     }}
                   />
                   {prev && (
@@ -125,7 +125,7 @@ export function QuarterlyChart({ data, year, selectedQuarter, compare, onSelectQ
                       className="w-1/3 max-w-[44px] rounded-t-md"
                       style={{
                         height: barHeight(prev.total, maxQuarter),
-                        background: 'linear-gradient(180deg, #8896cc 0%, #4a5474 100%)',
+                        background: 'linear-gradient(180deg, var(--chart-bar-compare-from, #8896cc) 0%, var(--chart-bar-compare-to, #4a5474) 100%)',
                         opacity: 0.35,
                       }}
                     />
@@ -184,7 +184,7 @@ export function QuarterlyChart({ data, year, selectedQuarter, compare, onSelectQ
                     className="absolute bottom-0 left-0 right-0 rounded-t-[3px] transition-all duration-300 hover:brightness-110"
                     style={{
                       height: barHeight(cur.total, maxMonth),
-                      background: 'linear-gradient(180deg, #8097ff 0%, #4a5ee8 100%)',
+                      background: 'linear-gradient(180deg, var(--chart-bar-from, #8097ff) 0%, var(--chart-bar-to, #4a5ee8) 100%)',
                     }}
                   />
                 </div>

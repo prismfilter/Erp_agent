@@ -5,29 +5,18 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableHeader } from '@/components/ui/SortableHeader';
+import { EmailCell } from '@/components/admin/EmailCell';
+import { RoleSelect, type AccountRole } from '@/components/admin/RoleSelect';
+import { UserDetailModal } from '@/components/admin/UserDetailModal';
+import type { AdminUser } from '@/lib/admin/userMerge';
+import { RoleLabel } from '@/lib/ui/roleMeta';
 
-interface AccountUser {
-  id: string;
-  user_id: string;
-  name: string | null;
-  role: 'ADMIN' | 'STAFF' | 'EXCLUSIVE_WRITER' | 'GENERAL_WRITER' | null;
-  created_at: string;
-}
-
-const ROLE_OPTIONS = ['ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'] as const;
+type AccountUser = AdminUser & {
+  role: AccountRole | null;
+};
 
 const TAB_OPTIONS = ['전체', 'ADMIN', 'STAFF', 'EXCLUSIVE_WRITER', 'GENERAL_WRITER'] as const;
 type TabOption = typeof TAB_OPTIONS[number];
-
-function roleLabel(role: string | null) {
-  switch (role) {
-    case 'ADMIN':            return '👑 관리자';
-    case 'STAFF':            return '💼 직원';
-    case 'EXCLUSIVE_WRITER': return '✍️ 전속 작가';
-    case 'GENERAL_WRITER':   return '📝 일반 작가';
-    default:                 return '미지정';
-  }
-}
 
 function roleButtonLabel(role: string) {
   switch (role) {
@@ -83,7 +72,7 @@ function NameCell({
 
   if (isEditing) {
     return (
-      <div className="flex items-center gap-1">
+      <div className="inline-flex items-center gap-1">
         <input
           type="text"
           value={value}
@@ -93,7 +82,7 @@ function NameCell({
             if (e.key === 'Escape') handleCancel();
           }}
           autoFocus
-          className="w-24 px-2 py-1 text-xs bg-background border border-primary rounded outline-none text-foreground"
+          className="w-24 px-2 py-1 text-xs bg-background border border-primary rounded outline-none text-foreground text-center"
           placeholder="이름 입력"
         />
         <button
@@ -121,50 +110,20 @@ function NameCell({
   }
 
   return (
-    <div className="flex items-center gap-1.5 group">
+    <span className="relative inline-block group">
       <span className={currentName ? 'text-foreground' : 'text-muted-foreground italic text-xs'}>
         {currentName ?? '미등록'}
       </span>
       <button
         onClick={() => { setValue(currentName ?? ''); setIsEditing(true); }}
-        className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-blue-600/10"
+        className="absolute left-full top-1/2 -translate-y-1/2 ml-1 opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-blue-600/10"
         title="이름 수정"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
         </svg>
       </button>
-    </div>
-  );
-}
-
-// 사용자 ID 셀 (hover 전체 표시 + 클립보드 복사)
-function UserIdCell({
-  userId,
-  onCopy,
-}: {
-  userId: string;
-  onCopy: (id: string) => void;
-}) {
-  return (
-    <div className="flex items-center gap-1.5 group">
-      <span
-        className="text-foreground font-mono text-xs cursor-default"
-        title={userId}
-      >
-        {userId.substring(0, 8)}...
-      </span>
-      <button
-        onClick={() => onCopy(userId)}
-        className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-blue-600/10"
-        title="ID 복사"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-        </svg>
-      </button>
-    </div>
+    </span>
   );
 }
 
@@ -177,6 +136,7 @@ export default function AccountsPage() {
   const [selectedTab, setSelectedTab] = useState<TabOption>('전체');
   const [changingUserId, setChangingUserId] = useState<string | null>(null);
   const [copyToast, setCopyToast] = useState(false);
+  const [detailUser, setDetailUser] = useState<AccountUser | null>(null);
 
   useEffect(() => {
     if (!isAdmin()) router.push('/');
@@ -200,7 +160,7 @@ export default function AccountsPage() {
 
   const handleChangeRole = useCallback(async (
     userId: string,
-    newRole: 'ADMIN' | 'STAFF' | 'EXCLUSIVE_WRITER' | 'GENERAL_WRITER'
+    newRole: AccountRole
   ) => {
     setChangingUserId(userId);
     try {
@@ -235,6 +195,7 @@ export default function AccountsPage() {
   // 정렬: 이름·현재 역할·등록일
   const { sortKey, dir, toggle, sortRows } = useTableSort<AccountUser>({
     name: (u) => u.name,
+    email: (u) => u.email,
     role: (u) => u.role,
     created_at: (u) => u.created_at,
   }, 'pf_sort_accounts');
@@ -253,7 +214,7 @@ export default function AccountsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">관리자용</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">계정 관리</h1>
           <p className="text-muted-foreground text-sm">사용자 역할 및 이름 관리</p>
         </div>
       </div>
@@ -295,51 +256,49 @@ export default function AccountsPage() {
             <table className="w-full text-sm">
               <thead className="bg-primary/10 border-b border-border">
                 <tr>
-                  <SortableHeader label="이름" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
-                  <th className="px-6 py-3 text-left font-bold text-foreground text-xs uppercase">사용자 ID</th>
-                  <SortableHeader label="현재 역할" sortKey="role" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
-                  <SortableHeader label="등록일" sortKey="created_at" activeKey={sortKey} dir={dir} onSort={toggle} className="px-6 py-3 text-xs uppercase" />
-                  <th className="px-6 py-3 text-left font-bold text-foreground text-xs uppercase">역할 변경</th>
+                  <SortableHeader label="이름" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
+                  <SortableHeader label="이메일" sortKey="email" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
+                  <SortableHeader label="현재 역할" sortKey="role" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
+                  <SortableHeader label="등록일" sortKey="created_at" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-3 text-xs uppercase" />
+                  <th className="px-6 py-3 text-center font-bold text-foreground text-xs uppercase">역할 변경</th>
+                  <th className="px-6 py-3 text-center font-bold text-foreground text-xs uppercase">상세정보</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {filteredUsers.map((u) => (
                   <tr key={u.id} className="hover:bg-primary/5">
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-center">
                       <NameCell
                         userId={u.user_id}
                         currentName={u.name}
                         onSaved={handleNameSaved}
                       />
                     </td>
-                    <td className="px-6 py-4">
-                      <UserIdCell userId={u.user_id} onCopy={handleCopy} />
+                    <td className="px-6 py-4 text-center">
+                      <EmailCell email={u.email} onCopy={handleCopy} />
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded text-xs font-medium">
-                        {roleLabel(u.role)}
+                    <td className="px-6 py-4 text-center">
+                      <span className="inline-flex items-center bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded text-xs font-medium leading-none">
+                        <RoleLabel role={u.role} />
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-muted-foreground text-xs">
+                    <td className="px-6 py-4 text-center text-muted-foreground text-xs">
                       {new Date(u.created_at).toLocaleDateString('ko-KR')}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-1 flex-wrap">
-                        {ROLE_OPTIONS.map((role) => (
-                          <button
-                            key={role}
-                            onClick={() => handleChangeRole(u.user_id, role)}
-                            disabled={changingUserId === u.user_id}
-                            className={`px-2 py-1 rounded text-xs font-medium transition disabled:opacity-50 cursor-pointer ${
-                              u.role === role
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-border text-muted-foreground hover:bg-primary/20'
-                            }`}
-                          >
-                            {roleButtonLabel(role)}
-                          </button>
-                        ))}
-                      </div>
+                    <td className="px-6 py-4 text-center">
+                      <RoleSelect
+                        value={u.role}
+                        disabled={changingUserId === u.user_id}
+                        onChange={(role) => handleChangeRole(u.user_id, role)}
+                      />
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={() => setDetailUser(u)}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-border text-foreground hover:bg-primary/10 hover:border-primary transition cursor-pointer"
+                      >
+                        정보확인
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -348,6 +307,10 @@ export default function AccountsPage() {
           </div>
         )}
       </div>
+
+      {detailUser && (
+        <UserDetailModal user={detailUser} onClose={() => setDetailUser(null)} />
+      )}
 
       {/* 복사 완료 토스트 */}
       {copyToast && (

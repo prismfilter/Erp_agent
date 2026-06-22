@@ -134,6 +134,11 @@ export const clientCreateSchema = z.object({
   name: z.string().trim().min(1, '거래처명은 필수입니다.'),
 });
 
+export const clientUpdateSchema = z.object({
+  name: z.string().trim().min(1, '거래처명은 필수입니다.').optional(),
+  is_active: z.boolean().optional(),
+});
+
 // ── 회사 입금계좌 ───────────────────────────────────────────────────────────
 export const companyAccountCreateSchema = z.object({
   bank_name: z.string().trim().min(1, '은행명은 필수입니다.'),
