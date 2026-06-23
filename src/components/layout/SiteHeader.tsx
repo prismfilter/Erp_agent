@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { Search, Bell, Settings } from 'lucide-react';
 import { CommandPalette } from '@/components/search/CommandPalette';
+import { useBreadcrumbStore } from '@/store/breadcrumbStore';
 
 interface SiteHeaderProps {
   onMenuClick?: () => void;
@@ -35,6 +36,7 @@ const DYNAMIC_LABELS: ReadonlyArray<readonly [RegExp, string]> = [
   [/^\/invoices\/[^/]+\/edit$/, '청구서 수정'],
   [/^\/invoices\/[^/]+$/, '청구서 상세'],
   [/^\/settlement\/service\/[^/]+$/, '용역 정산 상세'],
+  [/^\/admin\/clients\/[^/]+$/, '거래처 상세'], // 거래처명 로드 전 fallback (로드 후 store override가 우선)
 ];
 
 function getPageTitle(pathname: string): string {
@@ -49,8 +51,10 @@ function getPageTitle(pathname: string): string {
 export function SiteHeader({ onMenuClick }: SiteHeaderProps) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
+  const override = useBreadcrumbStore((s) => s.override);
 
-  const pageTitle = useMemo(() => getPageTitle(pathname), [pathname]);
+  // 상세 페이지가 설정한 동적 제목(거래처명 등)을 경로 기반 라벨보다 우선 적용
+  const pageTitle = useMemo(() => override ?? getPageTitle(pathname), [override, pathname]);
 
   // Cmd/Ctrl + K 로 검색 팔레트 토글
   useEffect(() => {
