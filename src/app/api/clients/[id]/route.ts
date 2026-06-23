@@ -1,9 +1,56 @@
-// 거래처 수정 — 이름/사용여부(is_active) (ADMIN only)
+// 거래처 단일 조회(STAFF↑) / 수정(ADMIN) / 삭제(ADMIN)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
 import { parseBody } from '@/lib/validation/parse';
 import { clientUpdateSchema } from '@/lib/validation/schemas';
+
+// PATCH로 갱신 가능한 컬럼 화이트리스트(스키마와 1:1). 전송된 값만 부분 갱신.
+const PATCHABLE_FIELDS = [
+  'name',
+  'is_active',
+  'representative',
+  'business_number',
+  'address',
+  'manager_name',
+  'contact_phone',
+  'contact_email',
+  'department_title',
+  'bank_name',
+  'account_number',
+  'account_holder',
+] as const;
+
+// GET /api/clients/[id] — 단일 거래처 전체 필드 (상세 페이지용)
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const auth = await requireStaff();
+    if (isErrorResponse(auth)) return auth;
+
+    const { id } = await params;
+    const { data, error } = await auth.adminClient
+      .from('clients')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      // PGRST116 = 결과 없음
+      if (error.code === 'PGRST116') {
+        return NextResponse.json({ error: '거래처를 찾을 수 없습니다.' }, { status: 404 });
+      }
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ client: data });
+  } catch (err) {
+    console.error('거래처 단일 조회 API 오류:', err);
+    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+  }
+}
 
 export async function PATCH(
   req: NextRequest,
@@ -17,18 +64,21 @@ export async function PATCH(
     const parsed = parseBody(clientUpdateSchema, await req.json());
     if (!parsed.success) return parsed.response;
 
+    // 전송된 필드만 부분 갱신 (undefined 제외, null은 클리어 의미로 반영)
+    const data = parsed.data as Record<string, unknown>;
     const updates: Record<string, unknown> = {};
-    if (parsed.data.name !== undefined) updates.name = parsed.data.name;
-    if (parsed.data.is_active !== undefined) updates.is_active = parsed.data.is_active;
+    for (const field of PATCHABLE_FIELDS) {
+      if (data[field] !== undefined) updates[field] = data[field];
+    }
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: '변경할 내용이 없습니다.' }, { status: 400 });
     }
 
-    const { data, error } = await auth.adminClient
+    const { data: updated, error } = await auth.adminClient
       .from('clients')
       .update(updates)
       .eq('id', id)
-      .select('id, client_code, name, is_active, created_at')
+      .select('*')
       .single();
 
     if (error) {
@@ -38,7 +88,7 @@ export async function PATCH(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ client: data });
+    return NextResponse.json({ client: updated });
   } catch (err) {
     console.error('거래처 수정 API 오류:', err);
     return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
