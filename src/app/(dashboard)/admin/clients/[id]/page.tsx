@@ -7,6 +7,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { useBreadcrumbStore } from '@/store/breadcrumbStore';
 import type { Client } from '@/types/invoice';
 import { EditableField } from '@/components/clients/EditableField';
 import { ClientProjectsTab } from '@/components/clients/ClientProjectsTab';
@@ -47,6 +48,14 @@ export default function ClientDetailPage() {
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch (마이크로태스크에서 setState)
   useEffect(() => { fetchClient(); }, [fetchClient]);
+
+  // 브레드크럼에 거래처명 표시 (언마운트 시 해제 → 경로 기반 라벨로 복귀)
+  const setBreadcrumb = useBreadcrumbStore((s) => s.setOverride);
+  const clearBreadcrumb = useBreadcrumbStore((s) => s.clear);
+  useEffect(() => {
+    if (client?.name) setBreadcrumb(client.name);
+    return () => clearBreadcrumb();
+  }, [client?.name, setBreadcrumb, clearBreadcrumb]);
 
   // 단일 필드 저장 성공 시 로컬 상태 갱신
   const handleSaved = useCallback((field: string, value: string | null) => {
