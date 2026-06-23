@@ -35,8 +35,9 @@ export default function ClientDetailPage() {
   const fetchClient = useCallback(async () => {
     try {
       const res = await fetch(`/api/clients/${clientId}`);
-      if (!res.ok) throw new Error((await res.json()).error || '거래처를 불러올 수 없습니다.');
-      setClient((await res.json()).client);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '거래처를 불러올 수 없습니다.');
+      setClient(data.client);
     } catch (err) {
       setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
     } finally {
