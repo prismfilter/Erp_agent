@@ -137,6 +137,17 @@ export const clientCreateSchema = z.object({
 export const clientUpdateSchema = z.object({
   name: z.string().trim().min(1, '거래처명은 필수입니다.').optional(),
   is_active: z.boolean().optional(),
+  // 상세정보(021) — 빈 문자열/누락은 null로 클리어 허용
+  representative: z.string().trim().nullable().optional(),
+  business_number: z.string().trim().nullable().optional(),
+  address: z.string().trim().nullable().optional(),
+  manager_name: z.string().trim().nullable().optional(),
+  contact_phone: z.string().trim().nullable().optional(),
+  contact_email: z.string().trim().nullable().optional(),
+  department_title: z.string().trim().nullable().optional(),
+  bank_name: z.string().trim().nullable().optional(),
+  account_number: z.string().trim().nullable().optional(),
+  account_holder: z.string().trim().nullable().optional(),
 });
 
 // ── 회사 입금계좌 ───────────────────────────────────────────────────────────
