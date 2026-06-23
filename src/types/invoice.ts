@@ -60,6 +60,17 @@ export interface Client {
   name: string;
   is_active: boolean;
   created_at?: string; // 거래처 DB 관리 페이지용(테이블에 존재). 조인 결과엔 없을 수 있어 optional
+  // 상세정보(021) — 전부 nullable. 조인 결과엔 없을 수 있어 optional.
+  representative?: string | null;   // 대표자
+  business_number?: string | null;  // 사업자 등록번호
+  address?: string | null;          // 주소
+  manager_name?: string | null;     // 담당자
+  contact_phone?: string | null;    // 연락처
+  contact_email?: string | null;    // 이메일
+  department_title?: string | null; // 부서 / 직함
+  bank_name?: string | null;        // 은행명
+  account_number?: string | null;   // 계좌번호
+  account_holder?: string | null;   // 예금주
 }
 
 // 회사 입금계좌
