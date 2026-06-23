@@ -4,6 +4,7 @@
 // 삭제는 청구서 FK 참조 때문에 미제공 → '미사용'(is_active=false) 토글로 비활성화.
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import type { Client } from '@/types/invoice';
 import { useTableSort } from '@/hooks/useTableSort';
@@ -11,77 +12,10 @@ import { useRowFocus } from '@/hooks/useRowFocus';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 import { nextClientCode } from '@/lib/clients/clientCode';
 
-// 거래처명 인라인 편집 셀 (텍스트 가운데, 연필 아이콘은 절대배치로 겹침 없이 함께 이동)
-function ClientNameCell({
-  id,
-  name,
-  editable,
-  onSaved,
-}: {
-  id: string;
-  name: string;
-  editable: boolean;
-  onSaved: (id: string, name: string) => void;
-}) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [draft, setDraft] = useState(name);
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = useCallback(async () => {
-    const next = draft.trim();
-    if (!next || next === name) { setIsEditing(false); setDraft(name); return; }
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/clients/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: next }),
-      });
-      if (res.ok) { onSaved(id, next); setIsEditing(false); }
-    } finally {
-      setSaving(false);
-    }
-  }, [id, draft, name, onSaved]);
-
-  if (!editable) return <span className="text-foreground">{name}</span>;
-
-  if (isEditing) {
-    return (
-      <input
-        type="text"
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') handleSave();
-          if (e.key === 'Escape') { setDraft(name); setIsEditing(false); }
-        }}
-        onBlur={handleSave}
-        autoFocus
-        disabled={saving}
-        className="w-40 px-2 py-1 text-xs text-center bg-background border border-primary rounded outline-none text-foreground"
-      />
-    );
-  }
-
-  return (
-    <span className="relative inline-block group">
-      <span className="text-foreground">{name}</span>
-      <button
-        onClick={() => { setDraft(name); setIsEditing(true); }}
-        className="absolute left-full top-1/2 -translate-y-1/2 ml-1 opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-primary/10"
-        title="거래처명 수정"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-        </svg>
-      </button>
-    </span>
-  );
-}
-
 export default function ClientsDbPage() {
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN';
+  const router = useRouter();
 
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -128,10 +62,6 @@ export default function ClientsDbPage() {
     }
   };
 
-  const handleNameSaved = useCallback((id: string, name: string) => {
-    setClients((prev) => prev.map((c) => (c.id === id ? { ...c, name } : c)));
-  }, []);
-
   const deleteClient = async (id: string) => {
     const res = await fetch(`/api/clients/${id}`, { method: 'DELETE' });
     if (res.ok) {
@@ -165,7 +95,7 @@ export default function ClientsDbPage() {
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">거래처 DB</h1>
           <p className="text-muted-foreground text-sm">
-            청구서가 참조하는 거래처(회사) 관리
+            청구서가 참조하는 거래처(회사) 관리 · 행을 클릭하면 상세정보
             {!isAdmin && ' · 수정은 관리자만 가능'}
           </p>
         </div>
@@ -234,18 +164,21 @@ export default function ClientsDbPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {sorted.map((c) => (
-                  <tr key={c.id} id={`row-${c.id}`} className="hover:bg-primary/5">
+                  <tr
+                    key={c.id}
+                    id={`row-${c.id}`}
+                    onClick={() => router.push(`/admin/clients/${c.id}`)}
+                    className="hover:bg-primary/5 cursor-pointer"
+                  >
                     <td className="px-6 py-3 text-center">
                       <span className="font-mono text-xs tabular-nums text-foreground">{c.client_code}</span>
                     </td>
-                    <td className="px-6 py-3 text-center">
-                      <ClientNameCell id={c.id} name={c.name} editable={isAdmin} onSaved={handleNameSaved} />
-                    </td>
+                    <td className="px-6 py-3 text-center text-foreground">{c.name}</td>
                     <td className="px-6 py-3 text-center text-muted-foreground text-xs">
                       {c.created_at ? new Date(c.created_at).toLocaleDateString('ko-KR') : '-'}
                     </td>
                     {isAdmin && (
-                      <td className="px-6 py-3 text-center">
+                      <td className="px-6 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                         {confirmingId === c.id ? (
                           <div className="flex items-center justify-center gap-1 whitespace-nowrap">
                             <button
