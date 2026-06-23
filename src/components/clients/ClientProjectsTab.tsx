@@ -48,7 +48,7 @@ export function ClientProjectsTab({ clientId }: ClientProjectsTabProps) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border">
+    <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="bg-primary/10 border-b border-border">
           <tr>
