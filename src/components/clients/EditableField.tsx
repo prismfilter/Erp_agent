@@ -27,6 +27,7 @@ export function EditableField({
   const [saving, setSaving] = useState(false);
 
   const handleSave = useCallback(async () => {
+    if (saving) return;
     const trimmed = draft.trim();
     const next = trimmed === '' ? null : trimmed;
     if (next === (value ?? null)) {
@@ -51,7 +52,7 @@ export function EditableField({
     } finally {
       setSaving(false);
     }
-  }, [clientId, field, draft, value, onSaved]);
+  }, [clientId, field, draft, value, onSaved, saving]);
 
   return (
     <div className="rounded-lg border border-border bg-card px-4 py-3 flex flex-col items-center gap-1.5">
