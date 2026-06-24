@@ -143,3 +143,57 @@ describe('calcYoY', () => {
     expect(calcYoY(100, 0)).toBeNull();
   });
 });
+
+// ── 홈 피드 도넛/달력 헬퍼 테스트 ──────────────────────────────────────
+import { classifyDonutCategory, buildDonutBuckets, buildMonthlySeries } from './aggregator';
+
+describe('classifyDonutCategory', () => {
+  it("category가 '기타'면 기타", () => {
+    expect(classifyDonutCategory('기타', '레슨')).toBe('기타');
+  });
+  it("커스텀(빈 category)이면 기타", () => {
+    expect(classifyDonutCategory('커스텀', '임의항목')).toBe('기타');
+  });
+  it("그 외 카테고리는 저작권료", () => {
+    expect(classifyDonutCategory('앨범', '정규앨범')).toBe('저작권료');
+    expect(classifyDonutCategory('광고', 'CF 음악')).toBe('저작권료');
+  });
+});
+
+describe('buildDonutBuckets', () => {
+  it('저작권료/용역/기타 3버킷을 순서대로 반환하고 용역은 serviceTotal', () => {
+    const byCategory: Record<string, Record<number, number>> = {
+      '앨범': { 2026: 1000 },
+      '기타': { 2026: 300 },
+      '커스텀': { 2026: 200 },
+    };
+    const buckets = buildDonutBuckets(byCategory, 2026, 500);
+    expect(buckets).toEqual([
+      { bucket: '저작권료', amount: 1000 },
+      { bucket: '용역', amount: 500 },
+      { bucket: '기타', amount: 500 },
+    ]);
+  });
+  it('해당 연도 데이터 없으면 0', () => {
+    expect(buildDonutBuckets({}, 2026, 0)).toEqual([
+      { bucket: '저작권료', amount: 0 },
+      { bucket: '용역', amount: 0 },
+      { bucket: '기타', amount: 0 },
+    ]);
+  });
+});
+
+describe('buildMonthlySeries', () => {
+  it('1~12월을 채우고 없는 달은 0', () => {
+    // byMonth 타입: Record<string, QuarterRevenue> — QuarterRevenue는 { total, count }
+    const byMonth: Record<string, { total: number; count: number }> = {
+      '2026-1': { total: 100, count: 1 },
+      '2026-3': { total: 300, count: 2 },
+    };
+    const series = buildMonthlySeries(byMonth, 2026);
+    expect(series).toHaveLength(12);
+    expect(series[0]).toEqual({ month: 1, total: 100 });
+    expect(series[1]).toEqual({ month: 2, total: 0 });
+    expect(series[2]).toEqual({ month: 3, total: 300 });
+  });
+});
