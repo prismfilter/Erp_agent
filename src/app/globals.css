@@ -245,16 +245,6 @@
   background: linear-gradient(135deg, #7c5cff 0%, #6a45f4 100%);
 }
 
-/* 홈 피드 히어로 카드(올해 누적 수입) — 단색 대신 그라데이션으로 다른 카드와 통일감.
-   라이트: 바이올렛(기존 primary와 동일), 다크/클래식다크: 딥 인디고(단색 밝음 완화) */
-.light .home-hero {
-  background: linear-gradient(135deg, #7c5cff 0%, #6a45f4 100%);
-}
-.dark .home-hero,
-.classic-dark .home-hero {
-  background: linear-gradient(145deg, #2a3068 0%, #4d5ad6 100%);
-}
-
 /* 로그인 Google 버튼 — 라이트에서만 바이올렛 그라데이션(다크는 기존 블루 유지) */
 .light .login-google-btn {
   background: linear-gradient(135deg, #7c5cff 0%, #6a45f4 100%);

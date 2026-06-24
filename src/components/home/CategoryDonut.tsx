@@ -21,6 +21,19 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const FALLBACK_COLOR = '#94a3b8';
 
+// 카테고리별 그라데이션(밝은→진한) — 도넛 세그먼트에 입체감 부여
+const CATEGORY_GRADIENTS: Record<string, [string, string]> = {
+  '앨범': ['var(--primary)', 'var(--accent)'],
+  '방송·공연·시상식': ['#5eead4', '#0d9488'],
+  '광고': ['#fcd34d', '#d97706'],
+  '기타': ['#f9a8d4', '#db2777'],
+  '밴드': ['#93c5fd', '#2563eb'],
+  '밴드(플레디스)': ['#c4b5fd', '#7c3aed'],
+  '커스텀': ['#cbd5e1', '#64748b'],
+};
+
+const FALLBACK_GRADIENT: [string, string] = ['#cbd5e1', '#64748b'];
+
 // 둘레 100 정규화 반지름 (2πr = 100 → r ≈ 15.915)
 const R = 15.915;
 const CIRC = 100;
@@ -43,6 +56,20 @@ export function CategoryDonut({ slices }: CategoryDonutProps) {
       <div className="flex flex-1 flex-col items-center justify-center gap-7 px-6 py-6">
         {/* SVG 도넛 — stroke-dasharray 방식, 반지름 R로 둘레 100 정규화 */}
         <svg width="152" height="152" viewBox="0 0 42 42" className="flex-none">
+          {/* 카테고리별 그라데이션 정의 — 세그먼트마다 밝은→진한 */}
+          {total > 0 && (
+            <defs>
+              {slices.map((b, i) => {
+                const [from, to] = CATEGORY_GRADIENTS[b.category] ?? FALLBACK_GRADIENT;
+                return (
+                  <linearGradient key={i} id={`donut-grad-${i}`} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor={from} />
+                    <stop offset="100%" stopColor={to} />
+                  </linearGradient>
+                );
+              })}
+            </defs>
+          )}
           {/* 배경 트랙 — 항상 표시 */}
           <circle
             cx="21"
@@ -55,10 +82,9 @@ export function CategoryDonut({ slices }: CategoryDonutProps) {
 
           {/* 데이터 세그먼트 — 합계 0이면 렌더 생략(0 division 방지) */}
           {total > 0 &&
-            slices.map((b) => {
+            slices.map((b, i) => {
               const pct = (b.amount / total) * CIRC;
               const dash = `${pct} ${CIRC - pct}`;
-              const color = CATEGORY_COLORS[b.category] ?? FALLBACK_COLOR;
               // offset은 현재 시작 위치, 렌더 후 다음 세그먼트 위해 감소
               const seg = (
                 <circle
@@ -67,7 +93,7 @@ export function CategoryDonut({ slices }: CategoryDonutProps) {
                   cy="21"
                   r={R}
                   fill="none"
-                  stroke={color}
+                  stroke={`url(#donut-grad-${i})`}
                   strokeWidth="6"
                   strokeDasharray={dash}
                   strokeDashoffset={offset}
