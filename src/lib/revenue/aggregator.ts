@@ -26,6 +26,7 @@ export interface QuarterRevenue {
 export interface RevenueData {
   byQuarter: Record<string, QuarterRevenue>;          // 'YYYY-Q1' → 매출·건수
   byMonth: Record<string, QuarterRevenue>;            // 'YYYY-1' ~ 'YYYY-12' → 매출·건수
+  byDay: Record<string, QuarterRevenue>;              // 'YYYY-MM-DD' → 매출·건수
   byYear: Record<number, number>;                     // 연도 → 매출 합
   byCategory: Record<string, Record<number, number>>; // 카테고리 → (연도 → 매출 합)
   years: number[];                                    // 데이터 존재 연도 (내림차순)
@@ -44,6 +45,7 @@ export function aggregateRevenue(paidInvoices: Invoice[], priceItems: PriceItem[
 
   const byQuarter: Record<string, QuarterRevenue> = {};
   const byMonth: Record<string, QuarterRevenue> = {};
+  const byDay: Record<string, QuarterRevenue> = {};
   const byYear: Record<number, number> = {};
   const byCategory: Record<string, Record<number, number>> = {};
   const yearSet = new Set<number>();
@@ -78,12 +80,19 @@ export function aggregateRevenue(paidInvoices: Invoice[], priceItems: PriceItem[
     byMonth[mKey].total += invoiceTotal;
     byMonth[mKey].count += 1;
 
+    // 일별 집계 — invoice_date 앞 10자리를 키로 사용 (타임존 안전)
+    const dKey = inv.invoice_date.slice(0, 10);
+    if (!byDay[dKey]) byDay[dKey] = { total: 0, count: 0 };
+    byDay[dKey].total += invoiceTotal;
+    byDay[dKey].count += 1;
+
     byYear[year] = (byYear[year] ?? 0) + invoiceTotal;
   }
 
   return {
     byQuarter,
     byMonth,
+    byDay,
     byYear,
     byCategory,
     years: Array.from(yearSet).sort((a, b) => b - a),
@@ -131,4 +140,30 @@ export function buildMonthlySeries(
     series.push({ month, total: byMonth[`${year}-${month}`]?.total ?? 0 });
   }
   return series;
+}
+
+// 캘린더 셀 타입: null이면 앞/뒤 패딩, 객체면 해당 날짜 셀
+export type CalendarCell = { day: number; total: number; yoy: number | null } | null;
+
+// 선택 연/월의 달력 셀 배열. 앞쪽 요일 오프셋만큼 null, 뒤쪽은 7배수로 null 패딩.
+// 각 날짜 셀: 그날 귀속금액(total)과 전년 같은 날 대비 %(yoy, 전년 0이면 null).
+export function buildCalendarCells(
+  byDay: RevenueData['byDay'],
+  year: number,
+  month: number, // 1~12
+): CalendarCell[] {
+  const pad2 = (n: number) => String(n).padStart(2, '0');
+  const lead = new Date(year, month - 1, 1).getDay();     // 0(일)~6(토)
+  const days = new Date(year, month, 0).getDate();        // 그 달 일수
+  const cells: CalendarCell[] = [];
+  for (let i = 0; i < lead; i++) cells.push(null);
+  for (let d = 1; d <= days; d++) {
+    const key = `${year}-${pad2(month)}-${pad2(d)}`;
+    const prevKey = `${year - 1}-${pad2(month)}-${pad2(d)}`;
+    const total = byDay[key]?.total ?? 0;
+    const yoy = calcYoY(total, byDay[prevKey]?.total ?? 0);
+    cells.push({ day: d, total, yoy });
+  }
+  while (cells.length % 7 !== 0) cells.push(null);
+  return cells;
 }
