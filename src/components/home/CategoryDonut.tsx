@@ -47,15 +47,15 @@ export function CategoryDonut({ slices }: CategoryDonutProps) {
   return (
     <section className="flex flex-col rounded-xl border border-border bg-card shadow-sm">
       {/* 카드 헤더 */}
-      <div className="px-6 pt-5">
+      <div className="px-6 pt-4">
         <h3 className="text-sm font-extrabold text-foreground">카테고리별 매출</h3>
         <p className="mt-0.5 text-[11.5px] text-muted-foreground">올해 매출 구성</p>
       </div>
 
       {/* 도넛(위) + 범례(아래 전체폭) — 좁고 긴 카드의 세로 여백을 채우도록 세로 중앙 정렬 */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-7 px-6 py-6">
+      <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 py-3">
         {/* SVG 도넛 — stroke-dasharray 방식, 반지름 R로 둘레 100 정규화 */}
-        <svg width="152" height="152" viewBox="0 0 42 42" className="flex-none">
+        <svg width="124" height="124" viewBox="0 0 42 42" className="flex-none">
           {/* 카테고리별 그라데이션 정의 — 세그먼트마다 밝은→진한 */}
           {total > 0 && (
             <defs>
@@ -126,7 +126,7 @@ export function CategoryDonut({ slices }: CategoryDonutProps) {
         </svg>
 
         {/* 범례 — 도넛 아래 전체 폭 행. 항목명(좌)↔금액(우, ml-auto)이 양 끝으로 최대 분리 */}
-        <div className="flex w-full flex-col gap-3.5 text-[13px]">
+        <div className="flex w-full flex-col gap-2.5 text-[13px]">
           {slices.map((b) => {
             const color = CATEGORY_COLORS[b.category] ?? FALLBACK_COLOR;
             return (

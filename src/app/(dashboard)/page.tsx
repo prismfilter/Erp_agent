@@ -4,16 +4,25 @@
 // 데이터: paid 청구서(+price-items) · 작가 · 저작물 · 거래처
 
 import { useEffect, useState, useMemo } from 'react';
-import type { Invoice, PriceItem, Writer, WorkWriterGroup, Client } from '@/types/invoice';
+import type {
+  Invoice,
+  PriceItem,
+  Writer,
+  WorkWriterGroup,
+  Client,
+  ServiceSettlement,
+} from '@/types/invoice';
 import {
   aggregateRevenue,
   buildCategorySlices,
   buildMonthlySeries,
 } from '@/lib/revenue/aggregator';
+import { buildWriterRanking, buildClientRanking } from '@/lib/home/rankings';
 import { HeroRevenueCard } from '@/components/home/HeroRevenueCard';
 import { OverviewKpis } from '@/components/home/OverviewKpis';
 import { CategoryDonut } from '@/components/home/CategoryDonut';
 import { RevenueCalendarMonth } from '@/components/home/RevenueCalendarMonth';
+import { RankingList } from '@/components/home/RankingList';
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
@@ -22,6 +31,7 @@ export default function HomePage() {
   const [writers, setWriters] = useState<Writer[]>([]);
   const [workGroups, setWorkGroups] = useState<WorkWriterGroup[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [serviceSettlements, setServiceSettlements] = useState<ServiceSettlement[]>([]);
 
   // 연도: 장기 실행 stale 방지를 위해 컴포넌트 내부에서 산출
   const year = new Date().getFullYear();
@@ -30,20 +40,22 @@ export default function HomePage() {
   useEffect(() => {
     (async () => {
       try {
-        const [invRes, priceRes, writerRes, worksRes, clientRes] = await Promise.all([
+        const [invRes, priceRes, writerRes, worksRes, clientRes, settleRes] = await Promise.all([
           fetch('/api/invoices?status=paid'),
           fetch('/api/price-items?all=1'),
           fetch('/api/writers'),
           fetch('/api/works/writers'),
           fetch('/api/clients'),
+          fetch('/api/settlements/service'),
         ]);
 
-        const [invJson, priceJson, writerJson, worksJson, clientJson] = await Promise.all([
+        const [invJson, priceJson, writerJson, worksJson, clientJson, settleJson] = await Promise.all([
           invRes.ok ? invRes.json() : Promise.resolve({ invoices: [] }),
           priceRes.ok ? priceRes.json() : Promise.resolve({ priceItems: [] }),
           writerRes.ok ? writerRes.json() : Promise.resolve({ writers: [] }),
           worksRes.ok ? worksRes.json() : Promise.resolve({ writers: [] }),
           clientRes.ok ? clientRes.json() : Promise.resolve({ clients: [] }),
+          settleRes.ok ? settleRes.json() : Promise.resolve({ settlements: [] }),
         ]);
 
         setPaidInvoices(invJson.invoices ?? []);
@@ -51,6 +63,7 @@ export default function HomePage() {
         setWriters(writerJson.writers ?? []);
         setWorkGroups(worksJson.writers ?? []);
         setClients(clientJson.clients ?? []);
+        setServiceSettlements(settleJson.settlements ?? []);
       } catch {
         // fetch 실패 시 0/빈 상태로 자연 렌더
       } finally {
@@ -75,8 +88,22 @@ export default function HomePage() {
     );
     const settledCount = paidThisYear.length;
 
-    return { total, prevTotal, monthly, slices, settledCount, byDay: data.byDay, years: data.years };
-  }, [paidInvoices, priceItems, year]);
+    // 순위 위젯: 작가별 올해 정산(용역정산 기준), 상위 거래처 매출(귀속금액 기준)
+    const writerRanking = buildWriterRanking(serviceSettlements, year);
+    const clientRanking = buildClientRanking(paidInvoices, year);
+
+    return {
+      total,
+      prevTotal,
+      monthly,
+      slices,
+      settledCount,
+      byDay: data.byDay,
+      years: data.years,
+      writerRanking,
+      clientRanking,
+    };
+  }, [paidInvoices, priceItems, serviceSettlements, year]);
 
   // 관리 저작물 수 = works count 합
   const worksCount = useMemo(
@@ -95,9 +122,9 @@ export default function HomePage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex h-full flex-col gap-3">
       {/* 페이지 헤더 */}
-      <div className="flex items-end justify-between">
+      <div className="flex shrink-0 items-end justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">홈 피드</h1>
           <p className="mt-1 text-[13px] text-muted-foreground">
@@ -107,7 +134,7 @@ export default function HomePage() {
       </div>
 
       {/* 1) 현황 개요 — 히어로(올해 누적 수입) + KPI 패널 */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.9fr_1fr]">
+      <div className="grid shrink-0 grid-cols-1 gap-3 lg:grid-cols-[1.9fr_1fr]">
         <HeroRevenueCard
           year={year}
           total={home.total}
@@ -123,8 +150,24 @@ export default function HomePage() {
         />
       </div>
 
-      {/* 2) 카테고리 도넛 + 매출 달력 */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.45fr]">
+      {/* 2) 작가별 정산 순위 + 상위 거래처 매출 순위 (도넛·캘린더보다 위) */}
+      <div className="grid flex-1 grid-cols-1 gap-3 lg:grid-cols-2">
+        <RankingList
+          title="작가별 올해 정산"
+          subtitle="전속작가 정산액(용역정산) 순"
+          items={home.writerRanking}
+          emptyText="올해 정산 내역이 없습니다."
+        />
+        <RankingList
+          title="상위 거래처 매출"
+          subtitle="올해 매출(귀속금액) 기여 순"
+          items={home.clientRanking}
+          emptyText="올해 매출 내역이 없습니다."
+        />
+      </div>
+
+      {/* 3) 카테고리 도넛 + 매출 달력 */}
+      <div className="grid flex-[1.4] grid-cols-1 gap-3 lg:grid-cols-[1fr_1.45fr]">
         <CategoryDonut slices={home.slices} />
         <RevenueCalendarMonth byDay={home.byDay} years={home.years} />
       </div>

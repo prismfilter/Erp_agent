@@ -77,8 +77,8 @@ export function RevenueCalendarMonth({ byDay, years }: RevenueCalendarMonthProps
 
   return (
     <section className="flex flex-col rounded-xl border border-border bg-card shadow-sm">
-      {/* 헤더: 이전달 화살표 / 연월 팝오버 버튼 / 다음달 화살표 */}
-      <div className="flex items-center justify-between px-4 pt-4">
+      {/* 헤더: 이전달 화살표 / 연월 팝오버 버튼 / 다음달 화살표 — 가운데로 모아 라벨에 밀착 */}
+      <div className="flex items-center justify-center gap-3 px-4 pt-3">
         <button
           type="button"
           onClick={prevMonth}
@@ -152,7 +152,7 @@ export function RevenueCalendarMonth({ byDay, years }: RevenueCalendarMonthProps
       </div>
 
       {/* 요일 헤더 (일=빨강, 토=파랑, 평일=muted) */}
-      <div className="grid grid-cols-7 px-3 pt-3 text-center text-[11px] font-semibold">
+      <div className="grid grid-cols-7 px-3 pt-2 text-center text-[11px] font-semibold">
         {WEEKDAYS.map((w, i) => (
           <div
             key={w}
@@ -169,8 +169,8 @@ export function RevenueCalendarMonth({ byDay, years }: RevenueCalendarMonthProps
         ))}
       </div>
 
-      {/* 날짜 그리드 — flex-1로 카드 높이 채움 */}
-      <div className="grid flex-1 grid-cols-7 gap-1 px-3 pb-3 pt-1">
+      {/* 날짜 그리드 — flex-1 + auto-rows-fr로 주(week) 행이 카드 높이를 균등하게 채움 */}
+      <div className="grid flex-1 auto-rows-fr grid-cols-7 gap-0.5 px-3 pb-2 pt-0.5">
         {cells.map((cell, i) => {
           // null 셀: 앞뒤 패딩 빈칸
           if (!cell) return <div key={i} />;
@@ -180,7 +180,7 @@ export function RevenueCalendarMonth({ byDay, years }: RevenueCalendarMonthProps
           return (
             <div
               key={i}
-              className={`flex min-h-[44px] flex-col items-center rounded-md px-0.5 py-1 ${
+              className={`flex min-h-[26px] flex-col items-center rounded-md px-0.5 py-0.5 ${
                 today ? 'bg-primary/10' : ''
               }`}
             >

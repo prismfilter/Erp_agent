@@ -56,11 +56,11 @@ export function OverviewKpis({
   ];
 
   return (
-    <div className="flex h-full flex-col gap-3">
+    <div className="flex h-full flex-col gap-2.5">
       {tiles.map(({ Icon, label, value, right, rightCls }) => (
         <div
           key={label}
-          className="flex flex-1 items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm"
+          className="flex flex-1 items-center gap-3 rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm"
         >
           {/* 아이콘 배경 박스 */}
           <div className="grid h-9 w-9 flex-none place-items-center rounded-lg bg-primary/10 text-primary">

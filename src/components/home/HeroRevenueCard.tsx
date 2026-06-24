@@ -18,12 +18,12 @@ export function HeroRevenueCard({ year, total, prevTotal, monthly }: HeroRevenue
   const avg = total > 0 ? Math.round(total / 12) : 0;
 
   return (
-    <section className="rounded-2xl border border-border bg-card px-7 py-6 shadow-sm">
+    <section className="rounded-2xl border border-border bg-card px-6 py-4 shadow-sm">
       <p className="text-sm font-semibold text-muted-foreground">올해 누적 수입 ({year})</p>
-      <p className="mt-1.5 text-[42px] font-extrabold leading-none tracking-tight text-foreground">
+      <p className="mt-1 text-[32px] font-extrabold leading-none tracking-tight text-foreground">
         {formatWon(total)}
       </p>
-      <p className="mt-2 text-[13px] font-semibold text-muted-foreground">
+      <p className="mt-1.5 text-[13px] font-semibold text-muted-foreground">
         {yoy !== null ? (
           <span className={yoy >= 0 ? 'text-emerald-500' : 'text-red-500'}>
             {yoy >= 0 ? '▲' : '▼'} 전년 동기 대비 {yoy >= 0 ? '+' : ''}
@@ -36,7 +36,7 @@ export function HeroRevenueCard({ year, total, prevTotal, monthly }: HeroRevenue
         {formatWon(avg)}
       </p>
       {/* 월별 스파크라인 — primary 틴트 막대(카드 배경 위) */}
-      <div className="mt-4 flex h-12 items-end gap-1.5">
+      <div className="mt-3 flex h-8 items-end gap-1.5">
         {monthly.map((m) => (
           <div
             key={m.month}
