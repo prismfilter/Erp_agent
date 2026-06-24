@@ -13,7 +13,7 @@ import {
 import { HeroRevenueCard } from '@/components/home/HeroRevenueCard';
 import { OverviewKpis } from '@/components/home/OverviewKpis';
 import { CategoryDonut } from '@/components/home/CategoryDonut';
-import { RevenueCalendar } from '@/components/home/RevenueCalendar';
+import { RevenueCalendarMonth } from '@/components/home/RevenueCalendarMonth';
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
@@ -75,7 +75,7 @@ export default function HomePage() {
     );
     const settledCount = paidThisYear.length;
 
-    return { total, prevTotal, monthly, slices, settledCount };
+    return { total, prevTotal, monthly, slices, settledCount, byDay: data.byDay, years: data.years };
   }, [paidInvoices, priceItems, year]);
 
   // 관리 저작물 수 = works count 합
@@ -126,7 +126,7 @@ export default function HomePage() {
       {/* 2) 카테고리 도넛 + 매출 달력 */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.45fr]">
         <CategoryDonut slices={home.slices} />
-        <RevenueCalendar monthly={home.monthly} />
+        <RevenueCalendarMonth byDay={home.byDay} years={home.years} />
       </div>
     </div>
   );
