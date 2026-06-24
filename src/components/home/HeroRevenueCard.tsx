@@ -18,7 +18,7 @@ export function HeroRevenueCard({ year, total, prevTotal, monthly }: HeroRevenue
   const avg = total > 0 ? Math.round(total / 12) : 0;
 
   return (
-    <section className="relative overflow-hidden rounded-2xl bg-primary px-7 py-6 text-primary-foreground shadow-sm">
+    <section className="home-hero relative overflow-hidden rounded-2xl px-7 py-6 text-primary-foreground shadow-sm">
       {/* 장식용 반투명 원 */}
       <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/10" />
       <p className="text-sm font-semibold opacity-90">올해 누적 수입 ({year})</p>

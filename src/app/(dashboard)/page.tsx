@@ -99,7 +99,7 @@ export default function HomePage() {
       {/* 페이지 헤더 */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-xl font-extrabold text-foreground">홈 피드</h1>
+          <h1 className="text-3xl font-bold text-foreground">홈 피드</h1>
           <p className="mt-1 text-[13px] text-muted-foreground">
             프리즘 필터 뮤직그룹 · {year}년 경영 현황 한눈에 보기
           </p>

@@ -32,17 +32,17 @@ export function CategoryDonut({ slices }: CategoryDonutProps) {
   let offset = 25;
 
   return (
-    <section className="rounded-xl border border-border bg-card shadow-sm">
+    <section className="flex flex-col rounded-xl border border-border bg-card shadow-sm">
       {/* 카드 헤더 */}
-      <div className="px-5 pt-4">
+      <div className="px-6 pt-5">
         <h3 className="text-sm font-extrabold text-foreground">카테고리별 매출</h3>
         <p className="mt-0.5 text-[11.5px] text-muted-foreground">올해 매출 구성</p>
       </div>
 
-      {/* 도넛 + 범례 */}
-      <div className="flex items-center gap-5 px-5 pb-6 pt-4">
+      {/* 도넛(위) + 범례(아래 전체폭) — 좁고 긴 카드의 세로 여백을 채우도록 세로 중앙 정렬 */}
+      <div className="flex flex-1 flex-col items-center justify-center gap-7 px-6 py-6">
         {/* SVG 도넛 — stroke-dasharray 방식, 반지름 R로 둘레 100 정규화 */}
-        <svg width="120" height="120" viewBox="0 0 42 42" className="flex-none">
+        <svg width="152" height="152" viewBox="0 0 42 42" className="flex-none">
           {/* 배경 트랙 — 항상 표시 */}
           <circle
             cx="21"
@@ -99,21 +99,21 @@ export function CategoryDonut({ slices }: CategoryDonutProps) {
           </text>
         </svg>
 
-        {/* 범례 — 카테고리별 색·이름·금액·퍼센트 */}
-        <div className="flex flex-col gap-3 text-[12.5px]">
+        {/* 범례 — 도넛 아래 전체 폭 행. 항목명(좌)↔금액(우, ml-auto)이 양 끝으로 최대 분리 */}
+        <div className="flex w-full flex-col gap-3.5 text-[13px]">
           {slices.map((b) => {
             const color = CATEGORY_COLORS[b.category] ?? FALLBACK_COLOR;
             return (
-              <div key={b.category} className="flex min-w-[150px] items-center gap-2">
+              <div key={b.category} className="flex items-center gap-2.5">
                 <span
-                  className="h-2.5 w-2.5 rounded"
+                  className="h-2.5 w-2.5 flex-none rounded"
                   style={{ background: color }}
                 />
-                <span className="text-foreground">{b.category}</span>
+                <span className="whitespace-nowrap text-foreground">{b.category}</span>
                 <b className="ml-auto font-extrabold text-foreground">
                   {formatCompactWon(b.amount)}
                 </b>
-                <small className="ml-1.5 text-[11px] text-muted-foreground">
+                <small className="ml-2 w-9 text-right text-[11px] text-muted-foreground">
                   {total > 0 ? Math.round((b.amount / total) * 100) : 0}%
                 </small>
               </div>
