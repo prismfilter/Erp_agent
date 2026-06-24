@@ -201,7 +201,7 @@ export default function StaffPage() {
       </div>
 
       {/* 테이블 — 프라이스 테이블처럼 표 카드만 적정 폭으로 제한하고 가운데 정렬 */}
-      <div className="bg-card border border-border rounded-lg overflow-hidden w-full max-w-4xl mx-auto">
+      <div className="bg-card border border-border rounded-lg overflow-hidden w-full max-w-6xl mx-auto">
         {isLoading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-6 w-6 border-2 border-border border-t-primary mx-auto mb-3" />

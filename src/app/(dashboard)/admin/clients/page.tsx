@@ -141,7 +141,7 @@ export default function ClientsDbPage() {
         </div>
       )}
 
-      <div className="bg-card border border-border rounded-lg overflow-hidden w-full max-w-3xl mx-auto">
+      <div className="bg-card border border-border rounded-lg overflow-hidden w-full max-w-5xl mx-auto">
         {isLoading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-6 w-6 border-2 border-border border-t-primary mx-auto mb-3" />

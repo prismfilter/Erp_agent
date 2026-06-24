@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Invoice, InvoiceItem, PriceItem } from '@/types/invoice';
-import { aggregateRevenue, getQuarter, getMonth, calcYoY } from './aggregator';
+import { aggregateRevenue, getQuarter, getMonth, calcYoY, buildCategorySlices, buildMonthlySeries, buildCalendarCells } from './aggregator';
+import type { CalendarCell } from './aggregator';
 
 function item(partial: Partial<InvoiceItem>): InvoiceItem {
   return {
@@ -141,5 +142,145 @@ describe('calcYoY', () => {
 
   it('전년이 0이면 null', () => {
     expect(calcYoY(100, 0)).toBeNull();
+  });
+});
+
+// ── 홈 피드 도넛/달력 헬퍼 테스트 ──────────────────────────────────────
+
+describe('buildCategorySlices', () => {
+  it('금액>0인 카테고리만 REVENUE_CATEGORIES 순서로 반환한다', () => {
+    const byCategory: Record<string, Record<number, number>> = {
+      '앨범': { 2026: 1000 },
+      '기타': { 2026: 300 },
+      '광고': { 2026: 0 },
+    };
+    const slices = buildCategorySlices(byCategory, 2026);
+    // '광고'는 0이라 제외, REVENUE_CATEGORIES 순서(앨범 → 기타)
+    expect(slices).toEqual([
+      { category: '앨범', amount: 1000 },
+      { category: '기타', amount: 300 },
+    ]);
+  });
+
+  it('해당 연도 데이터가 없으면 빈 배열', () => {
+    const slices = buildCategorySlices({}, 2026);
+    expect(slices).toEqual([]);
+  });
+
+  it('다른 연도 데이터는 포함하지 않는다', () => {
+    const byCategory: Record<string, Record<number, number>> = {
+      '앨범': { 2025: 5000, 2026: 2000 },
+    };
+    const slices = buildCategorySlices(byCategory, 2026);
+    expect(slices).toEqual([{ category: '앨범', amount: 2000 }]);
+  });
+});
+
+describe('buildMonthlySeries', () => {
+  it('1~12월을 채우고 없는 달은 0', () => {
+    // byMonth 타입: Record<string, QuarterRevenue> — QuarterRevenue는 { total, count }
+    const byMonth: Record<string, { total: number; count: number }> = {
+      '2026-1': { total: 100, count: 1 },
+      '2026-3': { total: 300, count: 2 },
+    };
+    const series = buildMonthlySeries(byMonth, 2026);
+    expect(series).toHaveLength(12);
+    expect(series[0]).toEqual({ month: 1, total: 100 });
+    expect(series[1]).toEqual({ month: 2, total: 0 });
+    expect(series[2]).toEqual({ month: 3, total: 300 });
+  });
+});
+
+// ── 일별 집계(byDay) 테스트 ─────────────────────────────────────────────
+
+describe('aggregateRevenue byDay', () => {
+  it('같은 날 여러 청구서를 byDay에 합산한다', () => {
+    const data = aggregateRevenue(
+      [
+        invoice('2026-05-10', [item({ supply_amount: 100_000 })], 'a'),
+        invoice('2026-05-10', [item({ supply_amount: 200_000 })], 'b'),
+      ],
+      priceItems
+    );
+    // (100,000 + 200,000) × 30% = 90,000, 2건
+    expect(data.byDay['2026-05-10']?.total).toBe(90_000);
+    expect(data.byDay['2026-05-10']?.count).toBe(2);
+  });
+
+  it('날짜가 다른 청구서는 각각 독립된 byDay 항목을 갖는다', () => {
+    const data = aggregateRevenue(
+      [
+        invoice('2026-05-10', [item({ supply_amount: 100_000 })], 'a'),
+        invoice('2026-05-15', [item({ supply_amount: 200_000 })], 'b'),
+      ],
+      priceItems
+    );
+    // 100,000 × 30% = 30,000
+    expect(data.byDay['2026-05-10']?.total).toBe(30_000);
+    expect(data.byDay['2026-05-10']?.count).toBe(1);
+    // 200,000 × 30% = 60,000
+    expect(data.byDay['2026-05-15']?.total).toBe(60_000);
+    expect(data.byDay['2026-05-15']?.count).toBe(1);
+  });
+});
+
+// ── buildCalendarCells 테스트 ────────────────────────────────────────────
+
+describe('buildCalendarCells', () => {
+  it('앞쪽 null 개수가 1일의 요일(lead)과 일치한다 (2026-05)', () => {
+    // 2026-05-01 = 금요일 → getDay() = 5
+    const cells = buildCalendarCells({}, 2026, 5);
+    const lead = new Date(2026, 4, 1).getDay();
+    const leadNulls = cells.slice(0, lead);
+    expect(leadNulls.every((c) => c === null)).toBe(true);
+    // lead번째 셀은 day=1인 비-null 셀
+    expect(cells[lead]).not.toBeNull();
+    expect((cells[lead] as NonNullable<CalendarCell>).day).toBe(1);
+  });
+
+  it('날짜 셀 개수가 그 달 일수와 일치하고 전체 길이가 7의 배수이다 (2026-05=31일)', () => {
+    const cells = buildCalendarCells({}, 2026, 5);
+    const dayCells = cells.filter((c) => c !== null);
+    expect(dayCells).toHaveLength(31);
+    expect(cells.length % 7).toBe(0);
+  });
+
+  it('byDay에 값이 있는 날은 total을 반영하고, 전년 같은 날 없으면 yoy=null', () => {
+    const byDay: Record<string, { total: number; count: number }> = {
+      '2026-05-10': { total: 90_000, count: 2 },
+    };
+    const cells = buildCalendarCells(byDay, 2026, 5);
+    const lead = new Date(2026, 4, 1).getDay();
+    const cell10 = cells[lead + 10 - 1] as NonNullable<CalendarCell>;
+    expect(cell10.day).toBe(10);
+    expect(cell10.total).toBe(90_000);
+    // 전년(2025-05-10) 데이터 없으므로 yoy=null
+    expect(cell10.yoy).toBeNull();
+  });
+
+  it('전년 같은 날 값이 있으면 yoy를 계산한다', () => {
+    const byDay: Record<string, { total: number; count: number }> = {
+      '2026-05-10': { total: 150_000, count: 1 },
+      '2025-05-10': { total: 100_000, count: 1 },
+    };
+    const cells = buildCalendarCells(byDay, 2026, 5);
+    const lead = new Date(2026, 4, 1).getDay();
+    const cell10 = cells[lead + 10 - 1] as NonNullable<CalendarCell>;
+    // yoy = (150,000 - 100,000) / 100,000 * 100 = 50
+    expect(cell10.yoy).toBe(50);
+  });
+
+  it('윤년 2024-02는 29일이다', () => {
+    const cells = buildCalendarCells({}, 2024, 2);
+    const dayCells = cells.filter((c) => c !== null);
+    expect(dayCells).toHaveLength(29);
+    expect(cells.length % 7).toBe(0);
+  });
+
+  it('평년 2026-02는 28일이다', () => {
+    const cells = buildCalendarCells({}, 2026, 2);
+    const dayCells = cells.filter((c) => c !== null);
+    expect(dayCells).toHaveLength(28);
+    expect(cells.length % 7).toBe(0);
   });
 });

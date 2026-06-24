@@ -102,39 +102,42 @@ export function QuarterlyChart({ data, year, selectedQuarter, compare, onSelectQ
                 key={q}
                 type="button"
                 onClick={() => onSelectQuarter(selectedQuarter === q ? null : q)}
-                className="flex-1 flex flex-col items-center justify-end gap-1 cursor-pointer h-full"
+                className="flex-1 flex flex-col items-center justify-end cursor-pointer h-full"
               >
-                <span className={`text-[10px] tabular-nums transition ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  {cur.total > 0 ? formatWon(cur.total) : '-'}
-                </span>
+                {/* 값 라벨 + 막대를 같은 flex 컬럼에 배치 — 막대 높이 변화 시 라벨이 함께 이동 */}
+                <div className="flex flex-col items-center justify-end flex-1 w-full">
+                  <span className={`mb-1 text-[10px] tabular-nums transition-all duration-300 ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    {cur.total > 0 ? formatWon(cur.total) : '-'}
+                  </span>
 
-                <div className="flex items-end gap-1 w-full justify-center">
-                  <div
-                    {...hoverProps(content, cur.total > 0)}
-                    className="w-1/3 max-w-[44px] rounded-t-md transition-all duration-300 hover:brightness-110"
-                    style={{
-                      height: barHeight(cur.total, maxQuarter),
-                      background: 'linear-gradient(180deg, var(--chart-bar-from, #8097ff) 0%, var(--chart-bar-to, #4a5ee8) 100%)',
-                      opacity: isSelected ? 1 : 0.4,
-                      boxShadow: selectedQuarter === q ? '0 0 16px var(--chart-glow, rgba(74, 94, 232, 0.55))' : 'none',
-                    }}
-                  />
-                  {prev && (
+                  <div className="flex items-end gap-1 w-full justify-center">
                     <div
-                      {...hoverProps(content, prev.total > 0)}
-                      className="w-1/3 max-w-[44px] rounded-t-md"
+                      {...hoverProps(content, cur.total > 0)}
+                      className="w-1/3 max-w-[44px] rounded-t-md transition-all duration-300 hover:brightness-110"
                       style={{
-                        height: barHeight(prev.total, maxQuarter),
-                        background: 'linear-gradient(180deg, var(--chart-bar-compare-from, #8896cc) 0%, var(--chart-bar-compare-to, #4a5474) 100%)',
-                        opacity: 0.35,
+                        height: barHeight(cur.total, maxQuarter),
+                        background: 'linear-gradient(180deg, var(--chart-bar-from, #8097ff) 0%, var(--chart-bar-to, #4a5ee8) 100%)',
+                        opacity: isSelected ? 1 : 0.4,
+                        boxShadow: selectedQuarter === q ? '0 0 16px var(--chart-glow, rgba(74, 94, 232, 0.55))' : 'none',
                       }}
                     />
-                  )}
+                    {prev && (
+                      <div
+                        {...hoverProps(content, prev.total > 0)}
+                        className="w-1/3 max-w-[44px] rounded-t-md"
+                        style={{
+                          height: barHeight(prev.total, maxQuarter),
+                          background: 'linear-gradient(180deg, var(--chart-bar-compare-from, #8896cc) 0%, var(--chart-bar-compare-to, #4a5474) 100%)',
+                          opacity: 0.35,
+                        }}
+                      />
+                    )}
+                  </div>
                 </div>
 
                 <span
                   {...hoverProps(content, !hasBar)}
-                  className={`text-xs font-semibold transition ${
+                  className={`mt-1 text-xs font-semibold transition ${
                     selectedQuarter === q ? 'text-primary' : isSelected ? 'text-foreground' : 'text-muted-foreground'
                   }`}
                 >
