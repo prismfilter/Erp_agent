@@ -164,44 +164,38 @@ export function QuarterlyChart({ data, year, selectedQuarter, compare, onSelectQ
             return (
               <div
                 key={m}
-                className="flex-1 flex flex-col items-center justify-end h-full"
+                className="flex-1 flex flex-col items-center justify-end gap-1.5 h-full"
               >
-                {/* 값 라벨 + 막대를 같은 flex 컬럼에 배치 — 막대 높이 변화 시 라벨이 함께 이동
-                    월뷰는 전년 막대(amber 오버레이)를 현재 막대 옆에 나란히 배치(flex 흐름, absolute 제거) */}
-                <div className="flex flex-col items-center justify-end flex-1 w-full">
-                  <span className="mb-1 text-[9px] tabular-nums text-muted-foreground transition-all duration-300 leading-none">
-                    {cur.total > 0 ? formatWon(cur.total) : ''}
-                  </span>
-
-                  <div className="flex items-end justify-center gap-0.5">
-                    {/* 현재 연도 막대 */}
+                {/* 막대 영역 — 컬럼 절반 폭(분기 막대의 약 절반 두께)
+                    전년 막대(반투명·뒤) 위에 현재 연도 막대(solid·앞)를 겹쳐, 현재 막대는 또렷·전년은 위로 비침 */}
+                <div className="relative w-1/2 max-w-[22px]" style={{ height: CHART_HEIGHT }}>
+                  {/* 전년 동월 (다른 색·반투명 오버레이, 뒤) */}
+                  {prev && (
                     <div
-                      {...hoverProps(content, cur.total > 0)}
-                      className="w-2.5 rounded-t-[3px] transition-all duration-300 hover:brightness-110"
+                      {...hoverProps(content, prev.total > 0)}
+                      className="absolute bottom-0 left-0 right-0 rounded-t-[3px] border border-amber-300/70"
                       style={{
-                        height: barHeight(cur.total, maxMonth),
-                        background: 'linear-gradient(180deg, var(--chart-bar-from, #8097ff) 0%, var(--chart-bar-to, #4a5ee8) 100%)',
+                        height: barHeight(prev.total, maxMonth),
+                        background: 'linear-gradient(180deg, #fbbf24 0%, #d97706 100%)',
+                        opacity: 0.55,
                       }}
                     />
-                    {/* 전년 동월 (amber 오버레이, compare 시에만) */}
-                    {prev && (
-                      <div
-                        {...hoverProps(content, prev.total > 0)}
-                        className="w-2.5 rounded-t-[3px] border border-amber-300/70 transition-all duration-300"
-                        style={{
-                          height: barHeight(prev.total, maxMonth),
-                          background: 'linear-gradient(180deg, #fbbf24 0%, #d97706 100%)',
-                          opacity: 0.55,
-                        }}
-                      />
-                    )}
-                  </div>
+                  )}
+                  {/* 현재 연도 (solid, 앞) */}
+                  <div
+                    {...hoverProps(content, cur.total > 0)}
+                    className="absolute bottom-0 left-0 right-0 rounded-t-[3px] transition-all duration-300 hover:brightness-110"
+                    style={{
+                      height: barHeight(cur.total, maxMonth),
+                      background: 'linear-gradient(180deg, var(--chart-bar-from, #8097ff) 0%, var(--chart-bar-to, #4a5ee8) 100%)',
+                    }}
+                  />
                 </div>
 
                 {/* 월 라벨 (막대 없을 때 호버 대상) */}
                 <span
                   {...hoverProps(content, !hasBar)}
-                  className="mt-1 text-[10px] text-muted-foreground tabular-nums"
+                  className="text-[10px] text-muted-foreground tabular-nums"
                 >
                   {m}
                 </span>
