@@ -122,6 +122,18 @@
     overflow: hidden;
   }
 
+  /* 클릭 가능한 요소는 항상 손가락(pointer) 커서.
+     Tailwind v4가 버튼 기본 커서를 default로 바꿔, 전역 base 규칙으로 복원.
+     비활성 요소는 제외. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  label[for],
+  summary,
+  select:not(:disabled) {
+    cursor: pointer;
+  }
+
   /* 스크롤바 숨김 — 스크롤 기능은 유지하되 스크롤바만 비표시
      (사이드바 호버 펼침 전환 중 스크롤바가 깜빡이는 현상 방지) */
   .scrollbar-hide {
