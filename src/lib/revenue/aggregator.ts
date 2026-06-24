@@ -107,38 +107,18 @@ export function calcYoY(current: number, previous: number): number | null {
 }
 
 // ── 홈 피드 도넛/달력 헬퍼 ─────────────────────────────────────────
-// 도넛 3분류. ⚠️ 용역은 청구서가 아니라 용역정산서(작가지급액) 합계에서 옴(대표님 지시).
-// 저작권료/기타는 청구서 귀속금액의 byCategory에서 분류. 금액 성격이 달라 단순 합은 '매출 구성'이지 누적수입이 아님.
-export type DonutBucket = '저작권료' | '용역' | '기타';
-
-// 청구서 항목 카테고리 → 저작권료|기타 (용역은 별도 소스라 여기서 분류하지 않음)
-export function classifyDonutCategory(
-  category: string,
-  _itemName: string,
-): Exclude<DonutBucket, '용역'> {
-  if (category === '기타' || category === '커스텀') return '기타';
-  return '저작권료';
-}
-
-// 도넛 3버킷 금액(저작권료·용역·기타 순). serviceTotal = 해당 연도 용역정산 합계.
-export function buildDonutBuckets(
+// 실제 매출 카테고리(귀속금액) 구성 — 합계는 히어로 누적수입과 일치.
+// 올해 매출 카테고리 구성 — byCategory에서 해당 연도 금액>0인 카테고리만 REVENUE_CATEGORIES 순서로.
+export function buildCategorySlices(
   byCategory: RevenueData['byCategory'],
   year: number,
-  serviceTotal: number,
-): { bucket: DonutBucket; amount: number }[] {
-  let royalty = 0;
-  let etc = 0;
-  for (const category of Object.keys(byCategory)) {
+): { category: string; amount: number }[] {
+  const slices: { category: string; amount: number }[] = [];
+  for (const category of REVENUE_CATEGORIES) {
     const amount = byCategory[category]?.[year] ?? 0;
-    if (amount === 0) continue;
-    if (classifyDonutCategory(category, '') === '기타') etc += amount;
-    else royalty += amount;
+    if (amount > 0) slices.push({ category, amount });
   }
-  return [
-    { bucket: '저작권료', amount: royalty },
-    { bucket: '용역', amount: serviceTotal },
-    { bucket: '기타', amount: etc },
-  ];
+  return slices;
 }
 
 // 1~12월 매출 시리즈(없는 달은 0)

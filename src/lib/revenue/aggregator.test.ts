@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Invoice, InvoiceItem, PriceItem } from '@/types/invoice';
-import { aggregateRevenue, getQuarter, getMonth, calcYoY } from './aggregator';
+import { aggregateRevenue, getQuarter, getMonth, calcYoY, buildCategorySlices, buildMonthlySeries } from './aggregator';
 
 function item(partial: Partial<InvoiceItem>): InvoiceItem {
   return {
@@ -145,41 +145,33 @@ describe('calcYoY', () => {
 });
 
 // ── 홈 피드 도넛/달력 헬퍼 테스트 ──────────────────────────────────────
-import { classifyDonutCategory, buildDonutBuckets, buildMonthlySeries } from './aggregator';
 
-describe('classifyDonutCategory', () => {
-  it("category가 '기타'면 기타", () => {
-    expect(classifyDonutCategory('기타', '레슨')).toBe('기타');
-  });
-  it("커스텀(빈 category)이면 기타", () => {
-    expect(classifyDonutCategory('커스텀', '임의항목')).toBe('기타');
-  });
-  it("그 외 카테고리는 저작권료", () => {
-    expect(classifyDonutCategory('앨범', '정규앨범')).toBe('저작권료');
-    expect(classifyDonutCategory('광고', 'CF 음악')).toBe('저작권료');
-  });
-});
-
-describe('buildDonutBuckets', () => {
-  it('저작권료/용역/기타 3버킷을 순서대로 반환하고 용역은 serviceTotal', () => {
+describe('buildCategorySlices', () => {
+  it('금액>0인 카테고리만 REVENUE_CATEGORIES 순서로 반환한다', () => {
     const byCategory: Record<string, Record<number, number>> = {
       '앨범': { 2026: 1000 },
       '기타': { 2026: 300 },
-      '커스텀': { 2026: 200 },
+      '광고': { 2026: 0 },
     };
-    const buckets = buildDonutBuckets(byCategory, 2026, 500);
-    expect(buckets).toEqual([
-      { bucket: '저작권료', amount: 1000 },
-      { bucket: '용역', amount: 500 },
-      { bucket: '기타', amount: 500 },
+    const slices = buildCategorySlices(byCategory, 2026);
+    // '광고'는 0이라 제외, REVENUE_CATEGORIES 순서(앨범 → 기타)
+    expect(slices).toEqual([
+      { category: '앨범', amount: 1000 },
+      { category: '기타', amount: 300 },
     ]);
   });
-  it('해당 연도 데이터 없으면 0', () => {
-    expect(buildDonutBuckets({}, 2026, 0)).toEqual([
-      { bucket: '저작권료', amount: 0 },
-      { bucket: '용역', amount: 0 },
-      { bucket: '기타', amount: 0 },
-    ]);
+
+  it('해당 연도 데이터가 없으면 빈 배열', () => {
+    const slices = buildCategorySlices({}, 2026);
+    expect(slices).toEqual([]);
+  });
+
+  it('다른 연도 데이터는 포함하지 않는다', () => {
+    const byCategory: Record<string, Record<number, number>> = {
+      '앨범': { 2025: 5000, 2026: 2000 },
+    };
+    const slices = buildCategorySlices(byCategory, 2026);
+    expect(slices).toEqual([{ category: '앨범', amount: 2000 }]);
   });
 });
 

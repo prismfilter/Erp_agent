@@ -1,21 +1,28 @@
 'use client';
 
 // 홈 피드 현황 개요 KPI 3타일(히어로 우측 세로 스택).
-// Props: settledCount·settledRatio·worksCount·writersCount·clientsCount·clientsDelta
+// Props: settledCount·worksCount·writersCount·clientsCount·clientsDelta
 import { CheckCircle2, Music, Building2 } from 'lucide-react';
 
 interface OverviewKpisProps {
   settledCount: number;   // 올해 정산 완료 건수
-  settledRatio: number;   // 0~100 (%) — 전체 대비 완료율
   worksCount: number;     // 관리 저작물 수
   writersCount: number;   // 전속작가 수
   clientsCount: number;   // 거래처 수
   clientsDelta: number;   // 이번 분기 거래처 증감
 }
 
+// 타일 정의 — right는 optional(undefined이면 배지 미표시)
+interface Tile {
+  Icon: React.ElementType;
+  label: string;
+  value: string;
+  right?: string;
+  rightCls?: string;
+}
+
 export function OverviewKpis({
   settledCount,
-  settledRatio,
   worksCount,
   writersCount,
   clientsCount,
@@ -25,13 +32,12 @@ export function OverviewKpis({
   const deltaLabel = clientsDelta > 0 ? `+${clientsDelta}` : `${clientsDelta}`;
   const deltaCls = clientsDelta > 0 ? 'text-emerald-500' : 'text-muted-foreground';
 
-  const tiles = [
+  const tiles: Tile[] = [
     {
       Icon: CheckCircle2,
       label: '올해 정산 완료',
       value: `${settledCount}건`,
-      right: `${settledRatio.toFixed(1)}%`,
-      rightCls: 'text-emerald-500',
+      // 퍼센트 배지 제거 — 건수만 표시
     },
     {
       Icon: Music,
@@ -67,8 +73,10 @@ export function OverviewKpis({
             <p className="mt-0.5 text-lg font-extrabold text-foreground">{value}</p>
           </div>
 
-          {/* 우측 보조 수치 */}
-          <span className={`ml-auto text-xs font-bold ${rightCls}`}>{right}</span>
+          {/* 우측 보조 수치 — 있을 때만 렌더 */}
+          {right !== undefined && (
+            <span className={`ml-auto text-xs font-bold ${rightCls ?? ''}`}>{right}</span>
+          )}
         </div>
       ))}
     </div>

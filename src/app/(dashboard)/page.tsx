@@ -1,13 +1,13 @@
 'use client';
 
 // 홈 피드 — 현황 개요 최상단, 올해 누적 수입·카테고리 도넛·매출 달력 중심 재구성
-// 데이터: paid 청구서(+price-items) · 용역정산 · 작가 · 저작물 · 거래처
+// 데이터: paid 청구서(+price-items) · 작가 · 저작물 · 거래처
 
 import { useEffect, useState, useMemo } from 'react';
-import type { Invoice, PriceItem, ServiceSettlement, Writer, WorkWriterGroup, Client } from '@/types/invoice';
+import type { Invoice, PriceItem, Writer, WorkWriterGroup, Client } from '@/types/invoice';
 import {
   aggregateRevenue,
-  buildDonutBuckets,
+  buildCategorySlices,
   buildMonthlySeries,
 } from '@/lib/revenue/aggregator';
 import { HeroRevenueCard } from '@/components/home/HeroRevenueCard';
@@ -15,35 +15,32 @@ import { OverviewKpis } from '@/components/home/OverviewKpis';
 import { CategoryDonut } from '@/components/home/CategoryDonut';
 import { RevenueCalendar } from '@/components/home/RevenueCalendar';
 
-// 현재 연도 상수
-const CURRENT_YEAR = new Date().getFullYear();
-
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [paidInvoices, setPaidInvoices] = useState<Invoice[]>([]);
   const [priceItems, setPriceItems] = useState<PriceItem[]>([]);
-  const [serviceSettlements, setServiceSettlements] = useState<ServiceSettlement[]>([]);
   const [writers, setWriters] = useState<Writer[]>([]);
   const [workGroups, setWorkGroups] = useState<WorkWriterGroup[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
 
-  // 데이터 일괄 fetch — paid 청구서 + 프라이스 테이블 + 용역정산 + 작가 + 저작물 + 거래처
+  // 연도: 장기 실행 stale 방지를 위해 컴포넌트 내부에서 산출
+  const year = new Date().getFullYear();
+
+  // 데이터 일괄 fetch — paid 청구서 + 프라이스 테이블 + 작가 + 저작물 + 거래처
   useEffect(() => {
     (async () => {
       try {
-        const [invRes, priceRes, svcRes, writerRes, worksRes, clientRes] = await Promise.all([
+        const [invRes, priceRes, writerRes, worksRes, clientRes] = await Promise.all([
           fetch('/api/invoices?status=paid'),
           fetch('/api/price-items?all=1'),
-          fetch('/api/settlements/service'),
           fetch('/api/writers'),
           fetch('/api/works/writers'),
           fetch('/api/clients'),
         ]);
 
-        const [invJson, priceJson, svcJson, writerJson, worksJson, clientJson] = await Promise.all([
+        const [invJson, priceJson, writerJson, worksJson, clientJson] = await Promise.all([
           invRes.ok ? invRes.json() : Promise.resolve({ invoices: [] }),
           priceRes.ok ? priceRes.json() : Promise.resolve({ priceItems: [] }),
-          svcRes.ok ? svcRes.json() : Promise.resolve({ settlements: [] }),
           writerRes.ok ? writerRes.json() : Promise.resolve({ writers: [] }),
           worksRes.ok ? worksRes.json() : Promise.resolve({ writers: [] }),
           clientRes.ok ? clientRes.json() : Promise.resolve({ clients: [] }),
@@ -51,7 +48,6 @@ export default function HomePage() {
 
         setPaidInvoices(invJson.invoices ?? []);
         setPriceItems(priceJson.priceItems ?? []);
-        setServiceSettlements(svcJson.settlements ?? []);
         setWriters(writerJson.writers ?? []);
         setWorkGroups(worksJson.writers ?? []);
         setClients(clientJson.clients ?? []);
@@ -63,8 +59,6 @@ export default function HomePage() {
     })();
   }, []);
 
-  const year = CURRENT_YEAR;
-
   // 집계 — aggregateRevenue(paid 청구서, 프라이스 테이블) 기반
   const home = useMemo(() => {
     const data = aggregateRevenue(paidInvoices, priceItems);
@@ -72,23 +66,17 @@ export default function HomePage() {
     const prevTotal = data.byYear[year - 1] ?? 0;
     const monthly = buildMonthlySeries(data.byMonth, year);
 
-    // 용역 = 올해 용역정산 period_start 연도 기준 total_amount 합
-    const serviceTotal = serviceSettlements
-      .filter((s) => new Date(s.period_start).getFullYear() === year)
-      .reduce((sum, s) => sum + (s.total_amount ?? 0), 0);
+    // 도넛: 실제 매출 카테고리(귀속금액) — 합계는 히어로 누적수입과 일치
+    const slices = buildCategorySlices(data.byCategory, year);
 
-    const buckets = buildDonutBuckets(data.byCategory, year, serviceTotal);
-
-    // 올해 paid 청구서 건수 / 전체 대비 비율
+    // 올해 paid 청구서 건수
     const paidThisYear = paidInvoices.filter(
       (inv) => new Date(inv.invoice_date ?? '').getFullYear() === year,
     );
     const settledCount = paidThisYear.length;
-    const settledRatio =
-      paidInvoices.length > 0 ? (settledCount / paidInvoices.length) * 100 : 0;
 
-    return { total, prevTotal, monthly, buckets, settledCount, settledRatio };
-  }, [paidInvoices, priceItems, serviceSettlements, year]);
+    return { total, prevTotal, monthly, slices, settledCount };
+  }, [paidInvoices, priceItems, year]);
 
   // 관리 저작물 수 = works count 합
   const worksCount = useMemo(
@@ -128,7 +116,6 @@ export default function HomePage() {
         />
         <OverviewKpis
           settledCount={home.settledCount}
-          settledRatio={home.settledRatio}
           worksCount={worksCount}
           writersCount={writers.length}
           clientsCount={clients.length}
@@ -138,7 +125,7 @@ export default function HomePage() {
 
       {/* 2) 카테고리 도넛 + 매출 달력 */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.45fr]">
-        <CategoryDonut buckets={home.buckets} />
+        <CategoryDonut slices={home.slices} />
         <RevenueCalendar monthly={home.monthly} />
       </div>
     </div>
