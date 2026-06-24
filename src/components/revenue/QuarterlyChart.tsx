@@ -124,7 +124,7 @@ export function QuarterlyChart({ data, year, selectedQuarter, compare, onSelectQ
                     {prev && (
                       <div
                         {...hoverProps(content, prev.total > 0)}
-                        className="w-1/3 max-w-[44px] rounded-t-md transition-all duration-300"
+                        className="w-1/3 max-w-[44px] rounded-t-md"
                         style={{
                           height: barHeight(prev.total, maxQuarter),
                           background: 'linear-gradient(180deg, var(--chart-bar-compare-from, #8896cc) 0%, var(--chart-bar-compare-to, #4a5474) 100%)',
