@@ -5,10 +5,11 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import type { Invoice } from '@/types/invoice';
-import { calcInvoiceTotals, getInternalItems } from '@/lib/invoice/calculator';
+import { calcInvoiceTotals } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableHeader } from '@/components/ui/SortableHeader';
+import { writerSummary } from '@/lib/invoice/writerSummary';
 
 export default function PayoutsPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -31,18 +32,6 @@ export default function PayoutsPage() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch라 setState는 마이크로태스크에서 실행 (동기 cascading render 아님)
   useEffect(() => { fetchInvoices(); }, [fetchInvoices]);
 
-  // 작업자 요약 (중복 제거, 최대 3명 + 외 N명)
-  const writerSummary = (inv: Invoice): string => {
-    const names = new Set<string>();
-    getInternalItems(inv.items ?? []).forEach((it) => {
-      it.writer_names.split(',').map((n) => n.trim()).filter(Boolean).forEach((n) => names.add(n));
-    });
-    const arr = Array.from(names);
-    if (arr.length === 0) return '-';
-    if (arr.length <= 3) return arr.join(', ');
-    return `${arr.slice(0, 3).join(', ')} 외 ${arr.length - 3}명`;
-  };
-
   // 정렬: 날짜·거래처·거래명·총작가지급액·총귀속금액
   const { sortKey, dir, toggle, sortRows } = useTableSort<Invoice>({
     date: (inv) => inv.invoice_date,
@@ -61,7 +50,7 @@ export default function PayoutsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground mb-2">내부 지급서</h1>
-        <p className="text-muted-foreground text-sm">작가별 지급액과 귀속금액 내역 (내부용)</p>
+        <p className="text-muted-foreground text-sm">작가별 지급액과 회사 수수료 내역 (내부용)</p>
       </div>
 
       <input
@@ -96,7 +85,7 @@ export default function PayoutsPage() {
                   <SortableHeader label="거래명" sortKey="title" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
                   <th className="px-4 py-3 text-left font-bold text-foreground text-xs uppercase">작업자</th>
                   <SortableHeader label="총 작가지급액 (B)" sortKey="writerPay" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
-                  <SortableHeader label="총 귀속금액 (C)" sortKey="attribution" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
+                  <SortableHeader label="총 회사 수수료 (C)" sortKey="attribution" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
                   <th className="px-4 py-3 text-center font-bold text-foreground text-xs uppercase whitespace-nowrap">입금 여부</th>
                 </tr>
               </thead>
@@ -120,7 +109,7 @@ export default function PayoutsPage() {
                         </Link>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground text-xs">
-                        {writerSummary(inv)}
+                        {writerSummary(inv.items ?? [])}
                       </td>
                       <td className="px-4 py-3 text-center text-foreground font-medium tabular-nums whitespace-nowrap">
                         {formatWon(totals.writerPayTotal)}

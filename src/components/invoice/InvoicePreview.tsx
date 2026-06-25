@@ -104,7 +104,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
               <>
                 <th className="px-3 py-2.5 text-center w-24 font-bold">할인금액</th>
                 <th className="px-3 py-2.5 text-center w-28 font-bold">작가 지급액</th>
-                <th className="px-3 py-2.5 text-center w-24 font-bold last:rounded-tr-md">귀속 금액</th>
+                <th className="px-3 py-2.5 text-center w-24 font-bold last:rounded-tr-md">회사 수수료</th>
               </>
             )}
           </tr>
@@ -196,7 +196,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
                 <span className="tabular-nums">{formatWon(totals.writerPayTotal)}</span>
               </div>
               <div className="flex justify-between py-1.5 text-xs text-slate-600 border-b border-gray-200">
-                <span>총 귀속금액 (C)</span>
+                <span>총 회사 수수료 (C)</span>
                 <span className="tabular-nums">{formatWon(totals.attributionTotal)}</span>
               </div>
               <div className="flex justify-between py-2.5 mt-1 px-3 bg-slate-800 text-white rounded-md">
