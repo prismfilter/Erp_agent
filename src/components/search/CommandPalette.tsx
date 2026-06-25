@@ -32,7 +32,7 @@ const SCOPES: Scope[] = [
   { key: 'revenue', label: '매출현황', icon: TrendingUp, href: '/revenue', perm: 'staff' },
   { key: 'invoices', label: '거래처 청구서', icon: FileText, href: '/invoices', perm: 'staff' },
   { key: 'payouts', label: '내부 지급서', icon: Wallet, href: '/payouts', perm: 'staff' },
-  { key: 'royalty', label: '저작권료 정산', icon: Music, href: '/settlement/royalty', perm: 'all' },
+  { key: 'royalty', label: '해외 저작권료 정산', icon: Music, href: '/settlement/royalty', perm: 'all' },
   { key: 'service', label: '용역 정산', icon: Briefcase, href: '/settlement/service', perm: 'all' },
   { key: 'clients', label: '거래처 DB', icon: Building2, href: '/admin/clients', perm: 'staff' },
   { key: 'permWorks', label: '영구 저작물 DB', icon: Disc, href: '/admin/works/permanent', perm: 'staff' },
