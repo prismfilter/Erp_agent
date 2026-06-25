@@ -5,6 +5,7 @@ import {
   calcItemBreakdown,
   calcWriterNet,
   calcFee,
+  feeRateForCategory,
   getExternalItems,
   getInternalItems,
   calcInvoiceTotals,
@@ -59,14 +60,33 @@ describe('라인 단위 계산', () => {
     expect(bd.attribution).toBe(100_000);
   });
 
-  it('calcWriterNet은 지급액에서 수수료를 뺀다 (기본 20%)', () => {
-    expect(calcWriterNet(100_000)).toBe(80_000);
-    expect(calcWriterNet(100_000, 0.3)).toBe(70_000);
+});
+
+describe('프라이스 테이블 수수료/실수령 (카테고리·희망청구가 기준)', () => {
+  it('feeRateForCategory는 밴드 계열만 0.2, 그 외 0.3', () => {
+    expect(feeRateForCategory('밴드')).toBe(0.2);
+    expect(feeRateForCategory('밴드(플레디스)')).toBe(0.2);
+    expect(feeRateForCategory('앨범')).toBe(0.3);
+    expect(feeRateForCategory('방송·공연·시상식')).toBe(0.3);
+    expect(feeRateForCategory('광고')).toBe(0.3);
+    expect(feeRateForCategory('기타')).toBe(0.3);
   });
 
-  it('calcFee는 지급액 × 수수료율을 절사한다', () => {
-    expect(calcFee(100_000)).toBe(20_000);
-    expect(calcFee(12_345)).toBe(2_469); // trunc(2469.0)
+  it('비밴드 30%: 250,000 → 수수료 75,000 / 실수령 175,000', () => {
+    const rate = feeRateForCategory('앨범');
+    expect(calcFee(250_000, rate)).toBe(75_000);
+    expect(calcWriterNet(250_000, rate)).toBe(175_000);
+  });
+
+  it('밴드 20%: 3,500,000 → 수수료 700,000 / 실수령 2,800,000', () => {
+    const rate = feeRateForCategory('밴드');
+    expect(calcFee(3_500_000, rate)).toBe(700_000);
+    expect(calcWriterNet(3_500_000, rate)).toBe(2_800_000);
+  });
+
+  it('절사: trunc로 0 방향 절사 (333,333 × 0.3 = 99,999.9 → 99,999)', () => {
+    expect(calcFee(333_333, 0.3)).toBe(99_999);
+    expect(calcWriterNet(333_333, 0.3)).toBe(233_334);
   });
 });
 

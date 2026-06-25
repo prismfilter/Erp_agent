@@ -8,7 +8,7 @@ import { Trash2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useRowFocus } from '@/hooks/useRowFocus';
 import type { PriceItem } from '@/types/invoice';
-import { calcFee, calcWriterNet } from '@/lib/invoice/calculator';
+import { feeRateForCategory, calcFee, calcWriterNet } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableHeader } from '@/components/ui/SortableHeader';
@@ -79,18 +79,15 @@ export default function PriceTablePage() {
   const [items, setItems] = useState<PriceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showInactive, setShowInactive] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  // 휴지통 보기 / 선택 / 삭제 선택지
+  // 휴지통 보기 / 행 삭제 확인(작가 마스터 패턴)
   const [viewTrash, setViewTrash] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [deleteChoice, setDeleteChoice] = useState(false);
-  // 신규 추가 폼
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  // 신규 추가 폼 (작가지급액 입력 제거)
   const [adding, setAdding] = useState(false);
   const [newCategory, setNewCategory] = useState(CATEGORIES[0]);
   const [newName, setNewName] = useState('');
   const [newBilling, setNewBilling] = useState('');
-  const [newWriterPay, setNewWriterPay] = useState('');
 
   const fetchItems = useCallback(async () => {
     try {
@@ -127,6 +124,14 @@ export default function PriceTablePage() {
     }
   };
 
+  // 추가폼 입력 리셋 (추가 완료/취소 공용)
+  const resetAddForm = () => {
+    setAdding(false);
+    setNewCategory(CATEGORIES[0]);
+    setNewName('');
+    setNewBilling('');
+  };
+
   const handleAdd = async () => {
     if (!newName.trim()) { showToast('작업내역명을 입력하세요'); return; }
     const res = await fetch('/api/price-items', {
@@ -136,12 +141,11 @@ export default function PriceTablePage() {
         category: newCategory,
         name: newName.trim(),
         billing_price: newBilling === '' ? null : Number(newBilling),
-        writer_base_pay: newWriterPay === '' ? null : Number(newWriterPay),
+        // writer_base_pay 미전송 — 실수령은 fee_rate(카테고리) 기준 자동계산
       }),
     });
     if (res.ok) {
-      setAdding(false);
-      setNewName(''); setNewBilling(''); setNewWriterPay('');
+      resetAddForm();
       fetchItems();
       showToast('항목 추가 완료');
     } else {
@@ -149,44 +153,23 @@ export default function PriceTablePage() {
     }
   };
 
-  // ── 선택 토글 ──
-  const toggleOne = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
-
-  const toggleMany = (ids: string[], checked: boolean) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      ids.forEach((id) => (checked ? next.add(id) : next.delete(id)));
-      return next;
-    });
-  };
-
-  const clearSelection = () => { setSelected(new Set()); setDeleteChoice(false); };
-
-  // ── 일괄/단건 작업 ──
-  const runBulk = async (ids: string[], fn: (id: string) => Promise<Response>, doneMsg: string) => {
-    const results = await Promise.all(ids.map(fn));
-    const ok = results.filter((r) => r.ok).length;
-    clearSelection();
+  // ── 단건 작업: 완료 후 목록 새로고침 + 토스트 ──
+  const runOne = async (req: Promise<Response>, doneMsg: string) => {
+    const res = await req;
+    setConfirmingId(null);
     await fetchItems();
-    showToast(`${doneMsg} (${ok}/${ids.length})`);
+    showToast(res.ok ? doneMsg : '작업 실패');
   };
 
-  const moveToTrash = (ids: string[]) =>
-    runBulk(ids, (id) => fetch(`/api/price-items/${id}`, { method: 'DELETE' }), '휴지통으로 이동');
+  const moveToTrash = (id: string) =>
+    runOne(fetch(`/api/price-items/${id}`, { method: 'DELETE' }), '휴지통으로 이동');
 
-  const permanentDelete = (ids: string[]) =>
-    runBulk(ids, (id) => fetch(`/api/price-items/${id}?permanent=1`, { method: 'DELETE' }), '영구 삭제');
+  const permanentDelete = (id: string) =>
+    runOne(fetch(`/api/price-items/${id}?permanent=1`, { method: 'DELETE' }), '영구 삭제');
 
-  const restore = (ids: string[]) =>
-    runBulk(
-      ids,
-      (id) => fetch(`/api/price-items/${id}`, {
+  const restore = (id: string) =>
+    runOne(
+      fetch(`/api/price-items/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deleted_at: null }),
@@ -196,36 +179,32 @@ export default function PriceTablePage() {
 
   const emptyTrash = async () => {
     const res = await fetch('/api/price-items/empty-trash', { method: 'POST' });
-    clearSelection();
+    setConfirmingId(null);
     await fetchItems();
     showToast(res.ok ? '휴지통을 비웠습니다' : '비우기 실패');
   };
 
-  // 정렬: 작업내역·희망청구가·작가지급액·관리수수료·실수령액 (카테고리 그룹 내부 정렬)
+  // 정렬: 작업내역·희망청구가·수수료·실수령액 (카테고리 그룹 내부 정렬)
   const { sortKey, dir, toggle, sortRows } = useTableSort<PriceItem>({
     name: (it) => it.name,
     billing_price: (it) => it.billing_price,
-    writer_base_pay: (it) => it.writer_base_pay,
-    fee: (it) => (it.writer_base_pay != null ? calcFee(it.writer_base_pay, it.fee_rate) : null),
-    net: (it) => (it.writer_base_pay != null ? calcWriterNet(it.writer_base_pay, it.fee_rate) : null),
+    fee: (it) =>
+      it.billing_price != null ? calcFee(it.billing_price, feeRateForCategory(it.category)) : null,
+    net: (it) =>
+      it.billing_price != null ? calcWriterNet(it.billing_price, feeRateForCategory(it.category)) : null,
   }, 'pf_sort_price_table');
 
-  // 카테고리별 그룹핑 + 그룹 내부 정렬
+  // 카테고리별 그룹핑 + 그룹 내부 정렬 (목록/휴지통은 fetch 단계에서 분리됨)
   const grouped = useMemo(() => {
-    const visible = viewTrash
-      ? items
-      : showInactive
-        ? items
-        : items.filter((it) => it.is_active);
     const groups = new Map<string, PriceItem[]>();
-    visible.forEach((it) => {
+    items.forEach((it) => {
       if (!groups.has(it.category)) groups.set(it.category, []);
       groups.get(it.category)!.push(it);
     });
     return Array.from(groups.entries()).map(
       ([cat, arr]) => [cat, sortRows(arr)] as [string, PriceItem[]]
     );
-  }, [items, showInactive, viewTrash, sortRows]);
+  }, [items, sortRows]);
 
   // 검색으로 진입 시 해당 프라이스 항목 행으로 스크롤 + 하이라이트
   useRowFocus(!isLoading && items.length > 0);
@@ -240,22 +219,11 @@ export default function PriceTablePage() {
           <p className="text-muted-foreground text-sm">
             {viewTrash
               ? '삭제된 항목 · 30일 후 자동 영구삭제'
-              : '2025년 개편안 단가 기준 · 수수료는 작가지급액의 20%'}
+              : '2026년 개편안 단가 기준 · 수수료는 희망청구가 기준 · 밴드 20% / 그 외 30%'}
             {!isAdmin && ' · 수정은 관리자만 가능'}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {!viewTrash && (
-            <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showInactive}
-                onChange={(e) => setShowInactive(e.target.checked)}
-                className="accent-[var(--primary)]"
-              />
-              비활성 항목 표시
-            </label>
-          )}
           {isAdmin && !viewTrash && (
             <button
               onClick={() => setAdding((v) => !v)}
@@ -266,7 +234,7 @@ export default function PriceTablePage() {
           )}
           {isAdmin && (
             <button
-              onClick={() => { setViewTrash((v) => !v); clearSelection(); }}
+              onClick={() => { setViewTrash((v) => !v); setConfirmingId(null); }}
               className={`px-4 py-2 text-sm rounded-lg transition font-medium border ${
                 viewTrash
                   ? 'border-primary text-primary hover:bg-primary/10'
@@ -286,63 +254,6 @@ export default function PriceTablePage() {
           )}
         </div>
       </div>
-
-      {/* 선택 액션 바 */}
-      {isAdmin && selected.size > 0 && (
-        <div className="bg-card border border-primary/40 rounded-lg px-4 py-3 flex flex-wrap items-center gap-3">
-          <span className="text-sm font-medium text-foreground">선택 {selected.size}건</span>
-          {viewTrash ? (
-            <>
-              <button
-                onClick={() => restore(Array.from(selected))}
-                className="px-3 py-1.5 text-xs bg-primary/15 text-primary rounded-lg hover:bg-primary/25 transition font-medium"
-              >
-                복구
-              </button>
-              <button
-                onClick={() => permanentDelete(Array.from(selected))}
-                className="px-3 py-1.5 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition font-medium"
-              >
-                영구 삭제
-              </button>
-            </>
-          ) : deleteChoice ? (
-            <>
-              <button
-                onClick={() => moveToTrash(Array.from(selected))}
-                className="px-3 py-1.5 text-xs bg-amber-500/20 text-amber-500 rounded-lg hover:bg-amber-500/30 transition font-medium"
-              >
-                휴지통으로 이동
-              </button>
-              <button
-                onClick={() => permanentDelete(Array.from(selected))}
-                className="px-3 py-1.5 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition font-medium"
-              >
-                영구 삭제
-              </button>
-              <button
-                onClick={() => setDeleteChoice(false)}
-                className="px-3 py-1.5 text-xs bg-gray-500/20 text-gray-400 rounded-lg hover:bg-gray-500/30 transition font-medium"
-              >
-                취소
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setDeleteChoice(true)}
-              className="px-3 py-1.5 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition font-medium"
-            >
-              삭제
-            </button>
-          )}
-          <button
-            onClick={clearSelection}
-            className="ml-auto text-xs text-muted-foreground hover:text-foreground transition"
-          >
-            선택 해제
-          </button>
-        </div>
-      )}
 
       {/* 신규 추가 폼 */}
       {adding && !viewTrash && (
@@ -374,19 +285,17 @@ export default function PriceTablePage() {
               className="w-32 px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
             />
           </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">작가지급액</label>
-            <NumericInput
-              value={newWriterPay === '' ? 0 : Number(newWriterPay)}
-              onChange={(v) => setNewWriterPay(v === 0 ? '' : String(v))}
-              className="w-32 px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
-            />
-          </div>
           <button
             onClick={handleAdd}
-            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
+            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition cursor-pointer"
           >
             추가
+          </button>
+          <button
+            onClick={resetAddForm}
+            className="px-4 py-2 text-sm border border-border text-foreground rounded-lg hover:bg-muted transition cursor-pointer"
+          >
+            취소
           </button>
         </div>
       )}
@@ -409,9 +318,8 @@ export default function PriceTablePage() {
         </div>
       ) : (
         grouped.map(([category, categoryItems]) => {
-          const ids = categoryItems.map((it) => it.id);
-          const allSelected = ids.length > 0 && ids.every((id) => selected.has(id));
-          const someSelected = ids.some((id) => selected.has(id));
+          // 그룹(카테고리) 수수료 라벨: 밴드 계열 20% / 그 외 30%
+          const feeLabel = feeRateForCategory(category) === 0.2 ? '밴드 수수료 (20%)' : '관리 수수료 (30%)';
           return (
           <div key={category} className="bg-card border border-border rounded-lg overflow-hidden w-full max-w-[1060px] mx-auto">
             <div className="px-4 py-3 border-b border-border bg-primary/5">
@@ -421,44 +329,22 @@ export default function PriceTablePage() {
               <table className="w-full text-xs table-fixed min-w-[980px]">
                 <thead className="bg-primary/10 border-b border-border">
                   <tr className="group">
-                    {isAdmin && (
-                      <th className="px-3 py-2 w-10 text-center">
-                        <input
-                          type="checkbox"
-                          checked={allSelected}
-                          onChange={(e) => toggleMany(ids, e.target.checked)}
-                          className={`accent-[var(--primary)] cursor-pointer transition-opacity ${
-                            someSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                          }`}
-                          aria-label={`${category} 전체 선택`}
-                        />
-                      </th>
-                    )}
-                    <SortableHeader label="작업내역" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-3 py-2 w-[320px]" />
-                    <SortableHeader label="희망청구가" sortKey="billing_price" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-32" />
-                    <SortableHeader label="작가지급액 (방어선)" sortKey="writer_base_pay" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-36" />
-                    <SortableHeader label="관리 수수료 (20%)" sortKey="fee" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-36" />
-                    <SortableHeader label="작가 실수령액" sortKey="net" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-32" />
-                    {isAdmin && <th className="px-3 py-2 text-center font-bold text-foreground w-28">{viewTrash ? '액션' : '상태'}</th>}
+                    <SortableHeader label="작업내역" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} className="px-3 py-2 w-[360px]" />
+                    <SortableHeader label="희망청구가" sortKey="billing_price" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-36" />
+                    <SortableHeader label={feeLabel} sortKey="fee" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-40" />
+                    <SortableHeader label="작가 실수령액" sortKey="net" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-3 py-2 w-36" />
+                    {isAdmin && <th className="px-3 py-2 text-center font-bold text-foreground w-28">액션</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {categoryItems.map((it) => (
-                    <tr key={it.id} id={`row-${it.id}`} className={`group hover:bg-primary/5 ${!it.is_active && !viewTrash ? 'opacity-40' : ''} ${selected.has(it.id) ? 'bg-primary/5' : ''}`}>
-                      {isAdmin && (
-                        <td className="px-3 py-2 text-center">
-                          <input
-                            type="checkbox"
-                            checked={selected.has(it.id)}
-                            onChange={() => toggleOne(it.id)}
-                            className={`accent-[var(--primary)] cursor-pointer transition-opacity ${
-                              selected.has(it.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                            }`}
-                            aria-label={`${it.name} 선택`}
-                          />
-                        </td>
-                      )}
-                      <td className="px-3 py-2 text-foreground w-[320px] truncate" title={it.name}>
+                  {categoryItems.map((it) => {
+                    // 수수료/실수령은 희망청구가 × 카테고리 수수료율로 자동계산 (수식형은 '-')
+                    const feeRate = feeRateForCategory(it.category);
+                    const fee = it.billing_price != null ? calcFee(it.billing_price, feeRate) : null;
+                    const net = it.billing_price != null ? calcWriterNet(it.billing_price, feeRate) : null;
+                    return (
+                    <tr key={it.id} id={`row-${it.id}`} className="group hover:bg-primary/5">
+                      <td className="px-3 py-2 text-foreground w-[360px] truncate" title={it.name}>
                         {it.name}
                         {it.is_formula && (
                           <span className="ml-2 text-amber-400 cursor-help" title={it.formula_note ?? '수식형 항목'}>
@@ -477,57 +363,58 @@ export default function PriceTablePage() {
                           />
                         )}
                       </td>
-                      <td className="px-3 py-2 text-center text-foreground whitespace-nowrap">
-                        {it.is_formula ? (
-                          <span className="text-muted-foreground">-</span>
-                        ) : (
-                          <AmountCell
-                            value={it.writer_base_pay}
-                            editable={isAdmin && !viewTrash}
-                            onSave={(v) => patchItem(it.id, { writer_base_pay: v })}
-                          />
-                        )}
-                      </td>
                       <td className="px-3 py-2 text-center text-muted-foreground tabular-nums whitespace-nowrap">
-                        {it.writer_base_pay != null ? formatWon(calcFee(it.writer_base_pay, it.fee_rate)) : '-'}
+                        {fee != null ? formatWon(fee) : '-'}
                       </td>
                       <td className="px-3 py-2 text-center text-green-500 tabular-nums whitespace-nowrap">
-                        {it.writer_base_pay != null ? formatWon(calcWriterNet(it.writer_base_pay, it.fee_rate)) : '-'}
+                        {net != null ? formatWon(net) : '-'}
                       </td>
                       {isAdmin && (
                         <td className="px-3 py-2 text-center">
                           {viewTrash ? (
                             <div className="flex items-center justify-center gap-1">
                               <button
-                                onClick={() => restore([it.id])}
-                                className="px-2 py-1 rounded text-[11px] font-medium bg-primary/15 text-primary hover:bg-primary/25 transition"
+                                onClick={() => restore(it.id)}
+                                className="px-2 py-1 rounded text-[11px] font-medium bg-primary/15 text-primary hover:bg-primary/25 transition cursor-pointer"
                               >
                                 복구
                               </button>
                               <button
-                                onClick={() => permanentDelete([it.id])}
-                                className="px-2 py-1 rounded text-[11px] font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition"
+                                onClick={() => permanentDelete(it.id)}
+                                className="px-2 py-1 rounded text-[11px] font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition cursor-pointer"
                               >
                                 영구삭제
                               </button>
                             </div>
+                          ) : confirmingId === it.id ? (
+                            <div className="flex items-center justify-center gap-1">
+                              <button
+                                onClick={() => moveToTrash(it.id)}
+                                className="px-2 py-1 rounded text-[11px] font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition cursor-pointer"
+                              >
+                                삭제
+                              </button>
+                              <button
+                                onClick={() => setConfirmingId(null)}
+                                className="px-2 py-1 rounded text-[11px] font-medium bg-gray-500/20 text-gray-400 hover:bg-gray-500/30 transition cursor-pointer"
+                              >
+                                취소
+                              </button>
+                            </div>
                           ) : (
                             <button
-                              onClick={() => patchItem(it.id, { is_active: !it.is_active })}
-                              className={`px-2 py-1 rounded text-[11px] font-medium transition whitespace-nowrap ${
-                                it.is_active
-                                  ? 'bg-green-500/20 text-green-400 hover:bg-red-500/20 hover:text-red-400'
-                                  : 'bg-gray-500/20 text-gray-400 hover:bg-green-500/20 hover:text-green-400'
-                              }`}
-                              title={it.is_active ? '클릭하여 비활성화' : '클릭하여 활성화'}
+                              onClick={() => setConfirmingId(it.id)}
+                              className="p-1.5 text-muted-foreground hover:text-red-400 transition rounded hover:bg-red-500/10 cursor-pointer"
+                              title="삭제(휴지통 이동)"
                             >
-                              {it.is_active ? '사용 중' : '비활성'}
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           )}
                         </td>
                       )}
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

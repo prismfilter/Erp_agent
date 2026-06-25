@@ -63,7 +63,7 @@ const NAV_ITEMS: NavItem[] = [
     color: 'text-violet-500',
     section: '인보이스',
     children: [
-      { label: '저작권료 정산', href: '/settlement/royalty' },
+      { label: '해외 저작권료 정산', href: '/settlement/royalty' },
       { label: '용역 정산', href: '/settlement/service' },
     ],
   },

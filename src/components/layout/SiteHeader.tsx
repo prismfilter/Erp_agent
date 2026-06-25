@@ -17,7 +17,7 @@ const PAGE_LABELS: Record<string, string> = {
   '/invoices': '거래처 청구서',
   '/invoices/new': '청구서 작성',
   '/payouts': '내부 지급서',
-  '/settlement/royalty': '저작권료 정산',
+  '/settlement/royalty': '해외 저작권료 정산',
   '/settlement/service': '용역 정산',
   '/staff': '구성원',
   '/writer-portal': '작가 포털',

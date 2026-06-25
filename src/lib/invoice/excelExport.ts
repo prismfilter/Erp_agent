@@ -117,7 +117,7 @@ export async function exportInvoiceExcel(invoice: Invoice): Promise<void> {
       { text: '공급가액', align: 'right' },
       { text: '할인', align: 'right' },
       { text: '작가 지급액', align: 'right' },
-      { text: '귀속 금액', align: 'right' },
+      { text: '회사 수수료', align: 'right' },
     ]);
     r += 1;
     const internalItems = getInternalItems(items);
@@ -138,7 +138,7 @@ export async function exportInvoiceExcel(invoice: Invoice): Promise<void> {
     r += 1;
     totalRow(ws, r, cols, '총 공급가액 (A)', totals.supplyTotal);
     totalRow(ws, r + 1, cols, '총 작가지급액 (B)', totals.writerPayTotal);
-    totalRow(ws, r + 2, cols, '총 귀속금액 (C)', totals.attributionTotal);
+    totalRow(ws, r + 2, cols, '총 회사 수수료 (C)', totals.attributionTotal);
     totalRow(ws, r + 3, cols, '총 합계 (B+C)', totals.grandTotal, true);
     r += 5;
     drawFooter(ws, r, cols, accountLabel);

@@ -379,8 +379,8 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                 <th className="px-2 py-2.5 text-center font-bold text-foreground min-w-[110px]">작업자</th>
                 <th className="px-2 py-2.5 text-center font-bold text-foreground w-32">공급가액</th>
                 <th className="px-2 py-2.5 text-center font-bold text-foreground w-28">할인금액</th>
-                <th className="px-2 py-2.5 text-center font-bold text-foreground w-24">작가수수료(%)</th>
-                <th className="px-2 py-2.5 text-center font-bold text-foreground w-32">귀속금액</th>
+                <th className="px-2 py-2.5 text-center font-bold text-foreground w-24">작가 수수료(%)</th>
+                <th className="px-2 py-2.5 text-center font-bold text-foreground w-32">회사 수수료</th>
                 <th className="px-2 py-2.5 text-center font-bold text-foreground w-32">액션</th>
               </tr>
             </thead>
@@ -506,7 +506,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
             <div className="text-[11px] text-muted-foreground tabular-nums">세액 {formatWon(totals.taxB)}</div>
           </div>
           <div>
-            <div className="text-xs text-muted-foreground mb-1">총 귀속금액 (C = A − B)</div>
+            <div className="text-xs text-muted-foreground mb-1">총 회사 수수료 (C = A − B)</div>
             <div className="font-bold text-foreground tabular-nums">{formatWon(totals.attributionTotal)}</div>
             <div className="text-[11px] text-muted-foreground tabular-nums">세액 {formatWon(totals.taxC)}</div>
           </div>

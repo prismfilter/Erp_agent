@@ -9,6 +9,7 @@ import { calcInvoiceTotals } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableHeader } from '@/components/ui/SortableHeader';
+import { writerSummary } from '@/lib/invoice/writerSummary';
 import {
   InvoiceStatusSelect,
   STATUS_LABEL,
@@ -182,6 +183,7 @@ export default function InvoicesPage() {
                   <SortableHeader label="날짜" sortKey="date" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
                   <SortableHeader label="거래처" sortKey="client" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
                   <SortableHeader label="거래명" sortKey="title" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
+                  <th className="px-4 py-3 text-left font-bold text-foreground text-xs uppercase">작업자</th>
                   <SortableHeader label="총 합계" sortKey="total" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
                   <SortableHeader label="상태" sortKey="status" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
                   <th className="px-4 py-3 text-center font-bold text-foreground text-xs uppercase">액션</th>
@@ -202,6 +204,9 @@ export default function InvoicesPage() {
                         <Link href={`/invoices/${inv.id}`} className="text-foreground hover:text-primary transition">
                           {inv.title}
                         </Link>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground text-xs">
+                        {writerSummary(inv.items ?? [])}
                       </td>
                       <td className="px-4 py-3 text-center text-foreground font-medium tabular-nums whitespace-nowrap">
                         {formatWon(totals.grandTotal)}

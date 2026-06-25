@@ -27,15 +27,22 @@ export function calcItemBreakdown(it: {
   return { netSupply, writerPay, attribution };
 }
 
-// 작가 실수령액 (프라이스 테이블 참고용) = 지급액 − 지급액×수수료율
-export function calcWriterNet(writerPay: number, feeRate: number = 0.2): number {
-  const fee = Math.trunc(writerPay * feeRate);
-  return writerPay - fee;
+// 밴드 계열 카테고리 — 수수료율 20% (그 외 30%). PDF v1 기준.
+const BAND_CATEGORIES = new Set(['밴드', '밴드(플레디스)']);
+
+// 카테고리 → 수수료율. 밴드/밴드(플레디스)=0.2, 그 외=0.3.
+export function feeRateForCategory(category: string): number {
+  return BAND_CATEGORIES.has(category) ? 0.2 : 0.3;
 }
 
-// 관리 수수료 = 작가지급액 × 수수료율
-export function calcFee(writerPay: number, feeRate: number = 0.2): number {
-  return Math.trunc(writerPay * feeRate);
+// 관리/밴드 수수료 = 희망청구가 × 수수료율 (0 방향 절사)
+export function calcFee(billingPrice: number, feeRate: number): number {
+  return Math.trunc(billingPrice * feeRate);
+}
+
+// 작가 실수령액 = 희망청구가 − 수수료
+export function calcWriterNet(billingPrice: number, feeRate: number): number {
+  return billingPrice - calcFee(billingPrice, feeRate);
 }
 
 // 외부(거래처 청구서) 표시 행 필터
