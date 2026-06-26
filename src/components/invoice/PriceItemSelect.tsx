@@ -25,7 +25,7 @@ interface DropdownPos {
 }
 
 const DROPDOWN_WIDTH = 320; // w-80
-const DROPDOWN_MAX_HEIGHT = 320; // max-h-80
+const DROPDOWN_MAX_HEIGHT = 340; // 검색 헤더(~47px) + 스크롤 리스트(max-h-72=288px)
 
 export function PriceItemSelect({ priceItems, selectedId, onSelect, placeholder = '항목 선택' }: PriceItemSelectProps) {
   const [open, setOpen] = useState(false);
@@ -134,10 +134,10 @@ export function PriceItemSelect({ priceItems, selectedId, onSelect, placeholder 
         bottom: pos.openUp ? window.innerHeight - pos.top + 4 : undefined,
         width: pos.width,
       }}
-      className="z-[100] max-h-80 overflow-y-auto bg-card border border-border rounded-lg shadow-xl"
+      className="z-[100] overflow-hidden bg-card border border-border rounded-lg shadow-xl"
     >
-      {/* 검색 입력 */}
-      <div className="sticky top-0 bg-card p-2 border-b border-border">
+      {/* 검색 입력 — 스크롤되지 않는 고정 헤더 */}
+      <div className="bg-card p-2 border-b border-border">
         <input
           ref={inputRef}
           type="text"
@@ -148,47 +148,50 @@ export function PriceItemSelect({ priceItems, selectedId, onSelect, placeholder 
         />
       </div>
 
-      {/* 커스텀(직접 입력) 옵션 */}
-      <button
-        type="button"
-        onClick={() => { onSelect(null); close(); }}
-        className="w-full px-3 py-2 text-xs text-left hover:bg-primary/10 text-muted-foreground italic inline-flex items-center gap-1.5"
-      >
-        <SquarePen className="w-3.5 h-3.5" /> 직접 입력 (커스텀 항목)
-      </button>
+      {/* 스크롤 리스트 — 카테고리 헤더가 이 영역 기준 sticky top-0으로 고정됨 */}
+      <div className="gradient-scroll max-h-72 overflow-y-auto">
+        {/* 커스텀(직접 입력) 옵션 */}
+        <button
+          type="button"
+          onClick={() => { onSelect(null); close(); }}
+          className="w-full px-3 py-2 text-xs text-left hover:bg-primary/10 text-muted-foreground italic inline-flex items-center gap-1.5"
+        >
+          <SquarePen className="w-3.5 h-3.5" /> 직접 입력 (커스텀 항목)
+        </button>
 
-      {grouped.length === 0 ? (
-        <div className="px-3 py-4 text-xs text-muted-foreground text-center">
-          검색 결과가 없습니다.
-        </div>
-      ) : (
-        grouped.map(([category, items]) => (
-          <div key={category}>
-            <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground bg-muted/50 uppercase sticky top-[41px]">
-              {category}
-            </div>
-            {items.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => { onSelect(item); close(); }}
-                className={`w-full px-3 py-2 text-xs text-left hover:bg-primary/10 transition flex justify-between gap-2 ${
-                  item.id === selectedId ? 'bg-primary/15 text-primary' : 'text-foreground'
-                }`}
-              >
-                <span className="truncate">{item.name}</span>
-                <span className="text-muted-foreground flex-shrink-0 tabular-nums">
-                  {item.is_formula
-                    ? '수식'
-                    : item.billing_price != null
-                    ? formatWon(item.billing_price)
-                    : '-'}
-                </span>
-              </button>
-            ))}
+        {grouped.length === 0 ? (
+          <div className="px-3 py-4 text-xs text-muted-foreground text-center">
+            검색 결과가 없습니다.
           </div>
-        ))
-      )}
+        ) : (
+          grouped.map(([category, items]) => (
+            <div key={category}>
+              <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground bg-muted uppercase sticky top-0 z-10">
+                {category}
+              </div>
+              {items.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => { onSelect(item); close(); }}
+                  className={`w-full px-3 py-2 text-xs text-left hover:bg-primary/10 transition flex justify-between gap-2 ${
+                    item.id === selectedId ? 'bg-primary/15 text-primary' : 'text-foreground'
+                  }`}
+                >
+                  <span className="truncate">{item.name}</span>
+                  <span className="text-muted-foreground flex-shrink-0 tabular-nums">
+                    {item.is_formula
+                      ? '수식'
+                      : item.billing_price != null
+                      ? formatWon(item.billing_price)
+                      : '-'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 
@@ -198,7 +201,7 @@ export function PriceItemSelect({ priceItems, selectedId, onSelect, placeholder 
         ref={buttonRef}
         type="button"
         onClick={handleToggle}
-        className="w-full px-2 py-1.5 text-xs text-left bg-background border border-border rounded hover:border-primary/50 transition truncate text-foreground"
+        className="w-full px-2 py-1.5 text-xs text-center bg-background border border-border rounded hover:border-primary/50 transition truncate text-foreground"
         title={selected ? `${selected.category} / ${selected.name}` : undefined}
       >
         {selected ? (

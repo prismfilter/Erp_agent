@@ -27,12 +27,20 @@ export function calcItemBreakdown(it: {
   return { netSupply, writerPay, attribution };
 }
 
-// 밴드 계열 카테고리 — 수수료율 20% (그 외 30%). PDF v1 기준.
-const BAND_CATEGORIES = new Set(['밴드', '밴드(플레디스)']);
+// 밴드 계열 카테고리 판별 — 카테고리명에 '밴드'가 포함되면 밴드(회사 수수료 20%/작가 80%).
+// 부분일치(includes)로 '밴드', '밴드(플레디스)' 등 밴드 계열 전부 포함.
+export function isBandCategory(category: string): boolean {
+  return category.includes('밴드');
+}
 
-// 카테고리 → 수수료율. 밴드/밴드(플레디스)=0.2, 그 외=0.3.
+// 카테고리 → 회사 수수료율. 밴드 계열=0.2, 그 외=0.3.
 export function feeRateForCategory(category: string): number {
-  return BAND_CATEGORIES.has(category) ? 0.2 : 0.3;
+  return isBandCategory(category) ? 0.2 : 0.3;
+}
+
+// 카테고리 → 작가 수수료(%). 밴드 계열=80, 그 외=70 (= 100 − 회사 수수료%).
+export function writerRateForCategory(category: string): number {
+  return isBandCategory(category) ? 80 : 70;
 }
 
 // 관리/밴드 수수료 = 희망청구가 × 수수료율 (0 방향 절사)

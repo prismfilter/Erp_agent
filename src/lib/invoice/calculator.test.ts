@@ -6,6 +6,8 @@ import {
   calcWriterNet,
   calcFee,
   feeRateForCategory,
+  isBandCategory,
+  writerRateForCategory,
   getExternalItems,
   getInternalItems,
   calcInvoiceTotals,
@@ -63,6 +65,13 @@ describe('라인 단위 계산', () => {
 });
 
 describe('프라이스 테이블 수수료/실수령 (카테고리·희망청구가 기준)', () => {
+  it('isBandCategory는 카테고리명에 "밴드" 포함 시 true', () => {
+    expect(isBandCategory('밴드')).toBe(true);
+    expect(isBandCategory('밴드(플레디스)')).toBe(true);
+    expect(isBandCategory('앨범')).toBe(false);
+    expect(isBandCategory('광고')).toBe(false);
+  });
+
   it('feeRateForCategory는 밴드 계열만 0.2, 그 외 0.3', () => {
     expect(feeRateForCategory('밴드')).toBe(0.2);
     expect(feeRateForCategory('밴드(플레디스)')).toBe(0.2);
@@ -70,6 +79,13 @@ describe('프라이스 테이블 수수료/실수령 (카테고리·희망청구
     expect(feeRateForCategory('방송·공연·시상식')).toBe(0.3);
     expect(feeRateForCategory('광고')).toBe(0.3);
     expect(feeRateForCategory('기타')).toBe(0.3);
+  });
+
+  it('writerRateForCategory는 밴드 계열 80, 그 외 70', () => {
+    expect(writerRateForCategory('밴드')).toBe(80);
+    expect(writerRateForCategory('밴드(플레디스)')).toBe(80);
+    expect(writerRateForCategory('앨범')).toBe(70);
+    expect(writerRateForCategory('광고')).toBe(70);
   });
 
   it('비밴드 30%: 250,000 → 수수료 75,000 / 실수령 175,000', () => {
