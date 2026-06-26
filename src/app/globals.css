@@ -194,6 +194,27 @@
 }
 
 /*
+  숫자 입력 네이티브 +/- 스피너 완전 제거
+  — @layer 밖(언레이어드) + !important + display:none 으로 모든 레이어·유틸보다 확실히 우선
+  — 좁은 가운데정렬 칸에서 스피너가 숫자를 가리는 문제 해결. 증감은 NumberInput의 커스텀 버튼으로 대체
+  — .hide-number-spin 은 NumberInput이 입력칸에 직접 부착(이중 안전장치)
+*/
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button,
+.hide-number-spin::-webkit-inner-spin-button,
+.hide-number-spin::-webkit-outer-spin-button {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  display: none !important;
+  margin: 0 !important;
+}
+input[type='number'],
+.hide-number-spin {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+
+/*
   다크 모드 그라데이션 오버라이드
   — @layer 밖에 배치하여 Tailwind 유틸리티보다 높은 cascade 우선순위 확보
   — CSS 변수(단색)로 표현 불가한 gradient를 실제 bg 속성으로 직접 적용

@@ -10,6 +10,7 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { useRowFocus } from '@/hooks/useRowFocus';
 import { nextWriterCode } from '@/lib/writers/writerCode';
 import { WriterTable, WriterTypeSelect, WRITER_TYPES, type WriterType } from '@/components/writers/WriterTable';
+import { NumberInput } from '@/components/ui/NumberInput';
 
 const TERMINATED_TAB = '계약 해지' as const;
 type WriterTab = '전체' | WriterType | typeof TERMINATED_TAB;
@@ -253,37 +254,37 @@ export default function WriterMasterPage() {
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1 text-center">영구 저작물(%)</label>
-            <input
-              type="number"
+            <NumberInput
               min={0}
               max={100}
               value={newPermanent}
-              onChange={(e) => setNewPermanent(e.target.value)}
+              onChange={(v) => setNewPermanent(v)}
               placeholder="미지정"
-              className="w-28 px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
+              className="px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
+              wrapperClassName="w-32"
             />
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1 text-center">일반 저작물(%)</label>
-            <input
-              type="number"
+            <NumberInput
               min={0}
               max={100}
               value={newGeneral}
-              onChange={(e) => setNewGeneral(e.target.value)}
+              onChange={(v) => setNewGeneral(v)}
               placeholder="미지정"
-              className="w-28 px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
+              className="px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
+              wrapperClassName="w-32"
             />
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1 text-center">용역 요율(%)</label>
-            <input
-              type="number"
+            <NumberInput
               min={0}
               max={100}
               value={newFee}
-              onChange={(e) => setNewFee(e.target.value)}
-              className="w-28 px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
+              onChange={(v) => setNewFee(v)}
+              className="px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
+              wrapperClassName="w-32"
             />
           </div>
           <div>
