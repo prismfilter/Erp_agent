@@ -5,9 +5,9 @@
 // clickToEdit=true(수정 모드): 값은 텍스트로 보이고 클릭 시에만 입력칸으로 전환된다.
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { WorkAuthorRole } from '@/types/invoice';
-import { Stepper } from '@/components/ui/NumberInput';
+import { NumberInput } from '@/components/ui/NumberInput';
 import { DatePicker } from '@/components/ui/DatePicker';
 
 // 포지션 옵션 (코드 표기). A=작사 / C=작곡 / AR=편곡
@@ -69,7 +69,7 @@ const INPUT_CLASS =
 const LABEL_CLASS = 'block text-xs text-center text-muted-foreground mb-1';
 // 클릭 전 표시(읽기) 상태 — 텍스트만, hover로 편집 가능함을 암시
 const DISPLAY_CLASS =
-  'flex items-center justify-center w-full min-h-[2.375rem] px-3 py-2 text-sm text-center rounded-lg border border-transparent text-foreground hover:border-border hover:bg-muted/40 transition cursor-text';
+  'flex items-center justify-center w-full min-h-[2.375rem] px-3 py-2 text-sm text-center rounded-lg border border-transparent text-foreground hover:border-border hover:bg-muted/40 transition cursor-pointer';
 
 // 텍스트/숫자 필드 — clickToEdit이면 클릭 시 입력칸으로 전환 (날짜는 커스텀 DatePicker 사용)
 function FormTextField({ clickToEdit, type, value, onChange, placeholder, display }: {
@@ -84,28 +84,24 @@ function FormTextField({ clickToEdit, type, value, onChange, placeholder, displa
   const showInput = !clickToEdit || editing;
   const shown = value ? (display ? display(value) : value) : '';
 
-  // 숫자칸: +/- 버튼(Stepper)을 오른쪽에 항상 고정하고, 왼쪽 영역만 표시↔입력으로 교체.
-  // → 클릭해 수정해도 입력칸이 밀리지 않는다.
+  // 숫자칸: 통합 커스텀 컨트롤(NumberInput). 값 가운데정렬 + 우측 안쪽 +/- 버튼 → 클릭해도 안 밀림.
   if (type === 'number') {
+    if (showInput) {
+      return (
+        <NumberInput
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          autoFocus={editing}
+          onBlur={() => setEditing(false)}
+          className="w-full"
+        />
+      );
+    }
     return (
-      <div className="flex items-stretch gap-1 w-full">
-        {showInput ? (
-          <input
-            type="number"
-            value={value}
-            placeholder={placeholder}
-            autoFocus={editing}
-            onChange={(e) => onChange(e.target.value)}
-            onBlur={() => setEditing(false)}
-            className={`hide-number-spin min-w-0 flex-1 ${INPUT_CLASS}`}
-          />
-        ) : (
-          <button type="button" onClick={() => setEditing(true)} className={`min-w-0 flex-1 ${DISPLAY_CLASS}`}>
-            {shown || <span className="text-muted-foreground">{placeholder ?? '—'}</span>}
-          </button>
-        )}
-        <Stepper value={value} onChange={onChange} />
-      </div>
+      <button type="button" onClick={() => setEditing(true)} className={DISPLAY_CLASS}>
+        {shown || <span className="text-muted-foreground">{placeholder ?? '—'}</span>}
+      </button>
     );
   }
 
@@ -165,11 +161,15 @@ interface WorkFormProps {
   cancelHref: string;
   // 값 텍스트 표시 후 클릭 시 편집(수정 모드). 미지정(등록)은 입력칸 그대로
   clickToEdit?: boolean;
-  // 성공 시 null, 실패 시 에러 메시지 반환. 성공 후 이동은 부모(onSubmit 내부)가 담당.
-  onSubmit: (payload: WorkSubmitPayload) => Promise<string | null>;
+  // ISWC 중복 인라인 확인 시 자기 자신 제외용(수정 페이지의 현재 작품 id)
+  excludeId?: string;
+  // 저장 호출. error=실패(폼 유지), warning=성공이지만 안내(토스트 후 이동), 둘 다 없으면 즉시 성공
+  onSubmit: (payload: WorkSubmitPayload) => Promise<{ error?: string; warning?: string }>;
+  // 성공 후 이동(목록 등) — warning이 있으면 토스트를 잠깐 보여준 뒤 호출
+  onSuccess: () => void;
 }
 
-export function WorkForm({ initial, submitLabel, submittingLabel, cancelHref, clickToEdit, onSubmit }: WorkFormProps) {
+export function WorkForm({ initial, submitLabel, submittingLabel, cancelHref, clickToEdit, excludeId, onSubmit, onSuccess }: WorkFormProps) {
   const [form, setForm] = useState({
     no: initial?.no ?? '',
     komca_code: initial?.komca_code ?? '',
@@ -184,11 +184,37 @@ export function WorkForm({ initial, submitLabel, submittingLabel, cancelHref, cl
     initial?.authors && initial.authors.length > 0 ? initial.authors : [{ ...EMPTY_AUTHOR }]
   );
   const [submitting, setSubmitting] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ msg: string; tone: 'info' | 'error' | 'warning' } | null>(null);
+  // ISWC 중복 인라인 경고(차단 아님). 입력 변화 시 디바운스로 확인
+  const [iswcWarning, setIswcWarning] = useState<string | null>(null);
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2500);
+  useEffect(() => {
+    const iswc = form.iswc.trim();
+    if (!iswc) { setIswcWarning(null); return; }
+    const timer = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({ iswc });
+        if (excludeId) params.set('excludeId', excludeId);
+        const res = await fetch(`/api/works/check-iswc?${params.toString()}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch 콜백
+        setIswcWarning(
+          json.duplicate
+            ? `이미 사용된 ISWC입니다${json.work ? ` (NO.${json.work.no} ${json.work.song_title})` : ''}. 동일 곡 중복 발매면 정상일 수 있습니다.`
+            : null
+        );
+      } catch {
+        // 무시 — 인라인 경고 실패는 치명적이지 않음
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [form.iswc, excludeId]);
+
+  // tone: error=빨강(중복·필수 누락), warning=주황(ISWC 중복 안내), info=기본
+  const showToast = (msg: string, tone: 'info' | 'error' | 'warning' = 'info') => {
+    setToast({ msg, tone });
+    setTimeout(() => setToast(null), tone === 'info' ? 2500 : 3500);
   };
 
   const setField = (key: keyof typeof form, value: string) => setForm((f) => ({ ...f, [key]: value }));
@@ -198,9 +224,9 @@ export function WorkForm({ initial, submitLabel, submittingLabel, cancelHref, cl
   const removeAuthor = (idx: number) => setAuthors((rows) => rows.filter((_, i) => i !== idx));
 
   const handleSubmit = async () => {
-    if (!form.no.trim()) { showToast('NO.를 입력하세요'); return; }
-    if (!form.komca_code.trim()) { showToast('저작물코드를 입력하세요'); return; }
-    if (!form.song_title.trim()) { showToast('곡명을 입력하세요'); return; }
+    if (!form.no.trim()) { showToast('NO.를 입력하세요', 'error'); return; }
+    if (!form.komca_code.trim()) { showToast('저작물코드를 입력하세요', 'error'); return; }
+    if (!form.song_title.trim()) { showToast('곡명을 입력하세요', 'error'); return; }
 
     const toNum = (s: string) => (s.trim() === '' ? null : Number(s));
     const payload: WorkSubmitPayload = {
@@ -225,9 +251,11 @@ export function WorkForm({ initial, submitLabel, submittingLabel, cancelHref, cl
     };
 
     setSubmitting(true);
-    const error = await onSubmit(payload);
-    if (error) { showToast(error); setSubmitting(false); }
-    // 성공 시 부모가 페이지 이동 → 상태 리셋 불필요
+    const { error, warning } = await onSubmit(payload);
+    if (error) { showToast(error, 'error'); setSubmitting(false); return; }
+    // 성공 — warning(예: ISWC 중복)이 있으면 토스트로 안내 후 이동, 없으면 즉시 이동
+    if (warning) { showToast(warning, 'warning'); setTimeout(onSuccess, 2500); }
+    else { onSuccess(); }
   };
 
   return (
@@ -280,6 +308,9 @@ export function WorkForm({ initial, submitLabel, submittingLabel, cancelHref, cl
           <div>
             <label className={LABEL_CLASS}>ISWC</label>
             <FormTextField clickToEdit={clickToEdit} type="text" value={form.iswc} onChange={(v) => setField('iswc', v)} />
+            {iswcWarning && (
+              <p className="mt-1 text-xs text-amber-500 text-center leading-snug">⚠ {iswcWarning}</p>
+            )}
           </div>
           <div>
             <label className={LABEL_CLASS}>아티스트</label>
@@ -359,8 +390,16 @@ export function WorkForm({ initial, submitLabel, submittingLabel, cancelHref, cl
       </div>
 
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-foreground text-background text-sm px-4 py-2 rounded-full shadow-lg z-50 pointer-events-none">
-          {toast}
+        <div
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 text-sm px-4 py-2 rounded-full shadow-lg z-50 pointer-events-none ${
+            toast.tone === 'error'
+              ? 'bg-red-500 text-white'
+              : toast.tone === 'warning'
+                ? 'bg-amber-500 text-white'
+                : 'bg-foreground text-background'
+          }`}
+        >
+          {toast.msg}
         </div>
       )}
     </div>

@@ -30,6 +30,7 @@ export interface Writer {
   recontract_date: string | null; // 전속작가 재계약일 (YYYY-MM-DD), null=미지정
   english_name: string | null;    // 영문명
   stage_name: string | null;      // 활동명
+  stage_name_en: string | null;   // 활동명(영문)
   position: string[];             // 포지션 ['A'|'C'|'AR'], 빈 배열=미정
   original_writer_code: string | null; // 원작자 코드(실제 저작물 작가코드)
   status: string;

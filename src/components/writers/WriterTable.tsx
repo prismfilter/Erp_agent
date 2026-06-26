@@ -158,11 +158,17 @@ export function FeeRateCell({
     }
   };
 
-  if (!editable) return <span className="tabular-nums text-foreground">{value}%</span>;
+  // 용역 요율 0%는 미설정으로 보고 재계약일처럼 '-'(muted)로 표시
+  if (!editable) {
+    return value === 0
+      ? <span className="text-muted-foreground text-xs">-</span>
+      : <span className="tabular-nums text-foreground">{value}%</span>;
+  }
 
   if (isEditing) {
     return (
       <NumberInput
+        size="sm"
         min={0}
         max={100}
         value={draft}
@@ -174,8 +180,7 @@ export function FeeRateCell({
         onBlur={handleSave}
         autoFocus
         disabled={saving}
-        className="px-2 py-1 text-xs text-center bg-background border border-primary rounded outline-none text-foreground tabular-nums"
-        wrapperClassName="w-28"
+        className="w-24 mx-auto"
       />
     );
   }
@@ -183,10 +188,10 @@ export function FeeRateCell({
   return (
     <button
       onClick={() => { setDraft(String(value)); setIsEditing(true); }}
-      className="tabular-nums text-foreground hover:text-primary transition cursor-pointer"
+      className={`w-24 mx-auto min-h-[2rem] flex items-center justify-center text-xs tabular-nums border border-transparent rounded-lg hover:border-border hover:bg-muted/40 transition cursor-pointer ${value === 0 ? 'text-muted-foreground' : 'text-foreground'}`}
       title="클릭하여 수정"
     >
-      {value}%
+      {value === 0 ? '-' : `${value}%`}
     </button>
   );
 }
@@ -218,13 +223,14 @@ export function NullableRateCell({
 
   if (!editable) {
     return value == null
-      ? <span className="text-muted-foreground text-xs">미지정</span>
+      ? <span className="text-muted-foreground text-xs">-</span>
       : <span className="tabular-nums text-foreground">{value}%</span>;
   }
 
   if (isEditing) {
     return (
       <NumberInput
+        size="sm"
         min={0}
         max={100}
         value={draft}
@@ -237,8 +243,7 @@ export function NullableRateCell({
         autoFocus
         disabled={saving}
         placeholder="미지정"
-        className="px-2 py-1 text-xs text-center bg-background border border-primary rounded outline-none text-foreground tabular-nums"
-        wrapperClassName="w-28"
+        className="w-24 mx-auto"
       />
     );
   }
@@ -246,10 +251,10 @@ export function NullableRateCell({
   return (
     <button
       onClick={() => { setDraft(value == null ? '' : String(value)); setIsEditing(true); }}
-      className={`transition cursor-pointer hover:text-primary ${value == null ? 'text-muted-foreground text-xs' : 'tabular-nums text-foreground'}`}
+      className={`w-24 mx-auto min-h-[2rem] flex items-center justify-center border border-transparent rounded-lg hover:border-border hover:bg-muted/40 transition cursor-pointer ${value == null ? 'text-muted-foreground text-xs' : 'tabular-nums text-foreground'}`}
       title="클릭하여 수정 (비우면 미지정)"
     >
-      {value == null ? '미지정' : `${value}%`}
+      {value == null ? '-' : `${value}%`}
     </button>
   );
 }

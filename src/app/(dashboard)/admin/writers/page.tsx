@@ -260,8 +260,7 @@ export default function WriterMasterPage() {
               value={newPermanent}
               onChange={(v) => setNewPermanent(v)}
               placeholder="미지정"
-              className="px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
-              wrapperClassName="w-32"
+              className="w-32 mx-auto"
             />
           </div>
           <div>
@@ -272,8 +271,7 @@ export default function WriterMasterPage() {
               value={newGeneral}
               onChange={(v) => setNewGeneral(v)}
               placeholder="미지정"
-              className="px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
-              wrapperClassName="w-32"
+              className="w-32 mx-auto"
             />
           </div>
           <div>
@@ -283,8 +281,7 @@ export default function WriterMasterPage() {
               max={100}
               value={newFee}
               onChange={(v) => setNewFee(v)}
-              className="px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
-              wrapperClassName="w-32"
+              className="w-32 mx-auto"
             />
           </div>
           <div>

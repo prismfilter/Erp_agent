@@ -1,10 +1,16 @@
 'use client';
 
-// 숫자 입력 — 네이티브 스피너 대신 입력칸 바로 옆(오른쪽)에 커스텀 +/- 버튼(Stepper)을 둔다.
-// 가운데 정렬·좁은 칸에서 네이티브 스피너가 숫자를 가리는 문제를 해결.
-// 네이티브 스피너 자체는 globals.css에서 전역 제거(.hide-number-spin)됨.
+// 숫자 입력 통합 커스텀 컨트롤 — 테두리 하나 안에 [입력칸 + 우측 +/- 버튼].
+// 값은 좌우 대칭 여백(pl/pr)으로 항상 가운데 정렬, 버튼은 오른쪽 안쪽에 절대배치 →
+// 클릭해 수정해도 값이 밀리지 않고, 네이티브 위젯 없이 한 덩어리 커스텀 컨트롤로 보인다.
+// 네이티브 +/- 스피너는 NO_SPINNER(arbitrary 유틸)로 제거.
 
 import { forwardRef } from 'react';
+
+// 네이티브 +/- 스피너 제거용 — Tailwind arbitrary 유틸(컴포넌트 스캔으로 생성되어 dev에서도 확실히 적용).
+// 모든 숫자 입력칸 className에 포함. raw globals CSS는 dev HMR에서 누락될 수 있어 신뢰 불가.
+export const NO_SPINNER =
+  '[&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden [-moz-appearance:textfield]';
 
 // 부동소수 노이즈 제거하며 step만큼 증감 (min/max clamp)
 function nextValue(value: string | number, dir: 1 | -1, step: number, min?: number, max?: number): string {
@@ -16,7 +22,7 @@ function nextValue(value: string | number, dir: 1 | -1, step: number, min?: numb
   return String(v);
 }
 
-// +/- 버튼 컬럼 — 입력칸 오른쪽에 고정 배치(항상 같은 폭). 클릭/수정 모드 모두에서 재사용.
+// 보더리스 +/- 버튼(컨트롤 내부 우측 절대배치용). mousedown preventDefault로 입력 포커스 유지.
 export function Stepper({ value, onChange, step = 1, min, max, disabled }: {
   value: string | number;
   onChange: (value: string) => void;
@@ -25,24 +31,23 @@ export function Stepper({ value, onChange, step = 1, min, max, disabled }: {
   max?: number;
   disabled?: boolean;
 }) {
-  // mousedown preventDefault: 입력 포커스/blur 유지(클릭편집 모드에서 편집이 풀리지 않게)
   const btn =
-    'flex-1 flex items-center justify-center px-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed';
+    'flex items-center justify-center px-0.5 text-muted-foreground hover:text-primary transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed';
   return (
-    <div className="flex flex-col shrink-0 rounded-lg border border-border overflow-hidden">
+    <span className="flex flex-col leading-[0]">
       <button type="button" tabIndex={-1} disabled={disabled} aria-label="증가"
         onMouseDown={(e) => e.preventDefault()} onClick={() => onChange(nextValue(value, 1, step, min, max))} className={btn}>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-          <path d="m18 15-6-6-6 6" />
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m6 15 6-6 6 6" />
         </svg>
       </button>
       <button type="button" tabIndex={-1} disabled={disabled} aria-label="감소"
-        onMouseDown={(e) => e.preventDefault()} onClick={() => onChange(nextValue(value, -1, step, min, max))} className={`${btn} border-t border-border`}>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        onMouseDown={(e) => e.preventDefault()} onClick={() => onChange(nextValue(value, -1, step, min, max))} className={btn}>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
           <path d="m6 9 6 6 6-6" />
         </svg>
       </button>
-    </div>
+    </span>
   );
 }
 
@@ -53,8 +58,8 @@ interface NumberInputProps {
   min?: number;
   max?: number;
   placeholder?: string;
-  className?: string;        // 입력 element 클래스
-  wrapperClassName?: string; // 바깥 래퍼 클래스(폭 지정: 예 w-full / w-32)
+  size?: 'sm' | 'md';      // sm: 표 셀, md(기본): 폼
+  className?: string;      // 래퍼 폭/마진 등 (예: w-full / w-32 mx-auto)
   autoFocus?: boolean;
   disabled?: boolean;
   onBlur?: () => void;
@@ -62,11 +67,12 @@ interface NumberInputProps {
 }
 
 export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(function NumberInput(
-  { value, onChange, step = 1, min, max, placeholder, className = '', wrapperClassName = '', autoFocus, disabled, onBlur, onKeyDown },
+  { value, onChange, step = 1, min, max, placeholder, size = 'md', className = '', autoFocus, disabled, onBlur, onKeyDown },
   ref,
 ) {
+  const sizeCls = size === 'sm' ? 'min-h-[2rem] py-1 text-xs' : 'min-h-[2.375rem] py-2 text-sm';
   return (
-    <div className={`flex items-stretch gap-1 ${wrapperClassName}`}>
+    <div className={`relative flex items-stretch rounded-lg border border-border bg-background focus-within:border-primary transition ${className}`}>
       <input
         ref={ref}
         type="number"
@@ -81,9 +87,12 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(functi
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         onKeyDown={onKeyDown}
-        className={`hide-number-spin min-w-0 flex-1 ${className}`}
+        className={`${NO_SPINNER} w-full bg-transparent border-0 outline-none text-center text-foreground tabular-nums pl-6 pr-6 ${sizeCls}`}
       />
-      <Stepper value={value} onChange={onChange} step={step} min={min} max={max} disabled={disabled} />
+      {/* +/- 버튼: 우측 안쪽 절대배치(값 가운데정렬 유지, 클릭 시 밀림 없음) */}
+      <span className="absolute right-1.5 top-1/2 -translate-y-1/2">
+        <Stepper value={value} onChange={onChange} step={step} min={min} max={max} disabled={disabled} />
+      </span>
     </div>
   );
 });

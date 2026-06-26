@@ -14,6 +14,7 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { useRowFocus } from '@/hooks/useRowFocus';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 import { WorkDetailModal } from '@/components/works/WorkDetailModal';
+import { WriterSidePanel } from '@/components/works/WriterSidePanel';
 
 const PAGE_SIZE = 20;
 
@@ -35,6 +36,8 @@ export default function WorksPage() {
   );
   const [works, setWorks] = useState<Work[]>([]);
   const [total, setTotal] = useState(0);
+  // 작가 선택과 무관한 전체 작품 수 (좌측 패널 전체보기 카운트)
+  const [worksTotal, setWorksTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -52,7 +55,11 @@ export default function WorksPage() {
   const loadWriters = useCallback(async () => {
     try {
       const res = await fetch('/api/works/writers');
-      if (res.ok) setWriters((await res.json()).writers || []);
+      if (res.ok) {
+        const j = await res.json();
+        setWriters(j.writers || []);
+        setWorksTotal(j.total || 0);
+      }
     } catch {
       // 무시 — 표 영역 에러로 충분
     }
@@ -82,6 +89,18 @@ export default function WorksPage() {
   useEffect(() => { loadWriters(); }, [loadWriters]);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch
   useEffect(() => { loadWorks(); }, [loadWorks]);
+
+  // 탭 포커스·visibilitychange 시 최신 데이터 갱신 (작가 마스터/곡 변경 즉시 반영)
+  useEffect(() => {
+    const revalidate = () => { loadWriters(); loadWorks(); };
+    const onVis = () => { if (!document.hidden) revalidate(); };
+    window.addEventListener('focus', revalidate);
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      window.removeEventListener('focus', revalidate);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, [loadWriters, loadWorks]);
 
   // 전체보기 더보기 (다음 20개 append)
   const loadMore = async () => {
@@ -140,28 +159,6 @@ export default function WorksPage() {
 
   // 검색으로 진입 시 해당 저작물 행으로 스크롤 + 하이라이트
   useRowFocus(!isLoading && works.length > 0);
-  const allCount = writers.reduce((s, w) => s + w.count, 0);
-
-  // 작가 패널 항목
-  const renderWriterButton = (label: string, count: number, key: string | null) => {
-    const active = selectedWriter === key;
-    return (
-      <button
-        key={key ?? '__all__'}
-        onClick={() => setSelectedWriter(key)}
-        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
-          active
-            ? 'bg-primary text-primary-foreground font-semibold shadow-sm'
-            : 'text-foreground hover:bg-primary/10'
-        }`}
-      >
-        <span className="truncate">{label}</span>
-        <span className={`ml-2 text-xs tabular-nums ${active ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
-          {count}
-        </span>
-      </button>
-    );
-  };
 
   const TH_CLASS = 'px-3 py-2 text-center';
 
@@ -186,14 +183,13 @@ export default function WorksPage() {
 
       {/* 본문: 좌측 자사작가 목록(sticky) + 우측 표 */}
       <div className="grid grid-cols-[180px_1fr] gap-6 items-start">
-        {/* 좌측 자사작가 패널 — 스크롤 시 따라오는 sticky */}
-        <aside className="sticky top-6 self-start bg-card border border-border rounded-lg p-2 max-h-[calc(100vh-7rem)] overflow-y-auto gradient-scroll transition-all duration-300">
-          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">작가</div>
-          <div className="space-y-1">
-            {renderWriterButton('전체보기', allCount, null)}
-            {writers.map((w) => renderWriterButton(w.writer_name, w.count, w.writer_name))}
-          </div>
-        </aside>
+        {/* 좌측 자사작가 패널 */}
+        <WriterSidePanel
+          writers={writers}
+          total={worksTotal}
+          selected={selectedWriter}
+          onSelect={setSelectedWriter}
+        />
 
         {/* 우측 표 */}
         <div className="min-w-0">

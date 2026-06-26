@@ -88,6 +88,7 @@ export const writerCreateSchema = z.object({
   recontract_date: z.string().nullable().optional(),                // 재계약일(YYYY-MM-DD), null=미지정
   english_name: z.string().trim().nullable().optional(),            // 영문명
   stage_name: z.string().trim().nullable().optional(),              // 예명
+  stage_name_en: z.string().trim().nullable().optional(),           // 활동명(영문)
   position: z.array(WRITER_POSITION).optional(),                   // 포지션(A/C/AR 복수 허용)
   original_writer_code: z.string().trim().nullable().optional(),    // 원본 작가 코드(마이그레이션용)
 });
@@ -103,6 +104,7 @@ export const writerUpdateSchema = z.object({
   status: z.enum(['active', 'terminated']).optional(),
   english_name: z.string().trim().nullable().optional(),
   stage_name: z.string().trim().nullable().optional(),
+  stage_name_en: z.string().trim().nullable().optional(),
   position: z.array(WRITER_POSITION).optional(),
   original_writer_code: z.string().trim().nullable().optional(),
 });
