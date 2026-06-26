@@ -7,7 +7,7 @@
 import { useState, useCallback } from 'react';
 
 interface EditableFieldProps {
-  clientId: string;
+  apiPath: string;
   field: string;
   label: string;
   value: string | null;
@@ -16,7 +16,7 @@ interface EditableFieldProps {
 }
 
 export function EditableField({
-  clientId,
+  apiPath,
   field,
   label,
   value,
@@ -39,7 +39,7 @@ export function EditableField({
     }
     setSaving(true);
     try {
-      const res = await fetch(`/api/clients/${clientId}`, {
+      const res = await fetch(apiPath, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: next }),
@@ -54,7 +54,7 @@ export function EditableField({
     } finally {
       setSaving(false);
     }
-  }, [clientId, field, draft, value, onSaved, saving]);
+  }, [apiPath, field, draft, value, onSaved, saving]);
 
   // 값 복사 — 클립보드에 쓰고 1.2초간 체크 아이콘 피드백
   const handleCopy = useCallback(async () => {

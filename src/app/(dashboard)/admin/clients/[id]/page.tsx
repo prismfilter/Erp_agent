@@ -135,16 +135,16 @@ export default function ClientDetailPage() {
               <span className="font-mono tabular-nums text-foreground">{client.client_code}</span>
             </DetailRow>
             <DetailRow label="거래처명">
-              <EditableField clientId={clientId} field="name" label="거래처명" value={client.name} editable={isAdmin} onSaved={handleSaved} />
+              <EditableField apiPath={`/api/clients/${clientId}`} field="name" label="거래처명" value={client.name} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>
             <DetailRow label="대표자">
-              <EditableField clientId={clientId} field="representative" label="대표자" value={client.representative ?? null} editable={isAdmin} onSaved={handleSaved} />
+              <EditableField apiPath={`/api/clients/${clientId}`} field="representative" label="대표자" value={client.representative ?? null} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>
             <DetailRow label="사업자 등록번호">
-              <EditableField clientId={clientId} field="business_number" label="사업자 등록번호" value={client.business_number ?? null} editable={isAdmin} onSaved={handleSaved} />
+              <EditableField apiPath={`/api/clients/${clientId}`} field="business_number" label="사업자 등록번호" value={client.business_number ?? null} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>
             <DetailRow label="주소">
-              <EditableField clientId={clientId} field="address" label="주소" value={client.address ?? null} editable={isAdmin} onSaved={handleSaved} />
+              <EditableField apiPath={`/api/clients/${clientId}`} field="address" label="주소" value={client.address ?? null} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>
             <DetailRow label="등록일">
               <span className="text-foreground">
@@ -158,16 +158,16 @@ export default function ClientDetailPage() {
         <SectionCard title="담당정보">
           <SectionTableBody>
             <DetailRow label="담당자">
-              <EditableField clientId={clientId} field="manager_name" label="담당자" value={client.manager_name ?? null} editable={isAdmin} onSaved={handleSaved} />
+              <EditableField apiPath={`/api/clients/${clientId}`} field="manager_name" label="담당자" value={client.manager_name ?? null} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>
             <DetailRow label="연락처">
-              <EditableField clientId={clientId} field="contact_phone" label="연락처" value={client.contact_phone ?? null} editable={isAdmin} onSaved={handleSaved} />
+              <EditableField apiPath={`/api/clients/${clientId}`} field="contact_phone" label="연락처" value={client.contact_phone ?? null} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>
             <DetailRow label="이메일">
-              <EditableField clientId={clientId} field="contact_email" label="이메일" value={client.contact_email ?? null} editable={isAdmin} onSaved={handleSaved} />
+              <EditableField apiPath={`/api/clients/${clientId}`} field="contact_email" label="이메일" value={client.contact_email ?? null} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>
             <DetailRow label="부서 / 직함">
-              <EditableField clientId={clientId} field="department_title" label="부서 / 직함" value={client.department_title ?? null} editable={isAdmin} onSaved={handleSaved} />
+              <EditableField apiPath={`/api/clients/${clientId}`} field="department_title" label="부서 / 직함" value={client.department_title ?? null} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>
           </SectionTableBody>
         </SectionCard>
@@ -176,13 +176,13 @@ export default function ClientDetailPage() {
         <SectionCard title="은행정보">
           <SectionTableBody>
             <DetailRow label="은행명">
-              <EditableField clientId={clientId} field="bank_name" label="은행명" value={client.bank_name ?? null} editable={isAdmin} onSaved={handleSaved} />
+              <EditableField apiPath={`/api/clients/${clientId}`} field="bank_name" label="은행명" value={client.bank_name ?? null} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>
             <DetailRow label="계좌번호">
-              <EditableField clientId={clientId} field="account_number" label="계좌번호" value={client.account_number ?? null} editable={isAdmin} onSaved={handleSaved} />
+              <EditableField apiPath={`/api/clients/${clientId}`} field="account_number" label="계좌번호" value={client.account_number ?? null} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>
             <DetailRow label="예금주">
-              <EditableField clientId={clientId} field="account_holder" label="예금주" value={client.account_holder ?? null} editable={isAdmin} onSaved={handleSaved} />
+              <EditableField apiPath={`/api/clients/${clientId}`} field="account_holder" label="예금주" value={client.account_holder ?? null} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>
           </SectionTableBody>
         </SectionCard>
