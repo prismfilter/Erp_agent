@@ -60,6 +60,19 @@ export async function PATCH(
 
     const { authors, ...workFields } = parsed.data;
 
+    // 0) 중복 검사(자기 자신 제외) — 저작물코드는 차단, ISWC는 경고만
+    if (workFields.komca_code) {
+      const { data: dup } = await auth.adminClient
+        .from('works').select('id').eq('komca_code', workFields.komca_code).neq('id', id).limit(1).maybeSingle();
+      if (dup) return NextResponse.json({ error: '이미 존재하는 저작물코드입니다.' }, { status: 409 });
+    }
+    let warning: string | undefined;
+    if (workFields.iswc) {
+      const { data: dup } = await auth.adminClient
+        .from('works').select('id').eq('iswc', workFields.iswc).neq('id', id).limit(1).maybeSingle();
+      if (dup) warning = '이미 사용된 ISWC입니다. 동일 곡 중복 발매면 정상일 수 있습니다.';
+    }
+
     // 1) 작품 필드 수정
     const { error: upErr } = await auth.adminClient
       .from('works')
@@ -67,7 +80,7 @@ export async function PATCH(
       .eq('id', id);
     if (upErr) {
       if (upErr.code === '23505') {
-        return NextResponse.json({ error: '이미 존재하는 NO. 또는 저작물코드입니다.' }, { status: 409 });
+        return NextResponse.json({ error: '이미 존재하는 NO.입니다.' }, { status: 409 });
       }
       return NextResponse.json({ error: upErr.message }, { status: 500 });
     }
@@ -88,7 +101,7 @@ export async function PATCH(
       await auth.adminClient.from('work_authors').delete().in('id', oldIds);
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, warning });
   } catch (err) {
     console.error('저작물 수정 API 오류:', err);
     return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });

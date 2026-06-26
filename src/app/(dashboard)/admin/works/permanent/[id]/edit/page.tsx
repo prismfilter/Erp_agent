@@ -58,21 +58,18 @@ export default function WorkEditPage() {
     };
   }, [id]);
 
-  // 수정(PATCH) — 성공 시 목록으로 이동, 실패 시 에러 메시지 반환
-  const handleUpdate = async (payload: WorkSubmitPayload): Promise<string | null> => {
+  // 수정(PATCH) — 성공 시 {warning?} (ISWC 중복 안내), 실패 시 {error}
+  const handleUpdate = async (payload: WorkSubmitPayload): Promise<{ error?: string; warning?: string }> => {
     try {
       const res = await fetch(`/api/works/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (res.ok) {
-        router.push('/admin/works/permanent');
-        return null;
-      }
-      return (await res.json()).error || '수정 실패';
+      const json = await res.json().catch(() => ({}));
+      return res.ok ? { warning: json.warning } : { error: json.error || '수정 실패' };
     } catch {
-      return '수정 중 오류가 발생했습니다.';
+      return { error: '수정 중 오류가 발생했습니다.' };
     }
   };
 
@@ -119,7 +116,9 @@ export default function WorkEditPage() {
               submittingLabel="수정 중..."
               cancelHref="/admin/works/permanent"
               clickToEdit
+              excludeId={id}
               onSubmit={handleUpdate}
+              onSuccess={() => router.push('/admin/works/permanent')}
             />
           ) : null}
         </div>

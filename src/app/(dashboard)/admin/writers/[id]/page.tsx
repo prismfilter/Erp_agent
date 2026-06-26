@@ -169,6 +169,9 @@ export default function WriterDetailPage() {
             <DetailRow label="활동명">
               <EditableField apiPath={`/api/writers/${id}`} field="stage_name" label="활동명" value={writer.stage_name ?? null} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>
+            <DetailRow label="활동명(EN)">
+              <EditableField apiPath={`/api/writers/${id}`} field="stage_name_en" label="활동명(EN)" value={writer.stage_name_en ?? null} editable={isAdmin} onSaved={handleSaved} />
+            </DetailRow>
             <DetailRow label="원작자 코드">
               <EditableField apiPath={`/api/writers/${id}`} field="original_writer_code" label="원작자 코드" value={writer.original_writer_code ?? null} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>

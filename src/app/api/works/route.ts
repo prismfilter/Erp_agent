@@ -74,6 +74,19 @@ export async function POST(request: NextRequest) {
 
     const { authors, ...workFields } = parsed.data;
 
+    // 0) 중복 검사 — 저작물코드는 차단, ISWC는 경고만(동일 곡 중복 발매 시 ISWC 중복 가능)
+    if (workFields.komca_code) {
+      const { data: dup } = await auth.adminClient
+        .from('works').select('id').eq('komca_code', workFields.komca_code).limit(1).maybeSingle();
+      if (dup) return NextResponse.json({ error: '이미 존재하는 저작물코드입니다.' }, { status: 409 });
+    }
+    let warning: string | undefined;
+    if (workFields.iswc) {
+      const { data: dup } = await auth.adminClient
+        .from('works').select('id').eq('iswc', workFields.iswc).limit(1).maybeSingle();
+      if (dup) warning = '이미 사용된 ISWC입니다. 동일 곡 중복 발매면 정상일 수 있습니다.';
+    }
+
     // 1) 작품 삽입
     const { data: work, error } = await auth.adminClient
       .from('works')
@@ -81,9 +94,9 @@ export async function POST(request: NextRequest) {
       .select('id')
       .single();
     if (error) {
-      // UNIQUE(no) 또는 UNIQUE(komca_code) 위반
+      // UNIQUE(no) 위반 (저작물코드는 위에서 사전 검사)
       if (error.code === '23505') {
-        return NextResponse.json({ error: '이미 존재하는 NO. 또는 저작물코드입니다.' }, { status: 409 });
+        return NextResponse.json({ error: '이미 존재하는 NO.입니다.' }, { status: 409 });
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -98,7 +111,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ id: work.id }, { status: 201 });
+    return NextResponse.json({ id: work.id, warning }, { status: 201 });
   } catch (err) {
     console.error('저작물 등록 API 오류:', err);
     return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });

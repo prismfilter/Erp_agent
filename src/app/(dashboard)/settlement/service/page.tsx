@@ -65,6 +65,7 @@ export default function ServiceSettlementPage() {
       recontract_date: null,
       english_name: null,
       stage_name: null,
+      stage_name_en: null,
       position: [],
       original_writer_code: null,
       status: 'active',
