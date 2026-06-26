@@ -36,8 +36,8 @@ export default function WorksPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  // 우클릭 컨텍스트 메뉴 위치/대상 + 상세보기/삭제 대상
-  const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
+  // 우클릭 컨텍스트 메뉴 위치/대상(어떤 행인지 헤더로 표시) + 상세보기/삭제 대상
+  const [contextMenu, setContextMenu] = useState<{ id: string; no: number; title: string; x: number; y: number } | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -228,8 +228,8 @@ export default function WorksPage() {
                       {/* 곡명·아티스트는 유연 컬럼 — 여분 폭을 흡수 */}
                       <SortableHeader label="곡명" sortKey="song_title" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={TH_CLASS} />
                       <SortableHeader label="아티스트" sortKey="artist" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={TH_CLASS} />
-                      <SortableHeader label="공표일자" sortKey="publish_date" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-28`} />
                       <SortableHeader label="ISWC" sortKey="iswc" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-40`} />
+                      <SortableHeader label="공표일자" sortKey="publish_date" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-28`} />
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -238,14 +238,14 @@ export default function WorksPage() {
                         key={w.id}
                         id={`row-${w.id}`}
                         className="hover:bg-primary/5 text-center text-foreground cursor-context-menu"
-                        onContextMenu={(e) => { e.preventDefault(); setContextMenu({ id: w.id, x: e.clientX, y: e.clientY }); }}
+                        onContextMenu={(e) => { e.preventDefault(); setContextMenu({ id: w.id, no: w.no, title: w.song_title, x: e.clientX, y: e.clientY }); }}
                       >
                         <td className="px-3 py-3 tabular-nums">{w.no}</td>
                         <td className="px-3 py-3 tabular-nums whitespace-nowrap" title={w.komca_code}>{w.komca_code}</td>
                         <td className="px-3 py-3 truncate" title={w.song_title}>{w.song_title}</td>
                         <td className="px-3 py-3 truncate" title={w.artist ?? ''}>{w.artist ?? '-'}</td>
-                        <td className="px-3 py-3 tabular-nums whitespace-nowrap">{formatDate(w.publish_date)}</td>
                         <td className="px-3 py-3 tabular-nums whitespace-nowrap truncate" title={w.iswc ?? ''}>{w.iswc ?? '-'}</td>
+                        <td className="px-3 py-3 tabular-nums whitespace-nowrap">{formatDate(w.publish_date)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -275,6 +275,11 @@ export default function WorksPage() {
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >
+          {/* 어떤 행을 우클릭했는지 표시 */}
+          <div className="px-3 py-2 border-b border-border">
+            <p className="text-xs font-semibold text-foreground">NO. {contextMenu.no}</p>
+            <p className="text-[11px] text-muted-foreground truncate max-w-[180px]" title={contextMenu.title}>{contextMenu.title}</p>
+          </div>
           <button
             onClick={() => { setDetailId(contextMenu.id); setContextMenu(null); }}
             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-primary/10 transition cursor-pointer"
