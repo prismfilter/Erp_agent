@@ -50,13 +50,13 @@ export interface Work {
   created_at: string;
 }
 
-// 작가구분: A=작곡 / C=작사 / AR=편곡
+// 포지션: A=작사 / C=작곡 / AR=편곡
 export type WorkAuthorRole = 'A' | 'C' | 'AR';
 
 // 원작자 (작품당 N건) — 공연권/복제권 보유
 export interface WorkAuthor {
   id: string;
-  role: WorkAuthorRole | null;        // 작가구분
+  role: WorkAuthorRole | null;        // 포지션
   author_code: string | null;        // 원작자코드(KOMCA)
   author_name: string | null;        // 원작자명
   author_name_en: string | null;     // 원작자영문명

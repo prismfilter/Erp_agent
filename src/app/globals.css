@@ -510,10 +510,10 @@
   --rdp-accent-color: #5c6cff;
   --rdp-accent-background-color: color-mix(in oklch, #5c6cff 15%, transparent);
   --rdp-today-color: #8097ff;
-  --rdp-day-width: 2.1rem;
-  --rdp-day-height: 2.1rem;
+  --rdp-day-width: 1.8rem;
+  --rdp-day-height: 1.8rem;
   color: var(--foreground);
-  font-size: 0.8rem;
+  font-size: 0.72rem;
 }
 .rdp-popover .rdp-caption_label,
 .rdp-popover .rdp-weekday {

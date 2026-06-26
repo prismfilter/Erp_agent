@@ -9,11 +9,11 @@ import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import type { WorkAuthorRole } from '@/types/invoice';
 
-// 작가구분 옵션
+// 포지션 옵션 (코드 표기). A=작사 / C=작곡 / AR=편곡
 const ROLE_OPTIONS: { value: WorkAuthorRole; label: string }[] = [
-  { value: 'A', label: '작곡' },
-  { value: 'C', label: '작사' },
-  { value: 'AR', label: '편곡' },
+  { value: 'A', label: 'A' },
+  { value: 'C', label: 'C' },
+  { value: 'AR', label: 'AR' },
 ];
 
 interface AuthorRow {
@@ -175,7 +175,7 @@ export default function WorkNewPage() {
           {authors.map((a, idx) => (
             <div key={idx} className="grid grid-cols-2 md:grid-cols-12 gap-2 items-end border border-border/60 rounded-lg p-3">
               <div className="md:col-span-2">
-                <label className={LABEL_CLASS}>구분</label>
+                <label className={LABEL_CLASS}>포지션</label>
                 <select value={a.role} onChange={(e) => setAuthorField(idx, 'role', e.target.value)} className={INPUT_CLASS}>
                   <option value="">선택…</option>
                   {ROLE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}

@@ -8,7 +8,7 @@ import { nextWriterCode } from '@/lib/writers/writerCode';
 
 // 응답·조회 공통 컬럼(작가 코드 포함)
 const WRITER_SELECT =
-  'id, writer_code, name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, status, created_at';
+  'id, writer_code, name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, english_name, stage_name, position, original_writer_code, status, created_at';
 
 // GET /api/writers — 목록 (ADMIN/STAFF 조회)
 export async function GET() {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     const parsed = parseBody(writerCreateSchema, await request.json());
     if (!parsed.success) return parsed.response;
-    const { name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date } = parsed.data;
+    const { name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, english_name, stage_name, position, original_writer_code } = parsed.data;
 
     // 동시 등록으로 코드가 겹치는 희박한 경우 대비 1회 재시도(UNIQUE 제약이 최종 방어선)
     let lastMessage = '작가 코드 생성에 실패했습니다.';
@@ -61,6 +61,10 @@ export async function POST(request: NextRequest) {
           permanent_rate: permanent_rate ?? null,
           general_rate: general_rate ?? null,
           recontract_date: recontract_date ?? null,
+          english_name: english_name ?? null,
+          stage_name: stage_name ?? null,
+          position: position ?? [],
+          original_writer_code: original_writer_code ?? null,
         })
         .select(WRITER_SELECT)
         .single();

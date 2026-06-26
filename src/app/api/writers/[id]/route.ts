@@ -7,7 +7,34 @@ import { writerUpdateSchema } from '@/lib/validation/schemas';
 import { needsRecode, nextWriterCode } from '@/lib/writers/writerCode';
 
 const WRITER_SELECT =
-  'id, writer_code, name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, status, created_at';
+  'id, writer_code, name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, english_name, stage_name, position, original_writer_code, status, created_at';
+
+// GET /api/writers/[id] — 작가 단건 조회 (STAFF↑)
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const auth = await requireStaff();
+    if (isErrorResponse(auth)) return auth;
+
+    const { id } = await params;
+    const { data, error } = await auth.adminClient
+      .from('writers')
+      .select(WRITER_SELECT)
+      .eq('id', id)
+      .single();
+
+    if (error?.code === 'PGRST116') {
+      return NextResponse.json({ error: '작가를 찾을 수 없습니다.' }, { status: 404 });
+    }
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ writer: data });
+  } catch (err) {
+    console.error('작가 상세 조회 API 오류:', err);
+    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+  }
+}
 
 export async function PATCH(
   request: NextRequest,

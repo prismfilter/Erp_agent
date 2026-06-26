@@ -6,10 +6,10 @@
 import { useEffect, useState } from 'react';
 import type { WorkDetail, WorkAuthorRole } from '@/types/invoice';
 
-// 작가구분 라벨
+// 포지션 코드 → 의미(툴팁용). A=작사 / C=작곡 / AR=편곡
 const ROLE_LABEL: Record<WorkAuthorRole, string> = {
-  A: '작곡',
-  C: '작사',
+  A: '작사',
+  C: '작곡',
   AR: '편곡',
 };
 
@@ -122,7 +122,7 @@ export function WorkDetailModal({ workId, onClose }: WorkDetailModalProps) {
                   <table className="w-full text-xs">
                     <thead className="bg-primary/10 border-b border-border">
                       <tr className="text-center text-muted-foreground">
-                        <th className="px-2 py-2 font-medium">구분</th>
+                        <th className="px-2 py-2 font-medium">포지션</th>
                         <th className="px-2 py-2 font-medium">원작자코드</th>
                         <th className="px-2 py-2 font-medium text-left">원작자명</th>
                         <th className="px-2 py-2 font-medium text-left">영문명</th>
@@ -133,7 +133,7 @@ export function WorkDetailModal({ workId, onClose }: WorkDetailModalProps) {
                     <tbody className="divide-y divide-border">
                       {work.authors.map((a) => (
                         <tr key={a.id} className="text-center text-foreground">
-                          <td className="px-2 py-2 whitespace-nowrap">{a.role ? ROLE_LABEL[a.role] : '-'}</td>
+                          <td className="px-2 py-2 whitespace-nowrap" title={a.role ? ROLE_LABEL[a.role] : ''}>{a.role ?? '-'}</td>
                           <td className="px-2 py-2 tabular-nums whitespace-nowrap">{a.author_code ?? '-'}</td>
                           <td className="px-2 py-2 text-left">{a.author_name ?? '-'}</td>
                           <td className="px-2 py-2 text-left text-muted-foreground">{a.author_name_en ?? '-'}</td>

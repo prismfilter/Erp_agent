@@ -17,14 +17,19 @@ describe('parseCodeNumber', () => {
   });
 });
 
-describe('nextWriterCode', () => {
+describe('nextWriterCode (빈 번호 먼저 채움)', () => {
   it('빈 목록 → 001', () => expect(nextWriterCode([], '전속작가')).toBe('EX-001'));
-  it('해당 prefix 최대+1, 다른 prefix 무시', () => {
-    expect(nextWriterCode(['EX-001', 'EX-003', 'GN-009'], '전속작가')).toBe('EX-004');
-    expect(nextWriterCode(['EX-001', 'GN-002'], '일반작가')).toBe('GN-003');
+  it('연속이면 최대+1, 다른 prefix 무시', () => {
+    expect(nextWriterCode(['EX-001', 'EX-002', 'EX-003', 'GN-009'], '전속작가')).toBe('EX-004');
+    expect(nextWriterCode(['EX-001', 'GN-001', 'GN-002'], '일반작가')).toBe('GN-003');
   });
-  it('번호 재사용 안 함(중간 공백 무시)', () => {
-    expect(nextWriterCode(['EX-001', 'EX-002', 'EX-005'], '전속작가')).toBe('EX-006');
+  it('중간 빈 번호를 먼저 채움', () => {
+    expect(nextWriterCode(['EX-001', 'EX-003', 'GN-009'], '전속작가')).toBe('EX-002');
+    expect(nextWriterCode(['EX-001', 'EX-002', 'EX-005'], '전속작가')).toBe('EX-003');
+  });
+  it('맨 앞 빈 번호(001)를 먼저 채움', () => {
+    expect(nextWriterCode(['EX-002', 'EX-003', 'EX-009'], '전속작가')).toBe('EX-001');
+    expect(nextWriterCode(['GN-002'], '일반작가')).toBe('GN-001');
   });
   it('알 수 없는 구분 → 예외', () => {
     expect(() => nextWriterCode([], '작곡가')).toThrow();

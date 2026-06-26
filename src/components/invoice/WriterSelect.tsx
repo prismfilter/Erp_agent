@@ -10,9 +10,9 @@ import type { Writer } from '@/types/invoice';
 
 interface WriterSelectProps {
   writers: Writer[];
-  value: string;                      // 현재 writer_names
-  onChange: (name: string) => void;   // 자유 입력 커밋
-  onPickWriter: (w: Writer) => void;  // 등록 작가 선택 (이름 + 요율)
+  value: string;                       // 현재 writer_names
+  onChange: (name: string) => void;    // 자유 입력 커밋
+  onPickWriter: (w: Writer) => void;   // 등록 작가 선택 (이름 + 요율)
   placeholder?: string;
 }
 
@@ -23,7 +23,7 @@ interface DropdownPos {
   openUp: boolean; // 아래 공간 부족 시 위로 펼침
 }
 
-const DROPDOWN_WIDTH = 240;
+const DROPDOWN_WIDTH = 200;
 const DROPDOWN_MAX_HEIGHT = 288; // max-h-72
 
 export function WriterSelect({
@@ -124,6 +124,16 @@ export function WriterSelect({
     return writers.filter((w) => w.name.toLowerCase().includes(q));
   }, [writers, draft]);
 
+  // 전속작가 / 일반작가 섹션으로 분리(전속 먼저). 빈 섹션은 제외.
+  const sections = useMemo(() => {
+    const exclusive = matches.filter((w) => w.writer_type === '전속작가');
+    const general = matches.filter((w) => w.writer_type !== '전속작가');
+    return [
+      { type: '전속작가', items: exclusive },
+      { type: '일반작가', items: general },
+    ].filter((s) => s.items.length > 0);
+  }, [matches]);
+
   const dropdown = open && pos && (
     <div
       ref={dropdownRef}
@@ -134,10 +144,10 @@ export function WriterSelect({
         bottom: pos.openUp ? window.innerHeight - pos.top + 4 : undefined,
         width: pos.width,
       }}
-      className="z-[300] max-h-72 overflow-y-auto bg-card border border-border rounded-lg shadow-xl"
+      className="gradient-scroll z-[300] max-h-72 overflow-y-auto rounded-lg shadow-xl border border-border bg-card"
     >
       {/* 자유 입력 겸 검색 */}
-      <div className="sticky top-0 bg-card p-2 border-b border-border">
+      <div className="sticky top-0 p-2 border-b border-border bg-card">
         <input
           ref={inputRef}
           type="text"
@@ -148,7 +158,7 @@ export function WriterSelect({
             if (e.key === 'Escape') cancel();
           }}
           placeholder="작업자명 입력 / 검색"
-          className="w-full px-2 py-1.5 text-xs bg-background border border-border rounded outline-none focus:border-primary text-foreground"
+          className="w-full px-2 py-1.5 text-xs rounded outline-none border border-border bg-background text-foreground focus:border-primary"
         />
       </div>
 
@@ -161,18 +171,26 @@ export function WriterSelect({
           일치하는 작가 없음 · 입력값을 그대로 사용
         </div>
       ) : (
-        matches.map((w) => (
-          <button
-            key={w.id}
-            type="button"
-            onClick={() => pick(w)}
-            className="w-full px-3 py-2 text-xs text-left hover:bg-primary/10 transition flex items-center justify-between gap-2 text-foreground cursor-pointer"
-          >
-            <span className="truncate">{w.name}</span>
-            <span className="flex-shrink-0 text-[10px] text-muted-foreground tabular-nums">
-              {w.writer_type === '전속작가' ? '전속' : '일반'} · {w.fee_rate}%
-            </span>
-          </button>
+        // 전속작가 / 일반작가 섹션별로 구분해 표시
+        sections.map((section) => (
+          <div key={section.type}>
+            <div className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground bg-muted/60 border-y border-border">
+              {section.type}
+            </div>
+            {section.items.map((w) => (
+              <button
+                key={w.id}
+                type="button"
+                onClick={() => pick(w)}
+                className="w-full px-3 py-2 text-xs text-left transition flex items-center justify-between gap-2 cursor-pointer text-foreground hover:bg-primary/10"
+              >
+                <span className="truncate">{w.name}</span>
+                <span className="flex-shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                  {w.fee_rate}%
+                </span>
+              </button>
+            ))}
+          </div>
         ))
       )}
     </div>

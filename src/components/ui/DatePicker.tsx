@@ -43,7 +43,7 @@ function ScrollDropdown(props: DropdownProps) {
         <span className="text-[10px] text-muted-foreground">▾</span>
       </button>
       {open && (
-        <div className="absolute z-[110] mt-1 max-h-44 min-w-[4.5rem] overflow-y-auto bg-card border border-border rounded-lg shadow-xl">
+        <div className="gradient-scroll absolute z-[110] mt-1 max-h-44 min-w-[4.5rem] overflow-y-auto bg-card border border-border rounded-lg shadow-xl">
           {options?.map((o) => (
             <button
               key={o.value}
@@ -67,6 +67,9 @@ interface DatePickerProps {
   value: string; // YYYY-MM-DD
   onChange: (value: string) => void;
   className?: string;
+  maxDate?: string; // YYYY-MM-DD — 이 날짜 이후는 선택 불가(연한색). 미지정 시 제한 없음
+  placeholder?: string; // 값 없을 때 표시 텍스트(기본 '날짜 선택')
+  centerText?: boolean; // 텍스트만 가운데 정렬(아이콘은 우측 고정). 기본 false=좌측
 }
 
 function parseYMD(s: string): Date | undefined {
@@ -83,13 +86,13 @@ function formatYMD(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-function displayLabel(s: string): string {
+function displayLabel(s: string, placeholder: string): string {
   const d = parseYMD(s);
-  if (!d) return '날짜 선택';
+  if (!d) return placeholder;
   return `${d.getFullYear()}. ${String(d.getMonth() + 1).padStart(2, '0')}. ${String(d.getDate()).padStart(2, '0')}.`;
 }
 
-export function DatePicker({ value, onChange, className }: DatePickerProps) {
+export function DatePicker({ value, onChange, className, maxDate, placeholder = '날짜 선택', centerText = false }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -136,12 +139,13 @@ export function DatePicker({ value, onChange, className }: DatePickerProps) {
   }, [open, computePos]);
 
   const selected = parseYMD(value);
+  const max = maxDate ? parseYMD(maxDate) : undefined; // 상한일(이후 비활성)
 
   const popover = open && pos && (
     <div
       ref={popRef}
       style={{ position: 'fixed', left: pos.left, top: pos.top, zIndex: 300 }}
-      className="rdp-popover bg-card border border-border rounded-xl shadow-2xl p-3"
+      className="rdp-popover bg-card border border-border rounded-xl shadow-2xl p-2"
     >
       <DayPicker
         mode="single"
@@ -155,10 +159,11 @@ export function DatePicker({ value, onChange, className }: DatePickerProps) {
         }}
         locale={ko}
         showOutsideDays
-        defaultMonth={selected}
+        defaultMonth={selected ?? max}
         captionLayout="dropdown"
         startMonth={new Date(2020, 0)}
-        endMonth={new Date(2035, 11)}
+        endMonth={max ?? new Date(2035, 11)}
+        disabled={max ? { after: max } : undefined}
         reverseYears
         components={{ Dropdown: ScrollDropdown }}
       />
@@ -171,14 +176,15 @@ export function DatePicker({ value, onChange, className }: DatePickerProps) {
         ref={btnRef}
         type="button"
         onClick={toggle}
-        className={className}
+        className={`${className ?? ''} ${centerText ? 'relative' : ''}`}
       >
-        <span className="tabular-nums">{displayLabel(value)}</span>
+        {/* centerText: 텍스트는 박스 전체 폭 기준 중앙(위 라벨과 정렬), 아이콘은 absolute로 우측 고정(레이아웃에서 제외) */}
+        <span className={`tabular-nums ${centerText ? 'w-full text-center' : ''}`}>{displayLabel(value, placeholder)}</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="15" height="15" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          className="text-muted-foreground flex-shrink-0"
+          className={`text-muted-foreground flex-shrink-0 ${centerText ? 'absolute right-2.5 top-1/2 -translate-y-1/2' : ''}`}
         >
           <rect width="18" height="18" x="3" y="4" rx="2" />
           <path d="M3 10h18M8 2v4M16 2v4" />

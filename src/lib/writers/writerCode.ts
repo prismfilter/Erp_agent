@@ -18,17 +18,20 @@ export function parseCodeNumber(code: string | null | undefined): number | null 
   return match ? Number(match[1]) : null;
 }
 
-// 같은 접두사 중 최대 번호 + 1을 3자리로 부여(번호 재사용 안 함). 빈 목록이면 001.
+// 같은 접두사에서 비어 있는 가장 작은 번호를 3자리로 부여(빈 번호 먼저 채움).
+// 1부터 순회해 사용 중이 아닌 첫 번호를 반환 → 중간/맨 앞 공백을 메우고, 연속이면 자연히 최대+1.
 export function nextWriterCode(existingCodes: string[], writerType: string): string {
   const prefix = codePrefix(writerType);
   if (!prefix) throw new Error(`알 수 없는 작가 구분: ${writerType}`);
-  const maxNum = existingCodes
-    .filter((c) => c.startsWith(`${prefix}-`))
-    .reduce((max, c) => {
-      const n = parseCodeNumber(c);
-      return n != null && n > max ? n : max;
-    }, 0);
-  return `${prefix}-${String(maxNum + 1).padStart(3, '0')}`;
+  const used = new Set(
+    existingCodes
+      .filter((c) => c.startsWith(`${prefix}-`))
+      .map((c) => parseCodeNumber(c))
+      .filter((n): n is number => n != null)
+  );
+  let n = 1;
+  while (used.has(n)) n += 1;
+  return `${prefix}-${String(n).padStart(3, '0')}`;
 }
 
 // 구분 변경 시 코드 재배정이 필요한가(접두사가 달라졌거나 코드가 아직 없으면 true).

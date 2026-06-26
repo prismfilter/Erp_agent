@@ -110,7 +110,7 @@ export const writerUpdateSchema = z.object({
 // ── 저작물 DB (works + 원작자 다건) ───────────────────────────────────────
 // 원작자 1건 입력
 export const workAuthorInputSchema = z.object({
-  role: z.enum(['A', 'C', 'AR']).nullable().optional(),       // A작곡/C작사/AR편곡
+  role: z.enum(['A', 'C', 'AR']).nullable().optional(),       // 포지션 A작사/C작곡/AR편곡
   author_code: z.string().trim().nullable().optional(),       // 원작자코드(KOMCA)
   author_name: z.string().trim().nullable().optional(),       // 원작자명
   author_name_en: z.string().trim().nullable().optional(),    // 원작자영문명

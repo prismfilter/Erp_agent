@@ -1,36 +1,15 @@
-// 용역 정산 — 생성(계산·저장) / 목록 조회
+// 용역 정산 — 계산(비영속)
 // 입금 완료(status='paid')된 청구서 중 paid_at이 선택 기간에 드는 건에서,
-// 선택 작가의 내부 항목 작가지급액을 합산해 정산 레코드를 만든다.
+// 선택 작가의 내부 항목 작가지급액을 합산해 정산서를 계산만 해 반환한다(DB 저장 없음 — 일회성).
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
 import { parseBody } from '@/lib/validation/parse';
 import { serviceSettlementCreateSchema } from '@/lib/validation/schemas';
 import { getInternalItems, calcItemBreakdown } from '@/lib/invoice/calculator';
-import type { Invoice, InvoiceItem, ServiceSettlementDetailItem } from '@/types/invoice';
+import type { Invoice, InvoiceItem, ServiceSettlement, ServiceSettlementDetailItem } from '@/types/invoice';
 
-// GET /api/settlements/service — 목록(최근 생성 순)
-export async function GET() {
-  try {
-    const auth = await requireStaff();
-    if (isErrorResponse(auth)) return auth;
-
-    const { data, error } = await auth.adminClient
-      .from('service_settlements')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ settlements: data });
-  } catch (err) {
-    console.error('용역 정산 목록 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
-  }
-}
-
-// POST /api/settlements/service — 정산 생성
+// POST /api/settlements/service — 정산 계산(저장하지 않고 결과만 반환)
 export async function POST(request: NextRequest) {
   try {
     const auth = await requireStaff();
@@ -91,26 +70,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: settlement, error: insErr } = await auth.adminClient
-      .from('service_settlements')
-      .insert({
-        writer_name,
-        period_start,
-        period_end,
-        total_amount: total,
-        detail,
-        created_by: auth.userId,
-      })
-      .select('*')
-      .single();
+    // 일회성 — DB 저장 없이 계산 결과만 반환(id/created_at은 임시값)
+    const settlement: ServiceSettlement = {
+      id: crypto.randomUUID(),
+      writer_name,
+      period_start,
+      period_end,
+      total_amount: total,
+      detail,
+      created_at: new Date().toISOString(),
+    };
 
-    if (insErr || !settlement) {
-      return NextResponse.json({ error: insErr?.message || '정산 저장 실패' }, { status: 500 });
-    }
-
-    return NextResponse.json({ settlement }, { status: 201 });
+    return NextResponse.json({ settlement });
   } catch (err) {
-    console.error('용역 정산 생성 API 오류:', err);
+    console.error('용역 정산 계산 API 오류:', err);
     return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
   }
 }

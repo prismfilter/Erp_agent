@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
 import type { PriceItem, Client, CompanyAccount, Invoice, InvoiceItem, Writer } from '@/types/invoice';
-import { calcInvoiceTotals, calcItemBreakdown } from '@/lib/invoice/calculator';
+import { calcInvoiceTotals, calcItemBreakdown, isBandCategory } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
 import { PriceItemSelect } from './PriceItemSelect';
 import { WriterSelect } from './WriterSelect';
@@ -141,8 +141,10 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
             price_item_id: p.id,
             item_type: 'normal',
             is_negotiated: false,
-            // 수식형은 금액 자동입력 없음. 공급가액만 자동입력, 작가수수료율은 기존값 유지
+            // 수식형은 금액 자동입력 없음. 공급가액만 자동입력
             supply_amount: p.is_formula ? it.supply_amount : (p.billing_price ?? 0),
+            // 밴드 계열 카테고리는 작가수수료 80% 고정, 그 외는 기존값 유지
+            writer_pay_rate: isBandCategory(p.category) ? 80 : it.writer_pay_rate,
             // 상세내용 자동 생성: {거래명}_{항목명} (이미 입력했으면 유지)
             description: it.description.trim() ? it.description : (title ? `${title}_${p.name}` : p.name),
           };
@@ -150,6 +152,22 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
       );
     },
     [title]
+  );
+
+  // 작업자(작가) 선택 → 이름 + 작가수수료율 설정.
+  // 단, 행의 항목이 밴드 계열 카테고리면 작가수수료 80% 유지(작가 마스터 요율로 덮어쓰지 않음).
+  const handlePickWriter = useCallback(
+    (itemId: string, w: Writer) => {
+      setItems((prev) =>
+        prev.map((it) => {
+          if (it.id !== itemId) return it;
+          const p = priceItems.find((pp) => pp.id === it.price_item_id);
+          const band = !!p && isBandCategory(p.category);
+          return { ...it, writer_names: w.name, writer_pay_rate: band ? 80 : w.fee_rate };
+        })
+      );
+    },
+    [priceItems]
   );
 
   // 공급가액 수정 → 프라이스 기본 단가와 다르면 협의가 플래그
@@ -280,7 +298,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
       {/* 헤더 입력 영역 */}
       <div className="bg-card border border-border rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[max-content_1fr_1.4fr_1.2fr] gap-4 items-start">
         <div>
-          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">날짜 *</label>
+          <label className="block text-xs font-semibold text-muted-foreground mb-1.5 text-center">날짜 *</label>
           <DatePicker
             value={invoiceDate}
             onChange={setInvoiceDate}
@@ -288,7 +306,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
           />
         </div>
         <div className="relative">
-          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">거래처</label>
+          <label className="block text-xs font-semibold text-muted-foreground mb-1.5 text-center">거래처</label>
           <input
             type="text"
             value={clientName}
@@ -299,7 +317,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
             className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
           />
           {showClientSuggest && clientSuggestions.length > 0 && (
-            <div className="absolute z-40 mt-1 w-full bg-card border border-border rounded-lg shadow-xl max-h-48 overflow-y-auto">
+            <div className="gradient-scroll absolute z-40 mt-1 w-full bg-card border border-border rounded-lg shadow-xl max-h-48 overflow-y-auto">
               {clientSuggestions.map((c) => (
                 <button
                   key={c.id}
@@ -314,7 +332,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
           )}
         </div>
         <div>
-          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">거래명 *</label>
+          <label className="block text-xs font-semibold text-muted-foreground mb-1.5 text-center">거래명 *</label>
           <input
             type="text"
             value={title}
@@ -324,7 +342,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
           />
         </div>
         <div className="relative">
-          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">입금계좌</label>
+          <label className="block text-xs font-semibold text-muted-foreground mb-1.5 text-center">입금계좌</label>
           <input
             type="text"
             value={accountText}
@@ -335,7 +353,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
             className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
           />
           {showAccountSuggest && accounts.length > 0 && (
-            <div className="absolute z-40 mt-1 w-full bg-card border border-border rounded-lg shadow-xl max-h-48 overflow-y-auto">
+            <div className="gradient-scroll absolute z-40 mt-1 w-full bg-card border border-border rounded-lg shadow-xl max-h-48 overflow-y-auto">
               {accounts.map((a) => (
                 <button
                   key={a.id}
@@ -437,7 +455,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                         writers={writers}
                         value={it.writer_names}
                         onChange={(name) => updateItem(it.id!, { writer_names: name })}
-                        onPickWriter={(w) => updateItem(it.id!, { writer_names: w.name, writer_pay_rate: w.fee_rate })}
+                        onPickWriter={(w) => handlePickWriter(it.id!, w)}
                       />
                     </td>
                     <td className="px-2 py-2">
