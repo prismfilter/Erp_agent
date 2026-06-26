@@ -28,26 +28,48 @@ export interface Writer {
   permanent_rate: number | null;  // 영구 저작물 요율(%) 0~100, null=미지정
   general_rate: number | null;    // 일반 저작물 요율(%) 0~100, null=미지정
   recontract_date: string | null; // 전속작가 재계약일 (YYYY-MM-DD), null=미지정
+  english_name: string | null;    // 영문명
+  stage_name: string | null;      // 활동명
+  position: string[];             // 포지션 ['A'|'C'|'AR'], 빈 배열=미정
+  original_writer_code: string | null; // 원작자 코드(실제 저작물 작가코드)
   status: string;
   created_at: string;
 }
 
-// 저작물 DB (전속작가 영구 관리 대상 저작물)
-export interface MusicWork {
+// 저작물 DB (출판사 관리 저작물 — 작품 단위, 저작물코드로 유일)
+export interface Work {
   id: string;
-  no: number;                       // 전역 순번 (UNIQUE, 중복 불가)
-  writer_name: string;              // 작가명
-  komca_code: string | null;        // KOMCA 저작물 코드
-  song_title: string;               // 곡명
-  artist: string | null;            // 아티스트
-  domestic_share: number | null;    // 국내 지분(%)
-  overseas_share: number | null;    // 국외 지분(%)
-  rate: number | null;              // 요율
-  recontract_date: string | null;   // 전속작가 재계약일
+  no: number;                       // 순번 (UNIQUE, 중복 불가)
+  komca_code: string;               // KOMCA 저작물 코드 (작품 식별자)
+  song_title: string;               // 저작물명(곡명)
+  song_title_en: string | null;     // 영문저작물명
+  artist: string | null;            // 가수명(아티스트)
+  artist_en: string | null;         // 영문가수명
+  publish_date: string | null;      // 공표일자 (YYYY-MM-DD)
+  iswc: string | null;              // ISWC
   created_at: string;
 }
 
-// 작가별 저작물 건수 (좌측 작가 목록용)
+// 작가구분: A=작곡 / C=작사 / AR=편곡
+export type WorkAuthorRole = 'A' | 'C' | 'AR';
+
+// 원작자 (작품당 N건) — 공연권/복제권 보유
+export interface WorkAuthor {
+  id: string;
+  role: WorkAuthorRole | null;        // 작가구분
+  author_code: string | null;        // 원작자코드(KOMCA)
+  author_name: string | null;        // 원작자명
+  author_name_en: string | null;     // 원작자영문명
+  performance_right: number | null;   // 공연권(%)
+  reproduction_right: number | null;  // 복제권(%)
+}
+
+// 저작물 상세 (작품 + 원작자 목록)
+export interface WorkDetail extends Work {
+  authors: WorkAuthor[];
+}
+
+// 작가별 저작물 건수 (좌측 자사작가 목록용). filter_name = ?writer= 필터 식별자(작가 실명)
 export interface WorkWriterGroup {
   writer_name: string;
   count: number;

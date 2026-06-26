@@ -1,52 +1,48 @@
-// 저작물 DB 수정·삭제 (ADMIN only)
+// 저작물 DB 상세 조회 / 삭제
+// 조회: ADMIN/STAFF · 삭제: ADMIN only (API에서 강제)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
-import { parseBody } from '@/lib/validation/parse';
-import { musicWorkUpdateSchema } from '@/lib/validation/schemas';
 
-const SELECT = 'id, no, writer_name, komca_code, song_title, artist, domestic_share, overseas_share, rate, recontract_date, created_at';
+// 작품 + 원작자 목록(공연권/복제권 포함) 중첩 조회
+const DETAIL_SELECT = `
+  id, no, komca_code, song_title, song_title_en, artist, artist_en, publish_date, iswc, created_at,
+  authors:work_authors (
+    id, role, author_code, author_name, author_name_en, performance_right, reproduction_right
+  )
+`;
 
-// PATCH /api/works/[id] — 인라인 수정
-export async function PATCH(
-  request: NextRequest,
+// GET /api/works/[id] — 상세(작품 + 원작자 목록)
+export async function GET(
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await requireStaff(true);
+    const auth = await requireStaff();
     if (isErrorResponse(auth)) return auth;
 
     const { id } = await params;
-    const parsed = parseBody(musicWorkUpdateSchema, await request.json());
-    if (!parsed.success) return parsed.response;
-
-    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
-    for (const [key, value] of Object.entries(parsed.data)) {
-      if (value !== undefined) updates[key] = value;
-    }
-
     const { data, error } = await auth.adminClient
-      .from('music_works')
-      .update(updates)
+      .from('works')
+      .select(DETAIL_SELECT)
       .eq('id', id)
-      .select(SELECT)
       .single();
 
     if (error) {
-      if (error.code === '23505') {
-        return NextResponse.json({ error: '이미 존재하는 NO입니다.' }, { status: 409 });
+      if (error.code === 'PGRST116') {
+        return NextResponse.json({ error: '저작물을 찾을 수 없습니다.' }, { status: 404 });
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ work: data });
   } catch (err) {
-    console.error('저작물 수정 API 오류:', err);
+    console.error('저작물 상세 API 오류:', err);
     return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
   }
 }
 
-// DELETE /api/works/[id] — 영구 삭제
+// DELETE /api/works/[id] — 영구 삭제 (원작자는 ON DELETE CASCADE)
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -56,7 +52,7 @@ export async function DELETE(
     if (isErrorResponse(auth)) return auth;
 
     const { id } = await params;
-    const { error } = await auth.adminClient.from('music_works').delete().eq('id', id);
+    const { error } = await auth.adminClient.from('works').delete().eq('id', id);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

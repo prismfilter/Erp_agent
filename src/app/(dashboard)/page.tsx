@@ -8,7 +8,6 @@ import type {
   Invoice,
   PriceItem,
   Writer,
-  WorkWriterGroup,
   Client,
   ServiceSettlement,
 } from '@/types/invoice';
@@ -29,7 +28,8 @@ export default function HomePage() {
   const [paidInvoices, setPaidInvoices] = useState<Invoice[]>([]);
   const [priceItems, setPriceItems] = useState<PriceItem[]>([]);
   const [writers, setWriters] = useState<Writer[]>([]);
-  const [workGroups, setWorkGroups] = useState<WorkWriterGroup[]>([]);
+  // 전체 관리 저작물 수(작품 단위). /api/works/writers의 total — 자사작가 참여합과 다름
+  const [worksTotal, setWorksTotal] = useState(0);
   const [clients, setClients] = useState<Client[]>([]);
   const [serviceSettlements, setServiceSettlements] = useState<ServiceSettlement[]>([]);
 
@@ -61,7 +61,7 @@ export default function HomePage() {
         setPaidInvoices(invJson.invoices ?? []);
         setPriceItems(priceJson.priceItems ?? []);
         setWriters(writerJson.writers ?? []);
-        setWorkGroups(worksJson.writers ?? []);
+        setWorksTotal(worksJson.total ?? 0);
         setClients(clientJson.clients ?? []);
         setServiceSettlements(settleJson.settlements ?? []);
       } catch {
@@ -105,11 +105,8 @@ export default function HomePage() {
     };
   }, [paidInvoices, priceItems, serviceSettlements, year]);
 
-  // 관리 저작물 수 = works count 합
-  const worksCount = useMemo(
-    () => workGroups.reduce((s, w) => s + (w.count ?? 0), 0),
-    [workGroups],
-  );
+  // 관리 저작물 수 = 전체 작품 수(중복 제거된 작품 단위)
+  const worksCount = worksTotal;
 
   // 로딩 스피너 (매출현황 패턴 동일)
   if (loading) {
