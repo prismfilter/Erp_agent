@@ -70,6 +70,8 @@ interface DatePickerProps {
   maxDate?: string; // YYYY-MM-DD — 이 날짜 이후는 선택 불가(연한색). 미지정 시 제한 없음
   placeholder?: string; // 값 없을 때 표시 텍스트(기본 '날짜 선택')
   centerText?: boolean; // 텍스트만 가운데 정렬(아이콘은 우측 고정). 기본 false=좌측
+  startYear?: number; // 연도 선택 시작(기본 2020). 과거 날짜(공표일자 등)는 더 이른 연도로
+  openClassName?: string; // 달력이 열렸을 때 트리거에 적용할 스타일(미지정 시 className 유지)
 }
 
 function parseYMD(s: string): Date | undefined {
@@ -92,7 +94,7 @@ function displayLabel(s: string, placeholder: string): string {
   return `${d.getFullYear()}. ${String(d.getMonth() + 1).padStart(2, '0')}. ${String(d.getDate()).padStart(2, '0')}.`;
 }
 
-export function DatePicker({ value, onChange, className, maxDate, placeholder = '날짜 선택', centerText = false }: DatePickerProps) {
+export function DatePicker({ value, onChange, className, maxDate, placeholder = '날짜 선택', centerText = false, startYear = 2020, openClassName }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -161,7 +163,7 @@ export function DatePicker({ value, onChange, className, maxDate, placeholder = 
         showOutsideDays
         defaultMonth={selected ?? max}
         captionLayout="dropdown"
-        startMonth={new Date(2020, 0)}
+        startMonth={new Date(startYear, 0)}
         endMonth={max ?? new Date(2035, 11)}
         disabled={max ? { after: max } : undefined}
         reverseYears
@@ -176,7 +178,7 @@ export function DatePicker({ value, onChange, className, maxDate, placeholder = 
         ref={btnRef}
         type="button"
         onClick={toggle}
-        className={`${className ?? ''} ${centerText ? 'relative' : ''}`}
+        className={`${(open && openClassName ? openClassName : className) ?? ''} ${centerText ? 'relative' : ''}`}
       >
         {/* centerText: 텍스트는 박스 전체 폭 기준 중앙(위 라벨과 정렬), 아이콘은 absolute로 우측 고정(레이아웃에서 제외) */}
         <span className={`tabular-nums ${centerText ? 'w-full text-center' : ''}`}>{displayLabel(value, placeholder)}</span>

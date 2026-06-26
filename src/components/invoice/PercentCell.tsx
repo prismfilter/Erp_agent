@@ -4,6 +4,7 @@
 // 작가수수료율 등 0~100 비율 입력에 재사용.
 
 import { useState, useRef, useEffect } from 'react';
+import { NumberInput } from '@/components/ui/NumberInput';
 
 interface PercentCellProps {
   value: number;
@@ -33,13 +34,12 @@ export function PercentCell({ value, onChange, disabled }: PercentCellProps) {
 
   if (editing) {
     return (
-      <input
+      <NumberInput
         ref={inputRef}
-        type="number"
         min={0}
         max={100}
         value={draft}
-        onChange={(e) => setDraft(e.target.value)}
+        onChange={(v) => setDraft(v)}
         onBlur={commit}
         onKeyDown={(e) => {
           if (e.key === 'Enter') commit();
@@ -48,7 +48,8 @@ export function PercentCell({ value, onChange, disabled }: PercentCellProps) {
             setEditing(false);
           }
         }}
-        className="w-full px-2 py-1.5 text-center bg-background border border-primary rounded outline-none text-foreground tabular-nums"
+        className="px-2 py-1.5 text-center bg-background border border-primary rounded outline-none text-foreground tabular-nums"
+        wrapperClassName="w-full"
       />
     );
   }

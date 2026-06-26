@@ -9,6 +9,7 @@ import { Eye, Pencil } from 'lucide-react';
 import type { Writer } from '@/types/invoice';
 import { WRITER_TYPE_META } from '@/lib/ui/roleMeta';
 import { SortableHeader } from '@/components/ui/SortableHeader';
+import { NumberInput } from '@/components/ui/NumberInput';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -161,12 +162,11 @@ export function FeeRateCell({
 
   if (isEditing) {
     return (
-      <input
-        type="number"
+      <NumberInput
         min={0}
         max={100}
         value={draft}
-        onChange={(e) => setDraft(e.target.value)}
+        onChange={(v) => setDraft(v)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') handleSave();
           if (e.key === 'Escape') { setDraft(String(value)); setIsEditing(false); }
@@ -174,7 +174,8 @@ export function FeeRateCell({
         onBlur={handleSave}
         autoFocus
         disabled={saving}
-        className="w-20 px-2 py-1 text-xs text-center bg-background border border-primary rounded outline-none text-foreground tabular-nums"
+        className="px-2 py-1 text-xs text-center bg-background border border-primary rounded outline-none text-foreground tabular-nums"
+        wrapperClassName="w-28"
       />
     );
   }
@@ -223,12 +224,11 @@ export function NullableRateCell({
 
   if (isEditing) {
     return (
-      <input
-        type="number"
+      <NumberInput
         min={0}
         max={100}
         value={draft}
-        onChange={(e) => setDraft(e.target.value)}
+        onChange={(v) => setDraft(v)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') handleSave();
           if (e.key === 'Escape') { setDraft(value == null ? '' : String(value)); setIsEditing(false); }
@@ -237,7 +237,8 @@ export function NullableRateCell({
         autoFocus
         disabled={saving}
         placeholder="미지정"
-        className="w-20 px-2 py-1 text-xs text-center bg-background border border-primary rounded outline-none text-foreground tabular-nums"
+        className="px-2 py-1 text-xs text-center bg-background border border-primary rounded outline-none text-foreground tabular-nums"
+        wrapperClassName="w-28"
       />
     );
   }
