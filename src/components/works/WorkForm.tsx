@@ -7,7 +7,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import type { WorkAuthorRole } from '@/types/invoice';
-import { NumberInput } from '@/components/ui/NumberInput';
+import { Stepper } from '@/components/ui/NumberInput';
 import { DatePicker } from '@/components/ui/DatePicker';
 
 // 포지션 옵션 (코드 표기). A=작사 / C=작곡 / AR=편곡
@@ -81,21 +81,35 @@ function FormTextField({ clickToEdit, type, value, onChange, placeholder, displa
   display?: (v: string) => string;
 }) {
   const [editing, setEditing] = useState(false);
-  if (!clickToEdit || editing) {
-    // 숫자칸은 네이티브 스피너 대신 옆에 +/- 버튼(NumberInput)
-    if (type === 'number') {
-      return (
-        <NumberInput
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          autoFocus={editing}
-          onBlur={() => setEditing(false)}
-          className={INPUT_CLASS}
-          wrapperClassName="w-full"
-        />
-      );
-    }
+  const showInput = !clickToEdit || editing;
+  const shown = value ? (display ? display(value) : value) : '';
+
+  // 숫자칸: +/- 버튼(Stepper)을 오른쪽에 항상 고정하고, 왼쪽 영역만 표시↔입력으로 교체.
+  // → 클릭해 수정해도 입력칸이 밀리지 않는다.
+  if (type === 'number') {
+    return (
+      <div className="flex items-stretch gap-1 w-full">
+        {showInput ? (
+          <input
+            type="number"
+            value={value}
+            placeholder={placeholder}
+            autoFocus={editing}
+            onChange={(e) => onChange(e.target.value)}
+            onBlur={() => setEditing(false)}
+            className={`hide-number-spin min-w-0 flex-1 ${INPUT_CLASS}`}
+          />
+        ) : (
+          <button type="button" onClick={() => setEditing(true)} className={`min-w-0 flex-1 ${DISPLAY_CLASS}`}>
+            {shown || <span className="text-muted-foreground">{placeholder ?? '—'}</span>}
+          </button>
+        )}
+        <Stepper value={value} onChange={onChange} />
+      </div>
+    );
+  }
+
+  if (showInput) {
     return (
       <input
         type={type}
@@ -108,7 +122,6 @@ function FormTextField({ clickToEdit, type, value, onChange, placeholder, displa
       />
     );
   }
-  const shown = value ? (display ? display(value) : value) : '';
   return (
     <button type="button" onClick={() => setEditing(true)} className={DISPLAY_CLASS}>
       {shown || <span className="text-muted-foreground">{placeholder ?? '—'}</span>}
