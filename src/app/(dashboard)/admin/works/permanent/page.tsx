@@ -1,57 +1,44 @@
 'use client';
 
-// 영구 저작물 DB — 전속작가 영구 관리 대상 저작물 (저작물 DB > 영구)
-// 좌측 작가 목록(이름순, sticky) → 우측 해당 작가 표. 전체보기는 20개씩 더보기.
-// 조회: ADMIN/STAFF · 추가/수정/삭제: ADMIN only (API에서 강제)
+// 영구 저작물 DB — 출판사 관리 저작물(작품 단위, 저작물코드로 유일)
+// 좌측 자사작가 목록(sticky) → 우측 해당 작가가 참여한 작품 표. 전체보기는 20개씩 더보기.
+// 우클릭 → 상세보기(STAFF↑) / 삭제(ADMIN). 신규 등록은 별도 페이지로 진입.
+// 조회: ADMIN/STAFF · 등록/삭제: ADMIN only (API에서 강제)
 
+import Link from 'next/link';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import type { MusicWork, WorkWriterGroup } from '@/types/invoice';
+import type { Work, WorkWriterGroup } from '@/types/invoice';
 import { useTableSort } from '@/hooks/useTableSort';
 import { useRowFocus } from '@/hooks/useRowFocus';
 import { SortableHeader } from '@/components/ui/SortableHeader';
+import { WorkDetailModal } from '@/components/works/WorkDetailModal';
 
 const PAGE_SIZE = 20;
 
-// 요율(소수 분수) → 퍼센트 표기. 0.35 → "35%". 부동소수 노이즈 제거.
-function formatRatePercent(v: number): string {
-  return `${Number((v * 100).toFixed(4))}%`;
+// YYYY-MM-DD → YYYY.MM.DD (없으면 '-')
+function formatDate(d: string | null): string {
+  if (!d) return '-';
+  return d.slice(0, 10).replace(/-/g, '.');
 }
-
-interface AddForm {
-  no: string;
-  writer_name: string;
-  komca_code: string;
-  song_title: string;
-  artist: string;
-  domestic_share: string;
-  overseas_share: string;
-  rate: string;
-}
-
-const EMPTY_FORM: AddForm = {
-  no: '', writer_name: '', komca_code: '', song_title: '', artist: '',
-  domestic_share: '', overseas_share: '', rate: '',
-};
 
 export default function WorksPage() {
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN';
 
   const [writers, setWriters] = useState<WorkWriterGroup[]>([]);
-  // null = 전체보기. 검색으로 진입(?writer=)하면 해당 작가를 선택해 그 작가의 전 행을 로드한다.
+  // null = 전체보기. 검색으로 진입(?writer=)하면 해당 작가를 선택해 그 작가의 작품을 로드한다.
   const [selectedWriter, setSelectedWriter] = useState<string | null>(
     () => (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('writer') : null)
   );
-  const [works, setWorks] = useState<MusicWork[]>([]);
+  const [works, setWorks] = useState<Work[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState<AddForm>(EMPTY_FORM);
-  // 우클릭 삭제 컨텍스트 메뉴 위치/대상 + 삭제 확인 다이얼로그 대상
+  // 우클릭 컨텍스트 메뉴 위치/대상 + 상세보기/삭제 대상
   const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -59,7 +46,7 @@ export default function WorksPage() {
     setTimeout(() => setToast(null), 2000);
   };
 
-  // 좌측 작가 목록
+  // 좌측 자사작가 목록
   const loadWriters = useCallback(async () => {
     try {
       const res = await fetch('/api/works/writers');
@@ -69,7 +56,7 @@ export default function WorksPage() {
     }
   }, []);
 
-  // 표 로딩 (작가 선택 시 전 행 / 전체보기 시 첫 페이지)
+  // 표 로딩 (작가 선택 시 그 작가 작품 전체 / 전체보기 시 첫 페이지)
   const loadWorks = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -107,39 +94,6 @@ export default function WorksPage() {
     }
   };
 
-  // 저작물 추가
-  const handleAdd = async () => {
-    if (!form.no.trim()) { showToast('NO.를 입력하세요'); return; }
-    if (!form.writer_name) { showToast('작가명을 선택하세요'); return; }
-    if (!form.song_title.trim()) { showToast('곡명을 입력하세요'); return; }
-    const toNum = (s: string) => (s.trim() === '' ? null : Number(s));
-    const res = await fetch('/api/works', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        no: Number(form.no),
-        writer_name: form.writer_name,
-        komca_code: form.komca_code.trim() || null,
-        song_title: form.song_title.trim(),
-        artist: form.artist.trim() || null,
-        domestic_share: toNum(form.domestic_share),
-        overseas_share: toNum(form.overseas_share),
-        rate: toNum(form.rate),
-      }),
-    });
-    if (res.ok) {
-      const { warning } = await res.json();
-      setAdding(false);
-      setForm(EMPTY_FORM);
-      await loadWriters();
-      await loadWorks();
-      // 동일 (작가+KOMCA코드) 중복이면 경고 문구, 아니면 일반 완료 안내
-      showToast(warning || '저작물 추가 완료');
-    } else {
-      showToast((await res.json()).error || '추가 실패');
-    }
-  };
-
   // 행 삭제 (우클릭 메뉴 → 확인 다이얼로그 → 실행)
   const performDelete = async (id: string) => {
     setConfirmDeleteId(null);
@@ -171,19 +125,16 @@ export default function WorksPage() {
   }, [contextMenu]);
 
   // 정렬 (로드된 행 대상)
-  const { sortKey, dir, toggle, sortRows } = useTableSort<MusicWork>({
+  const { sortKey, dir, toggle, sortRows } = useTableSort<Work>({
     no: (w) => w.no,
-    writer_name: (w) => w.writer_name,
     komca_code: (w) => w.komca_code,
     song_title: (w) => w.song_title,
     artist: (w) => w.artist,
-    domestic_share: (w) => w.domestic_share,
-    overseas_share: (w) => w.overseas_share,
-    rate: (w) => w.rate,
+    publish_date: (w) => w.publish_date,
+    iswc: (w) => w.iswc,
   }, 'pf_sort_works');
 
   const sorted = useMemo(() => sortRows(works), [works, sortRows]);
-  const showWriterCol = selectedWriter === null; // 전체보기일 때만 작가명 컬럼 노출
 
   // 검색으로 진입 시 해당 저작물 행으로 스크롤 + 하이라이트
   useRowFocus(!isLoading && works.length > 0);
@@ -195,7 +146,7 @@ export default function WorksPage() {
     return (
       <button
         key={key ?? '__all__'}
-        onClick={() => { setSelectedWriter(key); setAdding(false); }}
+        onClick={() => setSelectedWriter(key)}
         className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
           active
             ? 'bg-primary text-primary-foreground font-semibold shadow-sm'
@@ -218,120 +169,23 @@ export default function WorksPage() {
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">영구 저작물 DB</h1>
           <p className="text-muted-foreground text-sm">
-            전속작가 영구 관리 대상 저작물{!isAdmin && ' · 수정은 관리자만 가능'}
+            출판사 관리 저작물{!isAdmin && ' · 수정은 관리자만 가능'}
           </p>
         </div>
         {isAdmin && (
-          <button
-            onClick={() => setAdding((v) => !v)}
+          <Link
+            href="/admin/works/permanent/new"
             className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
           >
             + 저작물 추가
-          </button>
+          </Link>
         )}
       </div>
 
-      {/* 신규 추가 폼 */}
-      {adding && isAdmin && (
-        <div className="bg-card border border-primary/40 rounded-lg p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 items-end">
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">NO.</label>
-            <input
-              type="number"
-              value={form.no}
-              onChange={(e) => setForm((f) => ({ ...f, no: e.target.value }))}
-              placeholder="예: 165"
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">작가명</label>
-            <select
-              value={form.writer_name}
-              onChange={(e) => setForm((f) => ({ ...f, writer_name: e.target.value }))}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
-            >
-              <option value="">선택…</option>
-              {writers.map((w) => (
-                <option key={w.writer_name} value={w.writer_name}>{w.writer_name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">KOMCA 코드</label>
-            <input
-              type="text"
-              value={form.komca_code}
-              onChange={(e) => setForm((f) => ({ ...f, komca_code: e.target.value }))}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">곡명</label>
-            <input
-              type="text"
-              value={form.song_title}
-              onChange={(e) => setForm((f) => ({ ...f, song_title: e.target.value }))}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">아티스트</label>
-            <input
-              type="text"
-              value={form.artist}
-              onChange={(e) => setForm((f) => ({ ...f, artist: e.target.value }))}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">국내 지분(%)</label>
-            <input
-              type="number" step="any"
-              value={form.domestic_share}
-              onChange={(e) => setForm((f) => ({ ...f, domestic_share: e.target.value }))}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">국외 지분(%)</label>
-            <input
-              type="number" step="any"
-              value={form.overseas_share}
-              onChange={(e) => setForm((f) => ({ ...f, overseas_share: e.target.value }))}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">요율</label>
-            <input
-              type="number" step="any"
-              value={form.rate}
-              onChange={(e) => setForm((f) => ({ ...f, rate: e.target.value }))}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
-            />
-          </div>
-          <div className="col-span-2 md:col-span-3 lg:col-span-4 flex justify-end gap-2">
-            <button
-              onClick={() => { setAdding(false); setForm(EMPTY_FORM); }}
-              className="px-4 py-2 text-sm border border-border text-foreground rounded-lg hover:bg-muted transition"
-            >
-              취소
-            </button>
-            <button
-              onClick={handleAdd}
-              className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
-            >
-              추가
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 본문: 좌측 작가 목록(sticky) + 우측 표 */}
+      {/* 본문: 좌측 자사작가 목록(sticky) + 우측 표 */}
       <div className="grid grid-cols-[180px_1fr] gap-6 items-start">
-        {/* 좌측 작가 패널 — 스크롤 시 따라오는 sticky */}
-        <aside className="sticky top-6 self-start bg-card border border-border rounded-lg p-2 max-h-[calc(100vh-7rem)] overflow-y-auto transition-all duration-300">
+        {/* 좌측 자사작가 패널 — 스크롤 시 따라오는 sticky */}
+        <aside className="sticky top-6 self-start bg-card border border-border rounded-lg p-2 max-h-[calc(100vh-7rem)] overflow-y-auto gradient-scroll transition-all duration-300">
           <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">작가</div>
           <div className="space-y-1">
             {renderWriterButton('전체보기', allCount, null)}
@@ -366,20 +220,16 @@ export default function WorksPage() {
                 </span>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-xs table-fixed min-w-[720px]">
+                <table className="w-full text-xs table-fixed min-w-[760px]">
                   <thead className="bg-primary/10 border-b border-border">
                     <tr>
                       <SortableHeader label="NO." sortKey="no" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-14`} />
-                      {showWriterCol && (
-                        <SortableHeader label="작가명" sortKey="writer_name" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-20`} />
-                      )}
                       <SortableHeader label="KOMCA 코드" sortKey="komca_code" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-36`} />
-                      {/* 곡명·아티스트는 유연 컬럼(고정 width 제거) — 여분 폭을 흡수해 우측 컬럼이 벌어지지 않게 함 */}
+                      {/* 곡명·아티스트는 유연 컬럼 — 여분 폭을 흡수 */}
                       <SortableHeader label="곡명" sortKey="song_title" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={TH_CLASS} />
                       <SortableHeader label="아티스트" sortKey="artist" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={TH_CLASS} />
-                      <SortableHeader label="국내지분" sortKey="domestic_share" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-20`} />
-                      <SortableHeader label="국외지분" sortKey="overseas_share" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-20`} />
-                      <SortableHeader label="요율" sortKey="rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-16`} />
+                      <SortableHeader label="공표일자" sortKey="publish_date" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-28`} />
+                      <SortableHeader label="ISWC" sortKey="iswc" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className={`${TH_CLASS} w-40`} />
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -387,28 +237,15 @@ export default function WorksPage() {
                       <tr
                         key={w.id}
                         id={`row-${w.id}`}
-                        className="hover:bg-primary/5 text-center text-foreground"
-                        onContextMenu={isAdmin ? (e) => { e.preventDefault(); setContextMenu({ id: w.id, x: e.clientX, y: e.clientY }); } : undefined}
+                        className="hover:bg-primary/5 text-center text-foreground cursor-context-menu"
+                        onContextMenu={(e) => { e.preventDefault(); setContextMenu({ id: w.id, x: e.clientX, y: e.clientY }); }}
                       >
-                        {/* 고유 정보 7개(NO.·KOMCA·곡명·아티스트·지분·요율)는 표시 전용 — 추가 시에만 입력 */}
                         <td className="px-3 py-3 tabular-nums">{w.no}</td>
-                        {showWriterCol && (
-                          <td className="px-3 py-3 truncate" title={w.writer_name}>{w.writer_name}</td>
-                        )}
-                        <td className="px-3 py-3 tabular-nums whitespace-nowrap" title={w.komca_code ?? ''}>
-                          {w.komca_code ?? '-'}
-                        </td>
+                        <td className="px-3 py-3 tabular-nums whitespace-nowrap" title={w.komca_code}>{w.komca_code}</td>
                         <td className="px-3 py-3 truncate" title={w.song_title}>{w.song_title}</td>
                         <td className="px-3 py-3 truncate" title={w.artist ?? ''}>{w.artist ?? '-'}</td>
-                        <td className="px-3 py-3 tabular-nums">
-                          {w.domestic_share != null ? `${w.domestic_share}%` : '-'}
-                        </td>
-                        <td className="px-3 py-3 tabular-nums">
-                          {w.overseas_share != null ? `${w.overseas_share}%` : '-'}
-                        </td>
-                        <td className="px-3 py-3 tabular-nums">
-                          {w.rate != null ? formatRatePercent(w.rate) : '-'}
-                        </td>
+                        <td className="px-3 py-3 tabular-nums whitespace-nowrap">{formatDate(w.publish_date)}</td>
+                        <td className="px-3 py-3 tabular-nums whitespace-nowrap truncate" title={w.iswc ?? ''}>{w.iswc ?? '-'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -420,7 +257,7 @@ export default function WorksPage() {
                 <div className="p-4 border-t border-border text-center">
                   <button
                     onClick={loadMore}
-                    className="px-5 py-2 text-sm border border-border text-foreground rounded-lg hover:bg-muted transition font-medium"
+                    className="px-5 py-2 text-sm border border-border text-foreground rounded-lg hover:bg-muted transition font-medium cursor-pointer"
                   >
                     더보기 ({works.length} / {total})
                   </button>
@@ -431,24 +268,38 @@ export default function WorksPage() {
         </div>
       </div>
 
-      {/* 우클릭 컨텍스트 메뉴 — 삭제 (ADMIN) */}
+      {/* 우클릭 컨텍스트 메뉴 — 상세보기(전체) / 삭제(ADMIN) */}
       {contextMenu && (
         <div
-          className="fixed z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[128px]"
+          className="fixed z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[140px]"
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >
           <button
-            onClick={() => { setConfirmDeleteId(contextMenu.id); setContextMenu(null); }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition cursor-pointer"
+            onClick={() => { setDetailId(contextMenu.id); setContextMenu(null); }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-primary/10 transition cursor-pointer"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" />
             </svg>
-            삭제
+            상세보기
           </button>
+          {isAdmin && (
+            <button
+              onClick={() => { setConfirmDeleteId(contextMenu.id); setContextMenu(null); }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+              </svg>
+              삭제
+            </button>
+          )}
         </div>
       )}
+
+      {/* 상세보기 모달 */}
+      {detailId && <WorkDetailModal workId={detailId} onClose={() => setDetailId(null)} />}
 
       {/* 삭제 확인 다이얼로그 */}
       {confirmDeleteId && (

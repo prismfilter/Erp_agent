@@ -1,8 +1,6 @@
 // 커맨드 팔레트 검색 — 순수 로직(정규화 매칭·상한)과 스코프 데이터 소스 정의.
 // DOM·React 비의존 → vitest(node)로 단위테스트. CommandPalette는 cmdk shouldFilter=false에서 이 필터를 직접 사용.
 
-import { formatWon } from '@/lib/settlement/calculator';
-
 // 빠른 액션 = 스코프. key로 데이터 소스를 분기한다.
 export type ScopeKey =
   | 'home' | 'revenue' | 'invoices' | 'payouts' | 'royalty' | 'service'
@@ -25,10 +23,9 @@ export interface ScopeSource {
 
 // 원본 API 응답(필요 필드만)
 interface InvoiceLite { id: string; title: string; client?: { name?: string | null } | null }
-interface SettlementLite { id: string; writer_name: string; period_start: string; period_end: string; total_amount: number }
 interface WriterLite { id: string; name: string; writer_type: string }
 interface MemberLite { user_id: string; name: string | null; role: string }
-interface WorkLite { id: string; no: number; writer_name: string; song_title: string; komca_code: string | null; artist: string | null }
+interface WorkLite { id: string; no: number; song_title: string; song_title_en: string | null; komca_code: string | null; artist: string | null; artist_en: string | null }
 interface PriceLite { id: string; category: string; name: string }
 interface ClientLite { id: string; name: string; is_active: boolean }
 
@@ -67,14 +64,6 @@ export const SCOPE_SOURCES: Partial<Record<ScopeKey, ScopeSource>> = {
       href: `/invoices/${i.id}?tab=internal`, searchText: `${i.title} ${i.client?.name ?? ''}`,
     })),
   },
-  service: {
-    url: '/api/settlements/service', jsonKey: 'settlements',
-    toItems: (rows) => (rows as SettlementLite[]).map((s) => ({
-      id: `set-${s.id}`, primary: s.writer_name,
-      secondary: `${s.period_start}~${s.period_end} · ${formatWon(s.total_amount)}`,
-      href: `/settlement/service/${s.id}`, searchText: s.writer_name,
-    })),
-  },
   writers: {
     url: '/api/writers', jsonKey: 'writers',
     toItems: (rows) => (rows as WriterLite[]).map((w) => ({
@@ -93,9 +82,9 @@ export const SCOPE_SOURCES: Partial<Record<ScopeKey, ScopeSource>> = {
     url: '/api/works?limit=100', jsonKey: 'works',
     toItems: (rows) => (rows as WorkLite[]).map((w) => ({
       id: `wk-${w.id}`, primary: w.song_title,
-      secondary: `${w.writer_name}${w.artist ? ` · ${w.artist}` : ''}`,
-      href: `/admin/works/permanent?writer=${encodeURIComponent(w.writer_name)}&focus=${w.id}`,
-      searchText: `${w.song_title} ${w.writer_name} ${w.komca_code ?? ''} ${w.artist ?? ''}`,
+      secondary: `${w.komca_code ?? ''}${w.artist ? ` · ${w.artist}` : ''}`,
+      href: `/admin/works/permanent?focus=${w.id}`,
+      searchText: `${w.song_title} ${w.song_title_en ?? ''} ${w.komca_code ?? ''} ${w.artist ?? ''} ${w.artist_en ?? ''}`,
     })),
   },
   clients: {

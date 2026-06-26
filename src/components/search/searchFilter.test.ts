@@ -35,16 +35,12 @@ describe('SCOPE_SOURCES href에 포커스 파라미터 포함', () => {
     expect(items[0].href).toBe('/admin/writers?focus=w1');
     expect(items[0].primary).toBe('박서준');
   });
-  it('permWorks → ?writer=&focus=', () => {
+  it('permWorks → ?focus=', () => {
     const items = SCOPE_SOURCES.permWorks!.toItems([
-      { id: 'k1', no: 1, writer_name: '김용후', song_title: 'X', komca_code: null, artist: null },
+      { id: 'k1', no: 1, song_title: 'X', song_title_en: 'X-EN', komca_code: '100000000001', artist: '가수', artist_en: 'GASU' },
     ]);
-    expect(items[0].href).toBe(`/admin/works/permanent?writer=${encodeURIComponent('김용후')}&focus=k1`);
-  });
-  it('service(상세 이동)는 focus 없이 상세 경로', () => {
-    const items = SCOPE_SOURCES.service!.toItems([
-      { id: 's1', writer_name: '이교창', period_start: '2026-06-01', period_end: '2026-06-30', total_amount: 1000 },
-    ]);
-    expect(items[0].href).toBe('/settlement/service/s1');
+    expect(items[0].href).toBe('/admin/works/permanent?focus=k1');
+    expect(items[0].primary).toBe('X');
+    expect(items[0].secondary).toBe('100000000001 · 가수');
   });
 });

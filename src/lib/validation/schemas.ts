@@ -76,6 +76,8 @@ export const priceItemUpdateSchema = z.object({
 
 // ── 작가 마스터 ───────────────────────────────────────────────────────────
 const WRITER_TYPE = z.enum(['전속작가', '일반작가']);
+// 포지션 코드: A=작사, C=작곡, AR=편곡
+const WRITER_POSITION = z.enum(['A', 'C', 'AR']);
 
 export const writerCreateSchema = z.object({
   name: z.string().trim().min(1, '작가명은 필수입니다.'),
@@ -84,6 +86,10 @@ export const writerCreateSchema = z.object({
   permanent_rate: z.number().min(0).max(100).nullable().optional(), // 영구 저작물 요율(%), null=미지정
   general_rate: z.number().min(0).max(100).nullable().optional(),   // 일반 저작물 요율(%), null=미지정
   recontract_date: z.string().nullable().optional(),                // 재계약일(YYYY-MM-DD), null=미지정
+  english_name: z.string().trim().nullable().optional(),            // 영문명
+  stage_name: z.string().trim().nullable().optional(),              // 예명
+  position: z.array(WRITER_POSITION).optional(),                   // 포지션(A/C/AR 복수 허용)
+  original_writer_code: z.string().trim().nullable().optional(),    // 원본 작가 코드(마이그레이션용)
 });
 
 export const writerUpdateSchema = z.object({
@@ -95,31 +101,34 @@ export const writerUpdateSchema = z.object({
   recontract_date: z.string().nullable().optional(),
   // 계약 상태(활성화/해지). writer_code는 직접 수정 불가하므로 스키마에 포함하지 않는다.
   status: z.enum(['active', 'terminated']).optional(),
+  english_name: z.string().trim().nullable().optional(),
+  stage_name: z.string().trim().nullable().optional(),
+  position: z.array(WRITER_POSITION).optional(),
+  original_writer_code: z.string().trim().nullable().optional(),
 });
 
-// ── 저작물 DB ─────────────────────────────────────────────────────────────
-export const musicWorkCreateSchema = z.object({
+// ── 저작물 DB (works + 원작자 다건) ───────────────────────────────────────
+// 원작자 1건 입력
+export const workAuthorInputSchema = z.object({
+  role: z.enum(['A', 'C', 'AR']).nullable().optional(),       // A작곡/C작사/AR편곡
+  author_code: z.string().trim().nullable().optional(),       // 원작자코드(KOMCA)
+  author_name: z.string().trim().nullable().optional(),       // 원작자명
+  author_name_en: z.string().trim().nullable().optional(),    // 원작자영문명
+  performance_right: z.number().nullable().optional(),        // 공연권(%)
+  reproduction_right: z.number().nullable().optional(),       // 복제권(%)
+});
+
+// 저작물 신규 등록 (작품 + 원작자 목록)
+export const workCreateSchema = z.object({
   no: z.number().int().positive('NO.는 1 이상의 정수여야 합니다.'),
-  writer_name: z.string().trim().min(1, '작가명은 필수입니다.'),
-  komca_code: z.string().trim().nullable().optional(),
+  komca_code: z.string().trim().min(1, '저작물코드는 필수입니다.'),
   song_title: z.string().trim().min(1, '곡명은 필수입니다.'),
+  song_title_en: z.string().trim().nullable().optional(),
   artist: z.string().trim().nullable().optional(),
-  domestic_share: z.number().nullable().optional(),
-  overseas_share: z.number().nullable().optional(),
-  rate: z.number().nullable().optional(),
-  recontract_date: z.string().nullable().optional(),
-});
-
-export const musicWorkUpdateSchema = z.object({
-  no: z.number().int().positive().optional(),
-  writer_name: z.string().trim().min(1).optional(),
-  komca_code: z.string().trim().nullable().optional(),
-  song_title: z.string().trim().min(1).optional(),
-  artist: z.string().trim().nullable().optional(),
-  domestic_share: z.number().nullable().optional(),
-  overseas_share: z.number().nullable().optional(),
-  rate: z.number().nullable().optional(),
-  recontract_date: z.string().nullable().optional(),
+  artist_en: z.string().trim().nullable().optional(),
+  publish_date: z.string().trim().nullable().optional(),      // YYYY-MM-DD
+  iswc: z.string().trim().nullable().optional(),
+  authors: z.array(workAuthorInputSchema).default([]),
 });
 
 // ── 용역 정산 ─────────────────────────────────────────────────────────────
