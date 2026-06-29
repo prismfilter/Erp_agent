@@ -5,14 +5,13 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { SquarePen } from 'lucide-react';
 import type { PriceItem } from '@/types/invoice';
 import { formatWon } from '@/lib/settlement/calculator';
 
 interface PriceItemSelectProps {
   priceItems: PriceItem[];
   selectedId: string | null;
-  onSelect: (item: PriceItem | null) => void;
+  onSelect: (item: PriceItem) => void;
   placeholder?: string;
 }
 
@@ -150,15 +149,6 @@ export function PriceItemSelect({ priceItems, selectedId, onSelect, placeholder 
 
       {/* 스크롤 리스트 — 카테고리 헤더가 이 영역 기준 sticky top-0으로 고정됨 */}
       <div className="gradient-scroll max-h-72 overflow-y-auto">
-        {/* 커스텀(직접 입력) 옵션 */}
-        <button
-          type="button"
-          onClick={() => { onSelect(null); close(); }}
-          className="w-full px-3 py-2 text-xs text-left hover:bg-primary/10 text-muted-foreground italic inline-flex items-center gap-1.5"
-        >
-          <SquarePen className="w-3.5 h-3.5" /> 직접 입력 (커스텀 항목)
-        </button>
-
         {grouped.length === 0 ? (
           <div className="px-3 py-4 text-xs text-muted-foreground text-center">
             검색 결과가 없습니다.

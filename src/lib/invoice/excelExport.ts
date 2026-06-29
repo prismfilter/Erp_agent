@@ -71,7 +71,7 @@ export async function exportInvoiceExcel(invoice: Invoice): Promise<void> {
     tableHead(ws, r, [
       { text: 'No.' },
       { text: '작업자' },
-      { text: '상세내용', align: 'left' },
+      { text: '작업내용', align: 'left' },
       { text: '공급가액', align: 'right' },
       { text: '세 액', align: 'right' },
     ]);
@@ -113,7 +113,7 @@ export async function exportInvoiceExcel(invoice: Invoice): Promise<void> {
     tableHead(ws, r, [
       { text: 'No.' },
       { text: '작업자' },
-      { text: '상세내용', align: 'left' },
+      { text: '작업내용', align: 'left' },
       { text: '공급가액', align: 'right' },
       { text: '할인', align: 'right' },
       { text: '작가 지급액', align: 'right' },

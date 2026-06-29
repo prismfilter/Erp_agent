@@ -128,14 +128,10 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
 
   // 프라이스 항목 선택 → 자동 입력
   const handlePriceSelect = useCallback(
-    (itemId: string, p: PriceItem | null) => {
+    (itemId: string, p: PriceItem) => {
       setItems((prev) =>
         prev.map((it) => {
           if (it.id !== itemId) return it;
-          if (!p) {
-            // 커스텀 전환
-            return { ...it, price_item_id: null, item_type: it.item_type === 'discount' ? 'discount' : 'custom', is_negotiated: false };
-          }
           return {
             ...it,
             price_item_id: p.id,
@@ -145,13 +141,13 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
             supply_amount: p.is_formula ? it.supply_amount : (p.billing_price ?? 0),
             // 밴드 계열 카테고리는 작가수수료 80% 고정, 그 외는 기존값 유지
             writer_pay_rate: isBandCategory(p.category) ? 80 : it.writer_pay_rate,
-            // 상세내용 자동 생성: {거래명}_{항목명} (이미 입력했으면 유지)
-            description: it.description.trim() ? it.description : (title ? `${title}_${p.name}` : p.name),
+            // 작업내용 = [섹션] 항목명 (항목 재선택 시에도 항상 동기화)
+            description: `[${p.category}] ${p.name}`,
           };
         })
       );
     },
-    [title]
+    []
   );
 
   // 작업자(작가) 선택 → 이름 + 작가수수료율 설정.
@@ -240,6 +236,16 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
   const handleSave = async () => {
     if (!title.trim()) { setError('거래명을 입력하세요.'); return; }
     if (!invoiceDate) { setError('날짜를 선택하세요.'); return; }
+    // 항목 미선택이면서 작업내용도 비어 있는 '빈 신규 행'만 차단.
+    // 기존 커스텀 항목(price_item_id 없음 + 작업내용 있음)은 수정 저장 허용.
+    const missing = items.some(
+      (it) =>
+        !it.group_key &&
+        it.item_type !== 'discount' &&
+        !it.price_item_id &&
+        !it.description.trim()
+    );
+    if (missing) { setError('작업내용(항목)을 선택하지 않은 행이 있습니다.'); return; }
 
     setSaving(true);
     setError(null);
@@ -294,7 +300,7 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* 헤더 입력 영역 */}
       <div className="bg-card border border-border rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[max-content_1fr_1.4fr_1.2fr] gap-4 items-start">
         <div>
@@ -392,9 +398,8 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
             <thead className="bg-primary/10 border-b border-border">
               <tr>
                 <th className="px-2 py-2.5 text-center font-bold text-foreground w-10">No</th>
-                <th className="px-2 py-2.5 text-center font-bold text-foreground min-w-[180px]">항목</th>
-                <th className="px-2 py-2.5 text-center font-bold text-foreground min-w-[220px]">상세내용</th>
                 <th className="px-2 py-2.5 text-center font-bold text-foreground min-w-[110px]">작업자</th>
+                <th className="px-2 py-2.5 text-center font-bold text-foreground min-w-[240px]">작업내용</th>
                 <th className="px-2 py-2.5 text-center font-bold text-foreground w-32">공급가액</th>
                 <th className="px-2 py-2.5 text-center font-bold text-foreground w-28">할인금액</th>
                 <th className="px-2 py-2.5 text-center font-bold text-foreground w-24">작가 수수료(%)</th>
@@ -417,10 +422,20 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                       {isChild ? <span className="text-primary">└</span> : it.no}
                     </td>
                     <td className="px-2 py-2">
+                      <WriterSelect
+                        writers={writers}
+                        value={it.writer_names}
+                        onChange={(name) => updateItem(it.id!, { writer_names: name })}
+                        onPickWriter={(w) => handlePickWriter(it.id!, w)}
+                      />
+                    </td>
+                    <td className="px-2 py-2">
                       {isDiscount ? (
                         <span className="block text-center text-red-400 text-xs font-medium">할인 행</span>
                       ) : isChild ? (
-                        <span className="block text-center text-muted-foreground italic text-[11px]">내부 분리 행</span>
+                        <span className="block text-center text-muted-foreground italic text-[11px]">
+                          {it.description || '내부 분리 행'}
+                        </span>
                       ) : (
                         <div className="flex items-center gap-1">
                           <div className="flex-1">
@@ -440,23 +455,6 @@ export function InvoiceForm({ invoice }: InvoiceFormProps) {
                           )}
                         </div>
                       )}
-                    </td>
-                    <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={it.description}
-                        onChange={(e) => updateItem(it.id!, { description: e.target.value })}
-                        placeholder="상세내용"
-                        className="w-full px-2 py-1.5 text-center bg-background border border-border rounded outline-none focus:border-primary text-foreground"
-                      />
-                    </td>
-                    <td className="px-2 py-2">
-                      <WriterSelect
-                        writers={writers}
-                        value={it.writer_names}
-                        onChange={(name) => updateItem(it.id!, { writer_names: name })}
-                        onPickWriter={(w) => handlePickWriter(it.id!, w)}
-                      />
                     </td>
                     <td className="px-2 py-2">
                       <div className="relative">

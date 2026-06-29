@@ -13,6 +13,7 @@ import { formatWon } from '@/lib/settlement/calculator';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 import { NumericInput } from '@/components/ui/NumericInput';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 const CATEGORIES = ['앨범', '방송·공연·시상식', '광고', '기타', '밴드(플레디스)', '밴드'];
 
@@ -211,49 +212,49 @@ export default function PriceTablePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            용역 단가{viewTrash && ' · 휴지통'}
-          </h1>
-          <p className="text-muted-foreground text-sm">
+      <PageHeader
+        title={`용역 단가${viewTrash ? ' · 휴지통' : ''}`}
+        description={
+          <>
             {viewTrash
               ? '삭제된 항목 · 30일 후 자동 영구삭제'
               : '2026년 개편안 단가 기준 · 수수료는 희망청구가 기준 · 밴드 20% / 그 외 30%'}
             {!isAdmin && ' · 수정은 관리자만 가능'}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {isAdmin && !viewTrash && (
-            <button
-              onClick={() => setAdding((v) => !v)}
-              className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
-            >
-              + 항목 추가
-            </button>
-          )}
-          {isAdmin && (
-            <button
-              onClick={() => { setViewTrash((v) => !v); setConfirmingId(null); }}
-              className={`px-4 py-2 text-sm rounded-lg transition font-medium border ${
-                viewTrash
-                  ? 'border-primary text-primary hover:bg-primary/10'
-                  : 'border-border text-foreground hover:bg-muted'
-              }`}
-            >
-              {viewTrash ? '← 목록으로' : <span className="inline-flex items-center gap-1.5"><Trash2 className="w-4 h-4" /> 휴지통</span>}
-            </button>
-          )}
-          {isAdmin && viewTrash && (
-            <button
-              onClick={emptyTrash}
-              className="px-4 py-2 text-sm bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition font-medium"
-            >
-              휴지통 비우기
-            </button>
-          )}
-        </div>
-      </div>
+          </>
+        }
+        actions={
+          isAdmin && (
+            <>
+              {!viewTrash && (
+                <button
+                  onClick={() => setAdding((v) => !v)}
+                  className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
+                >
+                  + 항목 추가
+                </button>
+              )}
+              <button
+                onClick={() => { setViewTrash((v) => !v); setConfirmingId(null); }}
+                className={`px-4 py-2 text-sm rounded-lg transition font-medium border ${
+                  viewTrash
+                    ? 'border-primary text-primary hover:bg-primary/10'
+                    : 'border-border text-foreground hover:bg-muted'
+                }`}
+              >
+                {viewTrash ? '← 목록으로' : <span className="inline-flex items-center gap-1.5"><Trash2 className="w-4 h-4" /> 휴지통</span>}
+              </button>
+              {viewTrash && (
+                <button
+                  onClick={emptyTrash}
+                  className="px-4 py-2 text-sm bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition font-medium"
+                >
+                  휴지통 비우기
+                </button>
+              )}
+            </>
+          )
+        }
+      />
 
       {/* 신규 추가 폼 */}
       {adding && !viewTrash && (

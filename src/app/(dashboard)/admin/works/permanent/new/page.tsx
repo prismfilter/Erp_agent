@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { WorkForm, type WorkFormInitial, type WorkSubmitPayload } from '@/components/works/WorkForm';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 export default function WorkNewPage() {
   const router = useRouter();
@@ -74,14 +75,11 @@ export default function WorkNewPage() {
 
   return (
     <div className="space-y-6">
-      {/* 헤더 — 좌측 정렬(다른 페이지와 동일) */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">저작물 추가</h1>
-        <p className="text-muted-foreground text-sm">작품 정보와 원작자를 입력해 등록합니다.</p>
-      </div>
-
-      {/* 헤더 아래 구분선 — 전체 폭으로 길게 */}
-      <hr className="border-border" />
+      {/* 페이지 헤더 — border-b 내장으로 별도 hr 불필요 */}
+      <PageHeader
+        title="저작물 추가"
+        description="작품 정보와 원작자를 입력해 등록합니다."
+      />
 
       {/* 구분선 아래 — 작품 정보 + 원작자 등록 폼(가운데 정렬) */}
       <div className="max-w-4xl mx-auto">

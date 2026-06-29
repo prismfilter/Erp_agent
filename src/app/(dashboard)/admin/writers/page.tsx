@@ -11,6 +11,7 @@ import { useRowFocus } from '@/hooks/useRowFocus';
 import { nextWriterCode } from '@/lib/writers/writerCode';
 import { WriterTable, WriterTypeSelect, WRITER_TYPES, type WriterType } from '@/components/writers/WriterTable';
 import { NumberInput } from '@/components/ui/NumberInput';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 const TERMINATED_TAB = '계약 해지' as const;
 type WriterTab = '전체' | WriterType | typeof TERMINATED_TAB;
@@ -172,26 +173,29 @@ export default function WriterMasterPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">작가 마스터</h1>
-          <p className="text-muted-foreground text-sm">
+      <PageHeader
+        divider={false}
+        title="작가 마스터"
+        description={
+          <>
             작가/작업자 명단 · 구분 · 용역 요율 관리
             {!isAdmin && ' · 수정은 관리자만 가능'}
-          </p>
-        </div>
-        {isAdmin && (
-          <button
-            onClick={() => {
-              if (!adding) { setNewName(''); setNameMode('select'); }
-              setAdding((v) => !v);
-            }}
-            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium cursor-pointer"
-          >
-            + 등록
-          </button>
-        )}
-      </div>
+          </>
+        }
+        actions={
+          isAdmin && (
+            <button
+              onClick={() => {
+                if (!adding) { setNewName(''); setNameMode('select'); }
+                setAdding((v) => !v);
+              }}
+              className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium cursor-pointer"
+            >
+              + 등록
+            </button>
+          )
+        }
+      />
 
       {/* 등록 폼 */}
       {adding && (

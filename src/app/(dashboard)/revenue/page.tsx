@@ -11,6 +11,7 @@ import { formatWon } from '@/lib/settlement/calculator';
 import { QuarterlyChart } from '@/components/revenue/QuarterlyChart';
 import { YearlyChart } from '@/components/revenue/YearlyChart';
 import { CategoryBarChart } from '@/components/revenue/CategoryBarChart';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -108,84 +109,81 @@ export default function RevenuePage() {
   return (
     <div className="space-y-6">
       {/* 헤더 + 셀렉터 */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">매출현황</h1>
-          <p className="text-muted-foreground text-sm">
-            입금완료 청구서 기준 · 매출 = 총 귀속금액(C)
-          </p>
-        </div>
+      <PageHeader
+        title="매출현황"
+        description="입금완료 청구서 기준 · 매출 = 총 귀속금액(C)"
+        actions={
+          <div className="flex items-center gap-2">
+            {/* 연도 셀렉터 */}
+            <div ref={yearRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setYearOpen((v) => !v)}
+                className="px-4 py-2 text-sm font-semibold bg-card border border-border rounded-lg text-foreground hover:border-primary/50 transition cursor-pointer"
+              >
+                {year}년 ▾
+              </button>
+              {yearOpen && (
+                <div className="absolute right-0 z-40 mt-1 w-28 bg-card border border-border rounded-lg shadow-xl overflow-hidden">
+                  {yearOptions.map((y) => (
+                    <button
+                      key={y}
+                      type="button"
+                      onClick={() => { setYear(y); setYearOpen(false); }}
+                      className={`w-full px-3 py-2 text-sm text-left hover:bg-primary/10 transition cursor-pointer ${
+                        y === year ? 'text-primary font-semibold bg-primary/10' : 'text-foreground'
+                      }`}
+                    >
+                      {y}년
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-        <div className="flex items-center gap-2">
-          {/* 연도 셀렉터 */}
-          <div ref={yearRef} className="relative">
+            {/* 분기 셀렉터 */}
+            <div ref={quarterRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setQuarterOpen((v) => !v)}
+                className="px-4 py-2 text-sm font-semibold bg-card border border-border rounded-lg text-foreground hover:border-primary/50 transition cursor-pointer"
+              >
+                {quarter ? `Q${quarter}` : '전체'} ▾
+              </button>
+              {quarterOpen && (
+                <div className="absolute right-0 z-40 mt-1 w-24 bg-card border border-border rounded-lg shadow-xl overflow-hidden">
+                  {[null, 1, 2, 3, 4].map((q) => (
+                    <button
+                      key={q ?? 'all'}
+                      type="button"
+                      onClick={() => { setQuarter(q); setQuarterOpen(false); }}
+                      className={`w-full px-3 py-2 text-sm text-left hover:bg-primary/10 transition cursor-pointer ${
+                        q === quarter ? 'text-primary font-semibold bg-primary/10' : 'text-foreground'
+                      }`}
+                    >
+                      {q ? `Q${q}` : '전체'}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Compare 토글 */}
             <button
               type="button"
-              onClick={() => setYearOpen((v) => !v)}
-              className="px-4 py-2 text-sm font-semibold bg-card border border-border rounded-lg text-foreground hover:border-primary/50 transition"
+              onClick={() => setCompare((v) => !v)}
+              className={`px-4 py-2 text-sm font-semibold rounded-lg border transition cursor-pointer ${
+                compare
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-card text-foreground border-border hover:border-primary/50'
+              }`}
+              title="전년도 데이터를 반투명으로 겹쳐 비교"
             >
-              {year}년 ▾
+              ⇄ Compare
             </button>
-            {yearOpen && (
-              <div className="absolute right-0 z-40 mt-1 w-28 bg-card border border-border rounded-lg shadow-xl overflow-hidden">
-                {yearOptions.map((y) => (
-                  <button
-                    key={y}
-                    type="button"
-                    onClick={() => { setYear(y); setYearOpen(false); }}
-                    className={`w-full px-3 py-2 text-sm text-left hover:bg-primary/10 transition ${
-                      y === year ? 'text-primary font-semibold bg-primary/10' : 'text-foreground'
-                    }`}
-                  >
-                    {y}년
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
-
-          {/* 분기 셀렉터 */}
-          <div ref={quarterRef} className="relative">
-            <button
-              type="button"
-              onClick={() => setQuarterOpen((v) => !v)}
-              className="px-4 py-2 text-sm font-semibold bg-card border border-border rounded-lg text-foreground hover:border-primary/50 transition"
-            >
-              {quarter ? `Q${quarter}` : '전체'} ▾
-            </button>
-            {quarterOpen && (
-              <div className="absolute right-0 z-40 mt-1 w-24 bg-card border border-border rounded-lg shadow-xl overflow-hidden">
-                {[null, 1, 2, 3, 4].map((q) => (
-                  <button
-                    key={q ?? 'all'}
-                    type="button"
-                    onClick={() => { setQuarter(q); setQuarterOpen(false); }}
-                    className={`w-full px-3 py-2 text-sm text-left hover:bg-primary/10 transition ${
-                      q === quarter ? 'text-primary font-semibold bg-primary/10' : 'text-foreground'
-                    }`}
-                  >
-                    {q ? `Q${q}` : '전체'}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Compare 토글 */}
-          <button
-            type="button"
-            onClick={() => setCompare((v) => !v)}
-            className={`px-4 py-2 text-sm font-semibold rounded-lg border transition ${
-              compare
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-card text-foreground border-border hover:border-primary/50'
-            }`}
-            title="전년도 데이터를 반투명으로 겹쳐 비교"
-          >
-            ⇄ Compare
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* 요약 카드 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

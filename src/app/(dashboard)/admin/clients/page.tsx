@@ -11,6 +11,7 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { useRowFocus } from '@/hooks/useRowFocus';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 import { nextClientCode } from '@/lib/clients/clientCode';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 export default function ClientsDbPage() {
   const { user } = useAuthStore();
@@ -91,23 +92,25 @@ export default function ClientsDbPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">거래처 DB</h1>
-          <p className="text-muted-foreground text-sm">
+      <PageHeader
+        title="거래처 DB"
+        description={
+          <>
             청구서가 참조하는 거래처(회사) 관리 · 행을 클릭하면 상세정보
             {!isAdmin && ' · 수정은 관리자만 가능'}
-          </p>
-        </div>
-        {isAdmin && (
-          <button
-            onClick={() => { setNewName(''); setAdding((v) => !v); }}
-            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium cursor-pointer"
-          >
-            + 등록
-          </button>
-        )}
-      </div>
+          </>
+        }
+        actions={
+          isAdmin && (
+            <button
+              onClick={() => { setNewName(''); setAdding((v) => !v); }}
+              className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium cursor-pointer"
+            >
+              + 등록
+            </button>
+          )
+        }
+      />
 
       {adding && (
         <div className="bg-card border border-primary/40 rounded-lg p-4 flex flex-wrap items-end gap-3">

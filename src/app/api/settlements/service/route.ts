@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       for (const it of internal) {
         const names = it.writer_names.split(',').map((n) => n.trim()).filter(Boolean);
         if (!names.includes(writer_name)) continue;
-        const { writerPay } = calcItemBreakdown(it);
+        const { netSupply, writerPay, attribution } = calcItemBreakdown(it);
         total += writerPay;
         detail.push({
           invoice_id: inv.id,
@@ -59,6 +59,8 @@ export async function POST(request: NextRequest) {
           title: inv.title,
           description: it.description,
           writer_pay: writerPay,
+          supply: netSupply,
+          attribution,
         });
       }
     }

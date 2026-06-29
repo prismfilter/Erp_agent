@@ -5,8 +5,8 @@
 
 import { useMemo } from 'react';
 import type { ServiceSettlement } from '@/types/invoice';
-import { stripTitlePrefix } from '@/lib/invoice/calculator';
-import { calculateSettlement, formatWon } from '@/lib/settlement/calculator';
+import { stripTitlePrefix, parseWorkContent } from '@/lib/invoice/calculator';
+import { calculateSettlement, calcSettlementBreakdown, formatWon } from '@/lib/settlement/calculator';
 
 const COMPANY = {
   name: '주식회사 프리즘필터뮤직그룹',
@@ -32,6 +32,9 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
     [detail]
   );
 
+  // 총액 세부내역용 합계 — 총 공급가액에서 회사 수수료·세금을 차감해 실 수령액으로 흐른다
+  const { totalSupply, companyFee } = useMemo(() => calcSettlementBreakdown(detail), [detail]);
+
   // 페이지 분할
   const pages = useMemo(() => {
     const out: (typeof detail)[] = [];
@@ -47,7 +50,7 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
         const isLast = pageIdx === pages.length - 1;
         const startNo = pageIdx * PER_PAGE;
         // A4 채우기 — 합계가 들어가는 마지막 페이지는 빈 행을 적게
-        const emptyCount = Math.max(0, (isLast ? PER_PAGE - 4 : PER_PAGE) - pageItems.length);
+        const emptyCount = Math.max(0, (isLast ? PER_PAGE - 5 : PER_PAGE) - pageItems.length);
 
         return (
           <div
@@ -76,15 +79,15 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
             {/* ===== 정산 정보 ===== */}
             <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-xs mt-6 mb-6">
               <div className="flex">
-                <span className="w-20 text-slate-500 font-medium flex-shrink-0">작가명</span>
+                <span className="mr-2 text-slate-500 font-medium flex-shrink-0">작가명:</span>
                 <span className="font-semibold text-slate-900">{settlement.writer_name}</span>
               </div>
               <div className="flex">
-                <span className="w-20 text-slate-500 font-medium flex-shrink-0">건수</span>
+                <span className="mr-2 text-slate-500 font-medium flex-shrink-0">건수:</span>
                 <span className="font-semibold text-slate-900">{detail.length}건</span>
               </div>
               <div className="flex col-span-2">
-                <span className="w-20 text-slate-500 font-medium flex-shrink-0">정산 기간</span>
+                <span className="mr-2 text-slate-500 font-medium flex-shrink-0">정산 기간:</span>
                 <span className="font-semibold text-slate-900">
                   {settlement.period_start} ~ {settlement.period_end} <span className="text-slate-500">(입금 완료일 기준)</span>
                 </span>
@@ -97,7 +100,7 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
                 <tr className="bg-slate-800 text-white">
                   <th className="px-3 py-2.5 text-center w-10 font-bold first:rounded-tl-md">No.</th>
                   <th className="px-3 py-2.5 text-center w-24 font-bold">입금일</th>
-                  <th className="px-3 py-2.5 text-center w-28 font-bold">거래처</th>
+                  <th className="px-3 py-2.5 text-center font-bold whitespace-nowrap">거래처</th>
                   <th className="px-3 py-2.5 text-center font-bold">작업 내용</th>
                   <th className="px-3 py-2.5 text-center w-32 font-bold last:rounded-tr-md">작가 지급액</th>
                 </tr>
@@ -107,11 +110,21 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
                   <tr key={`${pageIdx}-${idx}`} className="border-b border-gray-200">
                     <td className="px-3 py-2 text-center tabular-nums text-slate-600">{startNo + idx + 1}</td>
                     <td className="px-3 py-2 text-center text-slate-600 whitespace-nowrap">{fmtDate(d.paid_at)}</td>
-                    <td className="px-3 py-2 text-center text-slate-900">{d.client_name || '-'}</td>
+                    <td className="px-3 py-2 text-center text-slate-900 whitespace-nowrap">{d.client_name || '-'}</td>
                     <td className="px-3 py-2 text-center text-slate-900 break-keep">
-                      <span className="text-slate-500">{d.title}</span>
-                      {' · '}
-                      {stripTitlePrefix(d.description, d.title)}
+                      {(() => {
+                        // 거래명은 윗줄, "[섹션] 내용"은 아랫줄(가운데 정렬)
+                        const { category, body } = parseWorkContent(stripTitlePrefix(d.description, d.title));
+                        return (
+                          <>
+                            <span className="block text-slate-500">{d.title}</span>
+                            <span className="block">
+                              {category && <span className="text-slate-500">[{category}] </span>}
+                              {body}
+                            </span>
+                          </>
+                        );
+                      })()}
                     </td>
                     <td className="px-3 py-2 text-center tabular-nums text-slate-900 whitespace-nowrap">
                       {formatWon(d.writer_pay)}
@@ -129,13 +142,17 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
               </tbody>
             </table>
 
-            {/* ===== 합계 (마지막 페이지에만) ===== */}
+            {/* ===== 합계 (마지막 페이지에만) — 하단 푸터 구분선 근처로 밀어 배치 ===== */}
             {isLast && (
-              <div className="flex justify-end mt-5">
+              <div className="flex justify-end mt-auto">
                 <div className="w-80">
+                  <div className="flex justify-between py-1.5 text-sm font-bold text-slate-900">
+                    <span>총 공급가액</span>
+                    <span className="tabular-nums">{formatWon(totalSupply)}</span>
+                  </div>
                   <div className="flex justify-between py-1.5 text-xs text-slate-600">
-                    <span>총 작가지급액</span>
-                    <span className="tabular-nums">{formatWon(result.totalAmount)}</span>
+                    <span>회사 수수료</span>
+                    <span className="tabular-nums">- {formatWon(companyFee)}</span>
                   </div>
                   <div className="flex justify-between py-1.5 text-xs text-slate-600">
                     <span>소득세 (3%)</span>
@@ -149,13 +166,13 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
                     <span className="font-bold text-sm">실 수령액</span>
                     <span className="font-bold text-sm tabular-nums">{formatWon(result.netAmount)}</span>
                   </div>
-                  <p className="text-right text-[10px] text-slate-500 mt-1">원천징수 3.3% 공제 후 지급액</p>
+                  <p className="text-right text-[10px] text-slate-500 mt-1">회사 수수료 및 원천징수 3.3% 공제 후 지급액</p>
                 </div>
               </div>
             )}
 
-            {/* ===== 푸터 ===== */}
-            <div className="mt-auto pt-8">
+            {/* ===== 푸터 — 마지막 페이지는 합계 바로 아래, 그 외 페이지는 맨 밑 ===== */}
+            <div className={`pt-8 ${isLast ? '' : 'mt-auto'}`}>
               <div className="flex justify-between items-end text-[11px] border-t border-gray-200 pt-4">
                 <div className="text-slate-600">
                   <p className="font-bold text-black">{COMPANY.name}</p>
