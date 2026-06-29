@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
-import { parseBody } from '@/lib/validation/parse';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { serviceSettlementCreateSchema } from '@/lib/validation/schemas';
 import { getInternalItems, calcItemBreakdown } from '@/lib/invoice/calculator';
 import type { Invoice, InvoiceItem, ServiceSettlement, ServiceSettlementDetailItem } from '@/types/invoice';
@@ -15,7 +15,9 @@ export async function POST(request: NextRequest) {
     const auth = await requireStaff();
     if (isErrorResponse(auth)) return auth;
 
-    const parsed = parseBody(serviceSettlementCreateSchema, await request.json());
+    const json = await readJson(request);
+    if (!json.success) return json.response;
+    const parsed = parseBody(serviceSettlementCreateSchema, json.data);
     if (!parsed.success) return parsed.response;
     const { writer_name, period_start, period_end } = parsed.data;
 

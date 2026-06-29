@@ -213,9 +213,9 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
               </div>
               <div className="flex justify-between py-2.5 mt-1 px-3 bg-slate-800 text-white rounded-md">
                 <span className="font-bold text-sm">총 합계 (B+C)</span>
-                <span className="font-bold text-sm tabular-nums">{formatWon(totals.grandTotal)}</span>
+                <span className="font-bold text-sm tabular-nums">{formatWon(totals.writerPayTotal + totals.attributionTotal)}</span>
               </div>
-              <p className="text-right text-[10px] text-slate-500 mt-1">거래처 청구서 총 합계와 일치</p>
+              <p className="text-right text-[10px] text-slate-500 mt-1">거래처 청구서 공급가액(A)과 일치</p>
             </>
           )}
         </div>
