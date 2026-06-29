@@ -6,6 +6,7 @@ import { UserRole } from '@/types';
 import { RoleLabel, ROLE_META } from '@/lib/ui/roleMeta';
 import { CheckCircle2, AlertTriangle, ShieldCheck, SquarePen, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 // 본인이 직접 설정 가능한 역할은 작가 역할로만 제한 (권한 상승 방지)
 // 직원·관리자 역할은 관리자가 계정 관리에서만 부여한다.
@@ -92,10 +93,10 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">내 프로필 설정</h1>
-        <p className="text-sm text-muted-foreground">계정 정보 및 설정을 관리합니다.</p>
-      </div>
+      <PageHeader
+        title="내 프로필 설정"
+        description="계정 정보 및 설정을 관리합니다."
+      />
 
       {saveSuccess && (
         <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3 text-sm text-green-400 flex items-center gap-2">

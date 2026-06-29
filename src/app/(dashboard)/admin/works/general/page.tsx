@@ -1,13 +1,12 @@
 // 일반 저작물 DB — 저작물 DB > 일반 (일반작가 저작물 관리 예정)
 // 데이터 모델·표 구성은 추후 설계. 현재는 안내용 플레이스홀더.
 
+import { PageHeader } from '@/components/layout/PageHeader';
+
 export default function GeneralWorksPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">일반 저작물 DB</h1>
-        <p className="text-muted-foreground text-sm">일반작가 저작물 관리</p>
-      </div>
+      <PageHeader title="일반 저작물 DB" description="일반작가 저작물 관리" />
 
       <div className="bg-card border border-border rounded-lg p-12 text-center w-full max-w-3xl mx-auto">
         <div className="text-4xl mb-3" aria-hidden="true">🎼</div>

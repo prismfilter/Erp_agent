@@ -1,4 +1,5 @@
 import { CalculationResult } from '@/types';
+import type { ServiceSettlementDetailItem } from '@/types/invoice';
 
 export interface SettlementItemInput {
   amount: number;
@@ -47,6 +48,22 @@ export function calculateSettlement(items: SettlementItemInput[]): CalculationRe
     netAmount,
     isValid,
   };
+}
+
+/**
+ * 용역 정산서 총액 세부내역 합계 — 총 공급가액·회사 수수료.
+ * PDF 미리보기와 엑셀이 같은 값을 쓰도록 단일 계산점. 누락 필드는 0으로 방어.
+ */
+export function calcSettlementBreakdown(
+  detail: ServiceSettlementDetailItem[]
+): { totalSupply: number; companyFee: number } {
+  return detail.reduce(
+    (acc, d) => ({
+      totalSupply: acc.totalSupply + (d.supply ?? 0),
+      companyFee: acc.companyFee + (d.attribution ?? 0),
+    }),
+    { totalSupply: 0, companyFee: 0 }
+  );
 }
 
 /**

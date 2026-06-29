@@ -376,14 +376,14 @@ export function AppSidebar({
       </nav>
 
       {/* ===== 하단: 사용자 프로필 ===== */}
-      <div className={`border-t border-border ${collapsed ? 'p-2' : 'p-4'}`}>
+      <div className={`border-t border-border ${collapsed ? 'p-2' : 'px-4 py-1.5'}`}>
         <DropdownMenu>
           <DropdownMenuTrigger
-            className={`w-full flex items-center py-3 rounded-lg hover:bg-blue-600/10 transition text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-sidebar ${
+            className={`w-full flex items-center py-1.5 rounded-lg hover:bg-blue-600/10 transition text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-sidebar ${
               collapsed ? 'justify-center' : 'gap-3 px-3'
             }`}
           >
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
               {avatarInitial}
             </div>
             {!collapsed && (

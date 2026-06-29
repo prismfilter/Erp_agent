@@ -150,6 +150,8 @@ export interface ServiceSettlementDetailItem {
   title: string;
   description: string;
   writer_pay: number;
+  supply: number;                 // 공급가액(순매출) — 정산서 총액 세부내역용
+  attribution: number;            // 회사 수수료(귀속금액) — 정산서 총액 세부내역용
 }
 
 // 용역 정산 레코드

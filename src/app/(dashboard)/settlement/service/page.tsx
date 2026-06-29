@@ -5,7 +5,8 @@
 // '완료'·'뒤로' 시 내용은 사라진다(목록 누적 없음 — PDF/엑셀로만 보관).
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { Plus, Briefcase, FileSpreadsheet, Printer, ArrowLeft, Check } from 'lucide-react';
+import { Plus, FileSpreadsheet, Printer, ArrowLeft, Check } from 'lucide-react';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { WriterSelect } from '@/components/invoice/WriterSelect';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { SettlementPreview } from '@/components/settlement/SettlementPreview';
@@ -142,41 +143,41 @@ export default function ServiceSettlementPage() {
   if (mode === 'preview' && settlement) {
     return (
       <div className="space-y-6">
-        <div className="print:hidden flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground mb-1">{settlement.writer_name} · 용역 정산서</h1>
-            <p className="text-muted-foreground text-sm">
-              {settlement.period_start} ~ {settlement.period_end} · {formatWon(settlement.total_amount)} · {settlement.detail?.length ?? 0}건
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={reset}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" /> 뒤로
-            </button>
-            <button
-              onClick={handleExcel}
-              disabled={exporting}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5" /> {exporting ? '생성 중...' : '엑셀 다운로드'}
-            </button>
-            <button
-              onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition cursor-pointer"
-            >
-              <Printer className="w-3.5 h-3.5" /> PDF 저장 / 인쇄
-            </button>
-            <button
-              onClick={reset}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 transition font-medium cursor-pointer"
-            >
-              <Check className="w-3.5 h-3.5" /> 완료
-            </button>
-          </div>
-        </div>
+        <PageHeader
+          className="print:hidden"
+          titleClassName="text-2xl"
+          title={`${settlement.writer_name} · 용역 정산서`}
+          description={`${settlement.period_start} ~ ${settlement.period_end} · ${formatWon(settlement.total_amount)} · ${settlement.detail?.length ?? 0}건`}
+          actions={
+            <>
+              <button
+                onClick={reset}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" /> 뒤로
+              </button>
+              <button
+                onClick={handleExcel}
+                disabled={exporting}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" /> {exporting ? '생성 중...' : '엑셀 다운로드'}
+              </button>
+              <button
+                onClick={handlePrint}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5" /> PDF 저장 / 인쇄
+              </button>
+              <button
+                onClick={reset}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 transition font-medium cursor-pointer"
+              >
+                <Check className="w-3.5 h-3.5" /> 완료
+              </button>
+            </>
+          }
+        />
 
         <SettlementPreview settlement={settlement} />
       </div>
@@ -186,25 +187,21 @@ export default function ServiceSettlementPage() {
   // ── idle / form 화면 ──
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
-            <Briefcase className="h-5 w-5" />
-          </span>
-          <div>
-            <h1 className="text-2xl font-bold">용역 정산</h1>
-            <p className="text-sm text-muted-foreground">입금 완료된 용역을 작가·기간별로 정산합니다.</p>
-          </div>
-        </div>
-        {mode === 'idle' && (
+      {/* (b) 입력 화면 헤더 — PageHeader로 통일(아이콘은 장식 요소이므로 제거) */}
+      <PageHeader
+        title="용역 정산"
+        description="입금 완료된 용역을 작가·기간별로 정산합니다."
+        titleClassName="text-2xl"
+        className="mb-6"
+        actions={mode === 'idle' ? (
           <button
             onClick={() => setMode('form')}
             className="inline-flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition font-medium cursor-pointer"
           >
             <Plus className="w-4 h-4 mr-2" />정산하기
           </button>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       {mode === 'idle' ? (
         <div className="bg-card border border-border rounded-lg p-10 text-center">
@@ -239,7 +236,15 @@ export default function ServiceSettlementPage() {
                 {/* 정산 시작일 */}
                 <div>
                   <label className="block text-xs text-muted-foreground mb-1 text-center">정산 시작일</label>
-                  <DatePicker value={start} onChange={setStart} maxDate={today} placeholder="시작일" centerText className={datePickerClass} />
+                  {/* 시작일 선택 시 종료일이 비어 있으면 오늘 날짜로 자동 입력 */}
+                  <DatePicker
+                    value={start}
+                    onChange={(v) => { setStart(v); if (v && !end) setEnd(today); }}
+                    maxDate={today}
+                    placeholder="시작일"
+                    centerText
+                    className={datePickerClass}
+                  />
                 </div>
 
                 {/* 정산 종료일 */}

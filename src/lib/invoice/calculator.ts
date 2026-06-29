@@ -131,6 +131,15 @@ export function stripTitlePrefix(description: string, title: string): string {
   return title && description.startsWith(prefix) ? description.slice(prefix.length) : description;
 }
 
+// 작업내용 "[섹션] 내용"을 섹션과 본문으로 분리.
+// 청구서/내부지급서/용역정산서에서 섹션 태그를 윗줄에, 내용을 아랫줄에 표시하기 위함.
+// 섹션 태그가 없으면 category=null.
+export function parseWorkContent(text: string): { category: string | null; body: string } {
+  const m = text.match(/^\s*\[([^\]]+)\]\s*([\s\S]*)$/);
+  if (m) return { category: m[1].trim(), body: m[2].trim() };
+  return { category: null, body: text.trim() };
+}
+
 // 내보내기 파일명 생성: PF_청구서_{거래처}_{거래명}_{YYMMDD} (특수문자 _ 치환)
 export function buildExportFilename(clientName: string, title: string, invoiceDate: string): string {
   const d = new Date(invoiceDate);

@@ -10,6 +10,7 @@ import { RoleSelect, type AccountRole } from '@/components/admin/RoleSelect';
 import { UserDetailModal } from '@/components/admin/UserDetailModal';
 import type { AdminUser } from '@/lib/admin/userMerge';
 import { RoleLabel } from '@/lib/ui/roleMeta';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 type AccountUser = AdminUser & {
   role: AccountRole | null;
@@ -212,12 +213,7 @@ export default function AccountsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">계정 관리</h1>
-          <p className="text-muted-foreground text-sm">사용자 역할 및 이름 관리</p>
-        </div>
-      </div>
+      <PageHeader title="계정 관리" description="사용자 역할 및 이름 관리" divider={false} />
 
       {/* 역할 탭 */}
       <div className="flex gap-2 border-b border-border overflow-x-auto">

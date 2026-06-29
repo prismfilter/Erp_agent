@@ -45,13 +45,14 @@ export function ThemeToggle({ className }: { className?: string }) {
         <CurrentIcon className={`w-5 h-5 ${currentTheme.color}`} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44 bg-card border border-border">
-        <DropdownMenuLabel className="text-foreground text-xs font-semibold flex items-center gap-1.5">
-          <THEME_GROUP_ICON className={`w-3.5 h-3.5 ${THEME_GROUP_COLOR}`} /> 테마
-        </DropdownMenuLabel>
+        {/* GroupLabel은 base-ui RadioGroup/Group 컨텍스트 안에 있어야 함 → 라벨을 RadioGroup 안에 둔다 */}
         <DropdownMenuRadioGroup
           value={theme ?? 'dark'}
           onValueChange={(v) => setTheme(String(v))}
         >
+          <DropdownMenuLabel className="text-foreground text-xs font-semibold flex items-center gap-1.5">
+            <THEME_GROUP_ICON className={`w-3.5 h-3.5 ${THEME_GROUP_COLOR}`} /> 테마
+          </DropdownMenuLabel>
           {THEME_META.map(({ key, label, Icon, color }) => (
             <DropdownMenuRadioItem key={key} value={key} className="text-foreground cursor-pointer gap-2">
               <Icon className={`w-4 h-4 ${color}`} /> {label}

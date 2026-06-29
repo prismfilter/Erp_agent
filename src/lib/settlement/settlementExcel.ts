@@ -1,7 +1,7 @@
 // 용역 정산서 엑셀(.xlsx) 내보내기 — PDF 미리보기와 유사한 디자인(로고·진한 헤더·테두리·합계 박스·푸터).
 // 공용 모듈(excelDoc)을 사용해 청구서 엑셀과 디자인 통일. exceljs는 동적 import.
 
-import { calculateSettlement } from '@/lib/settlement/calculator';
+import { calculateSettlement, calcSettlementBreakdown } from '@/lib/settlement/calculator';
 import { stripTitlePrefix } from '@/lib/invoice/calculator';
 import type { ServiceSettlement } from '@/types/invoice';
 import {
@@ -33,6 +33,8 @@ export async function exportSettlementExcel(settlement: ServiceSettlement): Prom
 
   const detail = settlement.detail ?? [];
   const result = calculateSettlement(detail.map((d) => ({ amount: d.writer_pay, rate: 0 })));
+  // 총액 세부내역용 합계 — 총 공급가액에서 회사 수수료·세금 차감
+  const { totalSupply, companyFee } = calcSettlementBreakdown(detail);
 
   const wb = new ExcelJS.Workbook();
   wb.creator = 'PRISMFILTER MUSIC GROUP';
@@ -77,11 +79,12 @@ export async function exportSettlementExcel(settlement: ServiceSettlement): Prom
   r += fillerRows(ws, r, Math.max(0, MIN_ROWS - detail.length), cols);
   r += 1; // gap
 
-  totalRow(ws, r, cols, '총 작가지급액', result.totalAmount);
-  totalRow(ws, r + 1, cols, '소득세 (3%)', -result.incomeTax);
-  totalRow(ws, r + 2, cols, '지방소득세 (0.3%)', -result.localIncomeTax);
-  totalRow(ws, r + 3, cols, '실 수령액 (원천징수 3.3% 공제)', result.netAmount, true);
-  r += 5; // gap
+  totalRow(ws, r, cols, '총 공급가액', totalSupply);
+  totalRow(ws, r + 1, cols, '회사 수수료', -companyFee);
+  totalRow(ws, r + 2, cols, '소득세 (3%)', -result.incomeTax);
+  totalRow(ws, r + 3, cols, '지방소득세 (0.3%)', -result.localIncomeTax);
+  totalRow(ws, r + 4, cols, '실 수령액 (회사 수수료·원천징수 3.3% 공제)', result.netAmount, true);
+  r += 6; // gap
 
   drawFooter(ws, r, cols, `발행일 : ${fmtDate(settlement.created_at)}`);
 

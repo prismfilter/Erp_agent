@@ -15,6 +15,7 @@ import { useRowFocus } from '@/hooks/useRowFocus';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 import { WorkDetailModal } from '@/components/works/WorkDetailModal';
 import { WriterSidePanel } from '@/components/works/WriterSidePanel';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 const PAGE_SIZE = 20;
 
@@ -164,22 +165,20 @@ export default function WorksPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">영구 저작물 DB</h1>
-          <p className="text-muted-foreground text-sm">
-            출판사 관리 저작물{!isAdmin && ' · 수정은 관리자만 가능'}
-          </p>
-        </div>
-        {isAdmin && (
-          <Link
-            href="/admin/works/permanent/new"
-            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
-          >
-            + 저작물 추가
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        title="영구 저작물 DB"
+        description={<>출판사 관리 저작물{!isAdmin && ' · 수정은 관리자만 가능'}</>}
+        actions={
+          isAdmin && (
+            <Link
+              href="/admin/works/permanent/new"
+              className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
+            >
+              + 저작물 추가
+            </Link>
+          )
+        }
+      />
 
       {/* 본문: 좌측 자사작가 목록(sticky) + 우측 표 */}
       <div className="grid grid-cols-[180px_1fr] gap-6 items-start">

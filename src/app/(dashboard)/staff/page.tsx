@@ -6,6 +6,7 @@ import { useRowFocus } from '@/hooks/useRowFocus';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 import { EmailCell } from '@/components/admin/EmailCell';
 import { RoleLabel } from '@/lib/ui/roleMeta';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 type MemberRole = 'ADMIN' | 'STAFF' | 'EXCLUSIVE_WRITER' | 'GENERAL_WRITER';
 
@@ -178,10 +179,11 @@ export default function StaffPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">구성원</h1>
-        <p className="text-muted-foreground text-sm">관리자 · 직원 · 전속/일반 작가 전체 목록</p>
-      </div>
+      <PageHeader
+        divider={false}
+        title="구성원"
+        description="관리자 · 직원 · 전속/일반 작가 전체 목록"
+      />
 
       {/* 탭 */}
       <div className="flex flex-wrap gap-2 border-b border-border">

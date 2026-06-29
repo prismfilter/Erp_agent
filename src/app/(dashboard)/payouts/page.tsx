@@ -5,6 +5,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import type { Invoice } from '@/types/invoice';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { calcInvoiceTotals } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
 import { useTableSort } from '@/hooks/useTableSort';
@@ -48,10 +49,7 @@ export default function PayoutsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">내부 지급서</h1>
-        <p className="text-muted-foreground text-sm">작가별 지급액과 회사 수수료 내역 (내부용)</p>
-      </div>
+      <PageHeader title="내부 지급서" description="작가별 지급액과 회사 수수료 내역 (내부용)" />
 
       <input
         type="text"

@@ -6,6 +6,7 @@ import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import type { Invoice } from '@/types/invoice';
 import { InvoiceForm } from '@/components/invoice/InvoiceForm';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 export default function EditInvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -47,10 +48,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">청구서 수정</h1>
-        <p className="text-muted-foreground text-sm">{invoice.title}</p>
-      </div>
+      <PageHeader title="청구서 수정" titleClassName="text-2xl" description={invoice.title} />
       <InvoiceForm invoice={invoice} />
     </div>
   );

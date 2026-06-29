@@ -5,6 +5,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import type { Invoice, InvoiceStatus, Client } from '@/types/invoice';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { calcInvoiceTotals } from '@/lib/invoice/calculator';
 import { formatWon } from '@/lib/settlement/calculator';
 import { useTableSort } from '@/hooks/useTableSort';
@@ -109,18 +110,19 @@ export default function InvoicesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">거래처 청구서</h1>
-          <p className="text-muted-foreground text-sm">외부 발송용 청구서 작성 및 관리</p>
-        </div>
-        <Link
-          href="/invoices/new"
-          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
-        >
-          + 새 청구서
-        </Link>
-      </div>
+      <PageHeader
+        divider={false}
+        title="거래처 청구서"
+        description="외부 발송용 청구서 작성 및 관리"
+        actions={
+          <Link
+            href="/invoices/new"
+            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
+          >
+            + 새 청구서
+          </Link>
+        }
+      />
 
       {/* 상태 탭 */}
       <div className="flex gap-2 border-b border-border overflow-x-auto">

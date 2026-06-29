@@ -22,6 +22,7 @@ import { OverviewKpis } from '@/components/home/OverviewKpis';
 import { CategoryDonut } from '@/components/home/CategoryDonut';
 import { RevenueCalendarMonth } from '@/components/home/RevenueCalendarMonth';
 import { RankingList } from '@/components/home/RankingList';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
@@ -121,14 +122,11 @@ export default function HomePage() {
   return (
     <div className="flex h-full flex-col gap-3">
       {/* 페이지 헤더 */}
-      <div className="flex shrink-0 items-end justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">홈 피드</h1>
-          <p className="mt-1 text-[13px] text-muted-foreground">
-            프리즘 필터 뮤직그룹 · {year}년 경영 현황 한눈에 보기
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="홈 피드"
+        description={`프리즘 필터 뮤직그룹 · ${year}년 경영 현황 한눈에 보기`}
+        className="shrink-0"
+      />
 
       {/* 1) 현황 개요 — 히어로(올해 누적 수입) + KPI 패널 */}
       <div className="grid shrink-0 grid-cols-1 gap-3 lg:grid-cols-[1.9fr_1fr]">

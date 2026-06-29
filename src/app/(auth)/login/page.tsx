@@ -80,7 +80,7 @@ export default function LoginPage() {
 
         {/* 안내 */}
         <div className="bg-blue-500/10 border border-blue-500 rounded-lg p-3 mb-4">
-          <p className="text-sm text-foreground">
+          <p className="text-sm text-foreground text-center">
             <strong>회사 계정(@prism-filter.com)</strong>만 접근 가능합니다.
           </p>
         </div>

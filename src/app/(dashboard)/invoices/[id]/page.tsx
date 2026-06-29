@@ -9,6 +9,7 @@ import { SquarePen, FileSpreadsheet, Printer, ReceiptText, Wallet, type LucideIc
 import type { Invoice } from '@/types/invoice';
 import { InvoicePreview } from '@/components/invoice/InvoicePreview';
 import { exportInvoiceExcel } from '@/lib/invoice/excelExport';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 type PreviewTab = 'external' | 'internal';
 
@@ -81,35 +82,36 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   return (
     <div className="space-y-6">
       {/* 상단 헤더 (인쇄 미포함) */}
-      <div className="print:hidden flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">{invoice.title}</h1>
-          <p className="text-muted-foreground text-sm">
-            {invoice.client?.name ?? '거래처 미지정'} · {invoice.invoice_date}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={`/invoices/${id}/edit`}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition"
-          >
-            <SquarePen className="w-3.5 h-3.5" /> 수정
-          </Link>
-          <button
-            onClick={handleExcel}
-            disabled={exporting}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" /> {exporting ? '생성 중...' : '엑셀 다운로드'}
-          </button>
-          <button
-            onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
-          >
-            <Printer className="w-3.5 h-3.5" /> PDF 저장 / 인쇄
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        divider={false}
+        className="print:hidden"
+        titleClassName="text-2xl"
+        title={invoice.title}
+        description={`${invoice.client?.name ?? '거래처 미지정'} · ${invoice.invoice_date}`}
+        actions={
+          <>
+            <Link
+              href={`/invoices/${id}/edit`}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition"
+            >
+              <SquarePen className="w-3.5 h-3.5" /> 수정
+            </Link>
+            <button
+              onClick={handleExcel}
+              disabled={exporting}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" /> {exporting ? '생성 중...' : '엑셀 다운로드'}
+            </button>
+            <button
+              onClick={handlePrint}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
+            >
+              <Printer className="w-3.5 h-3.5" /> PDF 저장 / 인쇄
+            </button>
+          </>
+        }
+      />
 
       {/* 탭 (인쇄 미포함) */}
       <div className="print:hidden flex items-center justify-between border-b border-border">
