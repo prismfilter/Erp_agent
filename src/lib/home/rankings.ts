@@ -10,13 +10,15 @@ export interface RankingItem {
   amount: number;
 }
 
-// 작가별 올해 정산 순위 — paid_at 연도가 year인 용역정산 행의 writer_pay를 작가별 합산(내림차순, 0 제외)
+// 작가별 올해 정산 순위 — '정산완료'로 마킹된 행만, paid_at 연도가 year인 writer_pay를 작가별 합산(내림차순, 0 제외)
+// 정산완료(status==='settled') 처리한 건만 반영 — 입금완료만으로는 집계하지 않는다(용역정산 페이지에서 정산완료 버튼을 눌러야 반영).
 export function buildWriterRanking(
   rows: SettlementRow[],
   year: number,
 ): RankingItem[] {
   const byWriter = new Map<string, number>();
   for (const r of rows) {
+    if (r.status !== 'settled') continue;
     if (!r.paid_at || parseInt(r.paid_at.slice(0, 4), 10) !== year) continue;
     byWriter.set(r.writer_name, (byWriter.get(r.writer_name) ?? 0) + (r.writer_pay ?? 0));
   }

@@ -168,9 +168,9 @@ export default function HomePage() {
       <div className="grid flex-1 grid-cols-1 gap-3 lg:grid-cols-2">
         <RankingList
           title="작가별 올해 정산"
-          subtitle="전속작가 정산액(용역정산) 순"
+          subtitle="정산완료 처리된 용역정산 합계 순"
           items={home.writerRanking}
-          emptyText="올해 정산 내역이 없습니다."
+          emptyText="정산완료된 내역이 없습니다."
         />
         <RankingList
           title="상위 거래처 매출"

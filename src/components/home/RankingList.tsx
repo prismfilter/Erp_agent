@@ -32,7 +32,18 @@ export function RankingList({
   emptyText = '데이터가 없습니다.',
 }: RankingListProps) {
   const top = items.slice(0, limit);
-  const max = Math.max(1, ...top.map((i) => i.amount));
+  // 차이 강조 스케일 — 최솟값을 FLOOR%, 최댓값을 100%로 선형 매핑.
+  // 0기준 비례는 근소한 차이(예: 10만원)가 거의 안 보이므로, 순위 가독성을 위해 차이를 또렷이 키운다.
+  // 모든 값이 같으면 전부 가득(100%) — 동일 금액은 동일 길이가 정상.
+  const amounts = top.map((i) => i.amount);
+  const maxAmount = Math.max(0, ...amounts);
+  const minAmount = Math.min(...amounts);
+  const FLOOR = 45; // 최솟값 막대 폭(%)
+  const barWidth = (amount: number): number => {
+    if (maxAmount <= 0) return 0;
+    if (maxAmount === minAmount) return 100;
+    return FLOOR + ((amount - minAmount) / (maxAmount - minAmount)) * (100 - FLOOR);
+  };
 
   return (
     <section className="flex flex-col rounded-xl border border-border bg-card shadow-sm">
@@ -58,7 +69,7 @@ export function RankingList({
                 <div
                   className="h-full rounded-full"
                   style={{
-                    width: `${(it.amount / max) * 100}%`,
+                    width: `${barWidth(it.amount)}%`,
                     background: 'linear-gradient(90deg, var(--primary), #b9a6ff)',
                   }}
                 />
