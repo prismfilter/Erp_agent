@@ -8,7 +8,46 @@ import { serverError, dbError } from '@/lib/api/respond';
 import { parseBody, readJson } from '@/lib/validation/parse';
 import { serviceSettlementCreateSchema } from '@/lib/validation/schemas';
 import { getInternalItems, calcItemBreakdown } from '@/lib/invoice/calculator';
+import { buildSettlementRows, settlementKey } from '@/lib/settlement/serviceRows';
 import type { Invoice, InvoiceItem, ServiceSettlement, ServiceSettlementDetailItem } from '@/types/invoice';
+
+// GET /api/settlements/service — paid 청구서에서 (작가 × 거래) 목록 행 + 상태를 반환(행은 비영속, 상태만 영속)
+export async function GET() {
+  try {
+    const auth = await requireStaff();
+    if (isErrorResponse(auth)) return auth;
+
+    // 입금 완료 청구서 + 내부 항목
+    const { data: invoicesData, error: invErr } = await auth.adminClient
+      .from('invoices')
+      .select('*, client:clients(*), items:invoice_items(*)')
+      .eq('status', 'paid')
+      .order('paid_at', { ascending: false });
+
+    if (invErr) {
+      return dbError('용역 정산 목록 API 오류', invErr);
+    }
+
+    // 정산완료 상태(레코드 존재 = 정산완료)
+    const { data: statusData, error: statusErr } = await auth.adminClient
+      .from('service_settlement_status')
+      .select('invoice_id, writer_name');
+
+    if (statusErr) {
+      return dbError('용역 정산 상태 조회 API 오류', statusErr);
+    }
+
+    const settledKeys = new Set(
+      (statusData ?? []).map((s) => settlementKey(s.invoice_id as string, s.writer_name as string)),
+    );
+
+    const rows = buildSettlementRows((invoicesData ?? []) as Invoice[], settledKeys);
+
+    return NextResponse.json({ rows });
+  } catch (err) {
+    return serverError('용역 정산 목록 API 오류', err);
+  }
+}
 
 // POST /api/settlements/service — 정산 계산(저장하지 않고 결과만 반환)
 export async function POST(request: NextRequest) {
