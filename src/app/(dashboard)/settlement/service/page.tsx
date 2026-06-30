@@ -6,7 +6,7 @@
 // 정산서(PDF/엑셀) 출력 버튼은 추후 별도 설계 예정 — 양식 파일(SettlementPreview/settlementExcel)은 보존.
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { Eye } from 'lucide-react';
+import { Eye, FileSpreadsheet, Printer, ArrowLeft, ReceiptText, Check } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { SelectMenu } from '@/components/ui/SelectMenu';
@@ -15,9 +15,15 @@ import {
   type SettlementStatus,
 } from '@/components/settlement/SettlementStatusSelect';
 import { SettlementDetailModal } from '@/components/settlement/SettlementDetailModal';
+import { SettlementPreview } from '@/components/settlement/SettlementPreview';
+import { exportSettlementExcel } from '@/lib/settlement/settlementExcel';
 import { formatWon } from '@/lib/settlement/calculator';
-import { settlementKey, type SettlementRow } from '@/lib/settlement/serviceRows';
-import type { Writer } from '@/types/invoice';
+import {
+  settlementKey,
+  buildSettlementFromRows,
+  type SettlementRow,
+} from '@/lib/settlement/serviceRows';
+import type { Writer, ServiceSettlement } from '@/types/invoice';
 
 type StatusTab = '전체' | SettlementStatus;
 type Kind = '전체' | '전속작가' | '일반작가';
@@ -43,6 +49,13 @@ export default function ServiceSettlementPage() {
 
   // 상세 모달 대상
   const [detailRow, setDetailRow] = useState<SettlementRow | null>(null);
+
+  // 정산서 미리보기 (일괄/개인별 공용)
+  const [preview, setPreview] = useState<ServiceSettlement | null>(null);
+  const [previewRows, setPreviewRows] = useState<SettlementRow[]>([]); // 미리보기에 포함된 출처 행(완료 처리용)
+  const [previewDoc, setPreviewDoc] = useState(''); // 미리보기 문서번호 표기
+  const [exporting, setExporting] = useState(false);
+  const [completing, setCompleting] = useState(false);
 
   // 오늘(로컬) — 날짜 선택 상한
   const today = useMemo(() => {
@@ -138,9 +151,155 @@ export default function ServiceSettlementPage() {
     }
   };
 
+  // 정산 기간 산출 — 필터 날짜 우선, 없으면 대상 행들의 입금완료일 min/max
+  const periodOf = useCallback(
+    (targetRows: SettlementRow[]): { start: string; end: string } => {
+      const dates = targetRows
+        .map((r) => r.paid_at?.slice(0, 10))
+        .filter((d): d is string => !!d)
+        .sort();
+      return {
+        start: start || dates[0] || today,
+        end: end || dates[dates.length - 1] || today,
+      };
+    },
+    [start, end, today],
+  );
+
+  // 미리보기 문서번호 — 단일이면 그 번호, 복수면 '대표 외 N건'
+  const docNumberOf = (targetRows: SettlementRow[]): string => {
+    const nums = Array.from(new Set(targetRows.map((r) => r.doc_number).filter(Boolean)));
+    if (nums.length === 0) return '';
+    if (nums.length === 1) return nums[0];
+    return `${nums[0]} 외 ${nums.length - 1}건`;
+  };
+
+  // 미리보기 진입 공통 — 출처 행·문서번호 보관 후 정산서 생성
+  const openPreview = (targetRows: SettlementRow[], writer: string) => {
+    const { start: ps, end: pe } = periodOf(targetRows);
+    setPreviewRows(targetRows);
+    setPreviewDoc(docNumberOf(targetRows));
+    setPreview(buildSettlementFromRows(targetRows, writer, ps, pe, new Date().toISOString()));
+  };
+
+  // 일괄 정산 — 현재 필터(선택 작가)에 해당하는 행들로 정산서 미리보기
+  const handleBulk = () => {
+    if (!writerName) {
+      setError('일괄 정산은 작가를 선택해야 합니다.');
+      return;
+    }
+    if (filtered.length === 0) {
+      setError('정산할 내역이 없습니다.');
+      return;
+    }
+    setError(null);
+    openPreview(filtered, writerName);
+  };
+
+  // 개인별 정산서 — 상세 모달의 '정산서 생성'에서 한 행만으로 미리보기
+  const handleGenerate = (row: SettlementRow) => {
+    setDetailRow(null);
+    openPreview([row], row.writer_name);
+  };
+
+  const handlePrint = () => window.print();
+
+  const handleExcel = async () => {
+    if (!preview) return;
+    setExporting(true);
+    try {
+      await exportSettlementExcel(preview);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // 완료 — 미리보기에 포함된 행들을 정산완료로 영속하고 목록에 반영, 목록으로 복귀
+  const handleComplete = async () => {
+    if (previewRows.length === 0) return;
+    setCompleting(true);
+    try {
+      const results = await Promise.all(
+        previewRows.map((r) =>
+          fetch('/api/settlements/service/status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              invoice_id: r.invoice_id,
+              writer_name: r.writer_name,
+              settled: true,
+            }),
+          }).then((res) => res.ok),
+        ),
+      );
+      const okKeys = new Set(
+        previewRows
+          .filter((_, i) => results[i])
+          .map((r) => settlementKey(r.invoice_id, r.writer_name)),
+      );
+      setRows((list) =>
+        list.map((r) =>
+          okKeys.has(settlementKey(r.invoice_id, r.writer_name))
+            ? { ...r, status: 'settled' as const }
+            : r,
+        ),
+      );
+      if (okKeys.size < previewRows.length) setError('일부 항목의 정산완료 처리에 실패했습니다.');
+      setPreview(null);
+    } finally {
+      setCompleting(false);
+    }
+  };
+
   // 날짜 선택 트리거 버튼 스타일 — 기존 용역정산 페이지와 동일
   const datePickerClass =
     'w-36 flex items-center justify-between gap-1.5 px-2.5 py-2 text-sm bg-background border border-border rounded-lg hover:border-primary transition cursor-pointer text-foreground';
+
+  // ── 정산서 미리보기 화면 ──
+  if (preview) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          className="print:hidden"
+          titleClassName="text-2xl"
+          divider={false}
+          title={`${preview.writer_name} · 용역 정산서`}
+          description={`${preview.period_start} ~ ${preview.period_end} · ${formatWon(preview.total_amount)} · ${preview.detail?.length ?? 0}건`}
+          actions={
+            <>
+              <button
+                onClick={() => setPreview(null)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" /> 목록
+              </button>
+              <button
+                onClick={handleComplete}
+                disabled={completing}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 transition font-medium cursor-pointer disabled:opacity-50"
+              >
+                <Check className="w-3.5 h-3.5" /> {completing ? '처리 중...' : '완료'}
+              </button>
+              <button
+                onClick={handleExcel}
+                disabled={exporting}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" /> {exporting ? '생성 중...' : '엑셀 다운로드'}
+              </button>
+              <button
+                onClick={handlePrint}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5" /> PDF 저장 / 인쇄
+              </button>
+            </>
+          }
+        />
+        <SettlementPreview settlement={preview} docNumber={previewDoc} />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -214,6 +373,16 @@ export default function ServiceSettlementPage() {
             className={datePickerClass}
           />
         </div>
+
+        {/* 일괄 정산 — 선택 작가의 필터 내역으로 정산서 미리보기 (작가 선택 필수) */}
+        <button
+          onClick={handleBulk}
+          disabled={!writerName}
+          title={writerName ? '선택 작가의 정산서 미리보기' : '작가를 선택하면 일괄 정산이 가능합니다'}
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition cursor-pointer font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <ReceiptText className="w-4 h-4" /> 일괄 정산
+        </button>
       </div>
 
       {error && (
@@ -234,10 +403,24 @@ export default function ServiceSettlementPage() {
             조건에 맞는 정산 내역이 없습니다.
           </div>
         ) : (
-          <table className="w-full text-sm">
+          // table-fixed + colgroup 고정폭 — 데이터(작가/거래명 길이)와 무관하게 컬럼 폭 고정(흔들림 방지)
+          <table className="w-full text-sm table-fixed">
+            {/* 문서번호·작가명·지급액·날짜·상세·상태는 고정폭, 거래처·거래명은 남은 폭을 균등 분배(잘림 방지+안정) */}
+            <colgroup>
+              <col className="w-24" />
+              <col className="w-20" />
+              <col />
+              <col />
+              <col className="w-28" />
+              <col className="w-28" />
+              <col className="w-24" />
+              <col className="w-24" />
+            </colgroup>
             <thead>
               <tr className="border-b border-border text-xs uppercase text-muted-foreground">
-                <th className="px-4 py-3 text-center font-medium">작가</th>
+                <th className="px-4 py-3 text-center font-medium">문서번호</th>
+                <th className="px-4 py-3 text-center font-medium">작가명</th>
+                <th className="px-4 py-3 text-center font-medium">거래처</th>
                 <th className="px-4 py-3 text-center font-medium">거래명</th>
                 <th className="px-4 py-3 text-center font-medium">지급액</th>
                 <th className="px-4 py-3 text-center font-medium">입금완료일</th>
@@ -251,8 +434,10 @@ export default function ServiceSettlementPage() {
                   key={settlementKey(r.invoice_id, r.writer_name)}
                   className="border-b border-border last:border-0"
                 >
-                  <td className="px-4 py-3 text-center text-foreground font-medium">{r.writer_name}</td>
-                  <td className="px-4 py-3 text-center text-foreground">{r.title}</td>
+                  <td className="px-4 py-3 text-center text-muted-foreground tabular-nums whitespace-nowrap">{r.doc_number || '-'}</td>
+                  <td className="px-4 py-3 text-center text-foreground font-medium truncate">{r.writer_name}</td>
+                  <td className="px-4 py-3 text-center text-foreground truncate">{r.client_name || '-'}</td>
+                  <td className="px-4 py-3 text-center text-foreground truncate" title={r.title}>{r.title}</td>
                   <td className="px-4 py-3 text-center text-foreground tabular-nums whitespace-nowrap">
                     {formatWon(r.writer_pay)}
                   </td>
@@ -284,7 +469,11 @@ export default function ServiceSettlementPage() {
       </div>
 
       {detailRow && (
-        <SettlementDetailModal row={detailRow} onClose={() => setDetailRow(null)} />
+        <SettlementDetailModal
+          row={detailRow}
+          onClose={() => setDetailRow(null)}
+          onGenerate={() => handleGenerate(detailRow)}
+        />
       )}
     </div>
   );

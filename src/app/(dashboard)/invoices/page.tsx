@@ -158,7 +158,7 @@ export default function InvoicesPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="거래명 검색..."
-          className="flex-1 min-w-[200px] px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
+          className="flex-1 min-w-[160px] max-w-xs px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
         />
       </div>
 
@@ -182,10 +182,10 @@ export default function InvoicesPage() {
             <table className="w-full text-sm">
               <thead className="bg-primary/10 border-b border-border">
                 <tr>
-                  <SortableHeader label="날짜" sortKey="date" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
-                  <SortableHeader label="거래처" sortKey="client" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
-                  <SortableHeader label="거래명" sortKey="title" activeKey={sortKey} dir={dir} onSort={toggle} className="px-4 py-3 text-xs uppercase" />
-                  <th className="px-4 py-3 text-left font-bold text-foreground text-xs uppercase">작업자</th>
+                  <SortableHeader label="날짜" sortKey="date" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
+                  <SortableHeader label="거래처" sortKey="client" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
+                  <SortableHeader label="거래명" sortKey="title" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
+                  <th className="px-4 py-3 text-center font-bold text-foreground text-xs uppercase">작업자</th>
                   <SortableHeader label="총 합계" sortKey="total" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
                   <SortableHeader label="상태" sortKey="status" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-4 py-3 text-xs uppercase" />
                   <th className="px-4 py-3 text-center font-bold text-foreground text-xs uppercase">액션</th>
@@ -196,18 +196,18 @@ export default function InvoicesPage() {
                   const totals = calcInvoiceTotals(inv.items ?? []);
                   return (
                     <tr key={inv.id} className="hover:bg-primary/5">
-                      <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">
+                      <td className="px-4 py-3 text-center text-muted-foreground text-xs whitespace-nowrap">
                         {inv.invoice_date}
                       </td>
-                      <td className="px-4 py-3 text-foreground whitespace-nowrap">
+                      <td className="px-4 py-3 text-center text-foreground whitespace-nowrap">
                         {inv.client?.name ?? '-'}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-center">
                         <Link href={`/invoices/${inv.id}`} className="text-foreground hover:text-primary transition">
                           {inv.title}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground text-xs">
+                      <td className="px-4 py-3 text-center text-muted-foreground text-xs">
                         {writerSummary(inv.items ?? [])}
                       </td>
                       <td className="px-4 py-3 text-center text-foreground font-medium tabular-nums whitespace-nowrap">

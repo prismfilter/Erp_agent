@@ -23,7 +23,13 @@ function fmtDate(s: string | null): string {
   return s.slice(0, 10);
 }
 
-export function SettlementPreview({ settlement }: { settlement: ServiceSettlement }) {
+export function SettlementPreview({
+  settlement,
+  docNumber,
+}: {
+  settlement: ServiceSettlement;
+  docNumber?: string;
+}) {
   const detail = useMemo(() => settlement.detail ?? [], [settlement.detail]);
 
   // 세금 계산 (작가지급액 합 기준, 수수료 없음 — 원천징수만)
@@ -55,8 +61,13 @@ export function SettlementPreview({ settlement }: { settlement: ServiceSettlemen
         return (
           <div
             key={pageIdx}
-            className="settlement-page mx-auto w-full max-w-[794px] min-h-[1123px] bg-white text-black border border-gray-200 shadow-lg p-12 flex flex-col print:max-w-none print:min-h-[265mm] print:shadow-none print:border-0 print:p-0"
+            className="settlement-page relative mx-auto w-full max-w-[794px] min-h-[1123px] bg-white text-black border border-gray-200 shadow-lg p-12 flex flex-col print:max-w-none print:min-h-[265mm] print:shadow-none print:border-0 print:p-0"
           >
+            {/* 문서번호 — A4 좌측 상단 모서리 끝 */}
+            {docNumber && (
+              <p className="absolute top-3 left-4 text-[10px] text-slate-400">문서번호 {docNumber}</p>
+            )}
+
             {/* ===== 헤더 ===== */}
             <div className="flex items-start justify-between pb-6 border-b-2 border-slate-800">
               <div className="flex items-center gap-3">

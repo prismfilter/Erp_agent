@@ -142,7 +142,8 @@ export function SettlementStatusSelect({ value, onChange, disabled }: Settlement
         type="button"
         onClick={handleToggle}
         disabled={disabled}
-        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium transition ${SETTLEMENT_STATUS_STYLE[value]} ${
+        // 폭 고정 — 미정산/정산완료 글자 길이가 달라도 컬럼이 흔들리지 않게
+        className={`inline-flex items-center justify-center gap-1 w-[5.5rem] px-2 py-1 rounded text-xs font-medium transition ${SETTLEMENT_STATUS_STYLE[value]} ${
           disabled ? 'opacity-50 cursor-default' : 'hover:opacity-90 cursor-pointer'
         }`}
         title="상태 변경"

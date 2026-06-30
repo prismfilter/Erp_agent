@@ -4,6 +4,7 @@
 // 목록의 작가 셀 클릭 시 진입. WorkDetailModal과 동일한 오버레이/닫기 패턴.
 
 import { useEffect } from 'react';
+import { FileText } from 'lucide-react';
 import { formatWon } from '@/lib/settlement/calculator';
 import { parseWorkContent } from '@/lib/invoice/calculator';
 import type { SettlementRow } from '@/lib/settlement/serviceRows';
@@ -11,9 +12,20 @@ import type { SettlementRow } from '@/lib/settlement/serviceRows';
 interface SettlementDetailModalProps {
   row: SettlementRow;
   onClose: () => void;
+  onGenerate?: () => void; // 정산서 생성 — 이 행 내용으로 용역정산서 미리보기
 }
 
-export function SettlementDetailModal({ row, onClose }: SettlementDetailModalProps) {
+// 상단 요약 필드 한 칸
+function InfoField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="text-center">
+      <p className="text-[11px] text-muted-foreground mb-0.5">{label}</p>
+      <p className="text-sm font-semibold text-foreground break-keep">{value || '-'}</p>
+    </div>
+  );
+}
+
+export function SettlementDetailModal({ row, onClose, onGenerate }: SettlementDetailModalProps) {
   // Esc로 닫기
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -29,7 +41,7 @@ export function SettlementDetailModal({ row, onClose }: SettlementDetailModalPro
       onClick={onClose}
     >
       <div
-        className="bg-card border border-border rounded-xl shadow-xl w-full max-w-2xl max-h-[88vh] flex flex-col"
+        className="bg-card border border-border rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 헤더 — 제목 가운데, 닫기 우측 고정 */}
@@ -46,14 +58,13 @@ export function SettlementDetailModal({ row, onClose }: SettlementDetailModalPro
           </button>
         </div>
 
-        {/* 본문 (스크롤) */}
-        <div className="flex-1 overflow-y-auto gradient-scroll px-5 py-4 space-y-4">
-          {/* 요약 — 작가 · 업체명 · 거래명 가운데 (작업내용 앞에 업체명 노출) */}
-          <div className="text-center space-y-0.5">
-            <p className="text-sm font-semibold text-foreground">{row.writer_name}</p>
-            <p className="text-xs text-muted-foreground">
-              {row.client_name ? `${row.client_name} · ${row.title}` : row.title}
-            </p>
+        {/* 본문 (스크롤) — 내용 높이에 맞춰 모달이 자연스럽게 늘어남(과한 빈공간 방지) */}
+        <div className="flex-1 min-h-0 overflow-y-auto gradient-scroll px-6 py-5 space-y-5">
+          {/* 요약 — 작가 · 거래처 · 거래명을 여유있는 정보 블럭으로(작업내용 앞에 업체명 노출) */}
+          <div className="grid grid-cols-3 gap-4 bg-muted/30 border border-border rounded-lg py-4 px-5">
+            <InfoField label="작가명" value={row.writer_name} />
+            <InfoField label="거래처" value={row.client_name} />
+            <InfoField label="거래명" value={row.title} />
           </div>
 
           {/* 항목 내역 표 */}
@@ -98,6 +109,18 @@ export function SettlementDetailModal({ row, onClose }: SettlementDetailModalPro
             </table>
           </div>
         </div>
+
+        {/* 푸터 — 정산서 생성 버튼(좌측 하단, 구분선 없이) */}
+        {onGenerate && (
+          <div className="flex justify-start px-6 py-3">
+            <button
+              onClick={onGenerate}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition cursor-pointer"
+            >
+              <FileText className="w-3.5 h-3.5" /> 정산서 생성
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

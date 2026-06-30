@@ -9,6 +9,7 @@ import { parseBody, readJson } from '@/lib/validation/parse';
 import { serviceSettlementCreateSchema } from '@/lib/validation/schemas';
 import { getInternalItems, calcItemBreakdown } from '@/lib/invoice/calculator';
 import { buildSettlementRows, settlementKey } from '@/lib/settlement/serviceRows';
+import { assignSettlementNumbers } from '@/lib/document/docNumber';
 import type { Invoice, InvoiceItem, ServiceSettlement, ServiceSettlementDetailItem } from '@/types/invoice';
 
 // GET /api/settlements/service — paid 청구서에서 (작가 × 거래) 목록 행 + 상태를 반환(행은 비영속, 상태만 영속)
@@ -42,6 +43,18 @@ export async function GET() {
     );
 
     const rows = buildSettlementRows((invoicesData ?? []) as Invoice[], settledKeys);
+
+    // 문서번호 채번(멱등) 후 각 행에 주입 — 입금완료일 순으로 작은 번호
+    const docMap = await assignSettlementNumbers(auth.adminClient, rows);
+    for (const r of rows) {
+      r.doc_number = docMap.get(settlementKey(r.invoice_id, r.writer_name)) ?? '';
+    }
+    // 문서번호 오름차순(미부여는 뒤로)
+    rows.sort((a, b) => {
+      if (!a.doc_number) return 1;
+      if (!b.doc_number) return -1;
+      return a.doc_number.localeCompare(b.doc_number);
+    });
 
     return NextResponse.json({ rows });
   } catch (err) {

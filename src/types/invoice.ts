@@ -135,6 +135,7 @@ export interface Invoice {
   memo: string | null;
   created_at: string;
   updated_at: string;
+  doc_number?: string;            // 문서번호(YYYY-NNN호) — 상세 GET에서 채번 주입(청구서·지급서 공유)
   // 조인 결과
   client?: Client | null;
   account?: CompanyAccount | null;

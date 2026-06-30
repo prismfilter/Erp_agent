@@ -6,6 +6,7 @@ import { serverError, dbError } from '@/lib/api/respond';
 import { insertItems } from '@/lib/invoice/itemsRepo';
 import { parseBody, readJson } from '@/lib/validation/parse';
 import { invoiceUpdateSchema } from '@/lib/validation/schemas';
+import { assignDocNumber, DOC_TYPE_INVOICE } from '@/lib/document/docNumber';
 
 // GET /api/invoices/[id]
 export async function GET(
@@ -33,6 +34,12 @@ export async function GET(
     // items를 no 순으로 정렬
     if (data.items) {
       data.items.sort((a: { no: number }, b: { no: number }) => a.no - b.no);
+    }
+
+    // 문서번호 채번(멱등) — 청구서/지급서가 공유. 연도=청구일.
+    const year = parseInt((data.invoice_date as string).slice(0, 4), 10);
+    if (!Number.isNaN(year)) {
+      data.doc_number = await assignDocNumber(auth.adminClient, DOC_TYPE_INVOICE, year, id);
     }
 
     return NextResponse.json({ invoice: data });
