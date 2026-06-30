@@ -2,7 +2,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
-import { parseBody } from '@/lib/validation/parse';
+import { serverError, dbError } from '@/lib/api/respond';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { priceItemCreateSchema } from '@/lib/validation/schemas';
 
 // 휴지통 보관 기간 (30일) — 경과 항목은 조회 시 자동 영구삭제
@@ -45,13 +46,12 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await query;
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('프라이스 테이블 API 오류', error);
     }
 
     return NextResponse.json({ priceItems: data });
   } catch (err) {
-    console.error('프라이스 테이블 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('프라이스 테이블 API 오류', err);
   }
 }
 
@@ -61,7 +61,9 @@ export async function POST(request: NextRequest) {
     const auth = await requireStaff(true);
     if (isErrorResponse(auth)) return auth;
 
-    const parsed = parseBody(priceItemCreateSchema, await request.json());
+    const body = await readJson(request);
+    if (!body.success) return body.response;
+    const parsed = parseBody(priceItemCreateSchema, body.data);
     if (!parsed.success) return parsed.response;
     const { category, name, billing_price, writer_base_pay, fee_rate, is_formula, formula_note, sort_order } = parsed.data;
 
@@ -81,12 +83,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('프라이스 테이블 추가 API 오류', error);
     }
 
     return NextResponse.json({ priceItem: data }, { status: 201 });
   } catch (err) {
-    console.error('프라이스 테이블 추가 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('프라이스 테이블 추가 API 오류', err);
   }
 }

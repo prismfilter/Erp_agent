@@ -2,7 +2,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
-import { parseBody } from '@/lib/validation/parse';
+import { serverError, dbError } from '@/lib/api/respond';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { writerCreateSchema } from '@/lib/validation/schemas';
 import { nextWriterCode } from '@/lib/writers/writerCode';
 
@@ -22,13 +23,12 @@ export async function GET() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('작가 마스터 목록 API 오류', error);
     }
 
     return NextResponse.json({ writers: data });
   } catch (err) {
-    console.error('작가 마스터 목록 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('작가 마스터 목록 API 오류', err);
   }
 }
 
@@ -38,7 +38,9 @@ export async function POST(request: NextRequest) {
     const auth = await requireStaff(true);
     if (isErrorResponse(auth)) return auth;
 
-    const parsed = parseBody(writerCreateSchema, await request.json());
+    const body = await readJson(request);
+    if (!body.success) return body.response;
+    const parsed = parseBody(writerCreateSchema, body.data);
     if (!parsed.success) return parsed.response;
     const { name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, english_name, stage_name, stage_name_en, position, original_writer_code } = parsed.data;
 
@@ -79,11 +81,10 @@ export async function POST(request: NextRequest) {
       if (error.code === '23505') {
         return NextResponse.json({ error: '이미 등록된 작가명입니다.' }, { status: 409 });
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('작가 마스터 등록 API 오류', error);
     }
     return NextResponse.json({ error: lastMessage }, { status: 500 });
   } catch (err) {
-    console.error('작가 마스터 등록 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('작가 마스터 등록 API 오류', err);
   }
 }

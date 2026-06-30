@@ -1,7 +1,8 @@
 // 홈 피드 순위 위젯용 순수 헬퍼
 // - 작가별 정산 순위: 용역정산 total_amount(작가지급액)를 작가별 합산
 // - 거래처별 매출 순위: paid 청구서 귀속금액(내부항목 기준)을 거래처별 합산
-import type { Invoice, ServiceSettlement } from '@/types/invoice';
+import type { Invoice } from '@/types/invoice';
+import type { SettlementRow } from '@/lib/settlement/serviceRows';
 import { getInternalItems, calcItemBreakdown } from '@/lib/invoice/calculator';
 
 export interface RankingItem {
@@ -9,15 +10,17 @@ export interface RankingItem {
   amount: number;
 }
 
-// 작가별 올해 정산 순위 — period_start 연도가 year인 용역정산 total_amount를 작가별 합산(내림차순, 0 제외)
+// 작가별 올해 정산 순위 — '정산완료'로 마킹된 행만, paid_at 연도가 year인 writer_pay를 작가별 합산(내림차순, 0 제외)
+// 정산완료(status==='settled') 처리한 건만 반영 — 입금완료만으로는 집계하지 않는다(용역정산 페이지에서 정산완료 버튼을 눌러야 반영).
 export function buildWriterRanking(
-  settlements: ServiceSettlement[],
+  rows: SettlementRow[],
   year: number,
 ): RankingItem[] {
   const byWriter = new Map<string, number>();
-  for (const s of settlements) {
-    if (!s.period_start || parseInt(s.period_start.slice(0, 4), 10) !== year) continue;
-    byWriter.set(s.writer_name, (byWriter.get(s.writer_name) ?? 0) + (s.total_amount ?? 0));
+  for (const r of rows) {
+    if (r.status !== 'settled') continue;
+    if (!r.paid_at || parseInt(r.paid_at.slice(0, 4), 10) !== year) continue;
+    byWriter.set(r.writer_name, (byWriter.get(r.writer_name) ?? 0) + (r.writer_pay ?? 0));
   }
   return [...byWriter.entries()]
     .map(([name, amount]) => ({ name, amount }))

@@ -3,7 +3,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
-import { parseBody } from '@/lib/validation/parse';
+import { serverError, dbError } from '@/lib/api/respond';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { workCreateSchema } from '@/lib/validation/schemas';
 
 // 작품 + 원작자 목록(공연권/복제권 포함) 중첩 조회
@@ -34,13 +35,12 @@ export async function GET(
       if (error.code === 'PGRST116') {
         return NextResponse.json({ error: '저작물을 찾을 수 없습니다.' }, { status: 404 });
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('저작물 상세 API 오류', error);
     }
 
     return NextResponse.json({ work: data });
   } catch (err) {
-    console.error('저작물 상세 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('저작물 상세 API 오류', err);
   }
 }
 
@@ -55,7 +55,9 @@ export async function PATCH(
 
     const { id } = await params;
     // 등록과 동일 폼(작품 전체 + 원작자 목록)을 제출받아 교체
-    const parsed = parseBody(workCreateSchema, await request.json());
+    const body = await readJson(request);
+    if (!body.success) return body.response;
+    const parsed = parseBody(workCreateSchema, body.data);
     if (!parsed.success) return parsed.response;
 
     const { authors, ...workFields } = parsed.data;
@@ -82,7 +84,7 @@ export async function PATCH(
       if (upErr.code === '23505') {
         return NextResponse.json({ error: '이미 존재하는 NO.입니다.' }, { status: 409 });
       }
-      return NextResponse.json({ error: upErr.message }, { status: 500 });
+      return dbError('저작물 수정 API 오류', upErr);
     }
 
     // 2) 원작자 교체 — 데이터 손실 방지를 위해 (기존 조회 → 신규 삽입 성공 후 → 기존 삭제) 순서
@@ -95,7 +97,7 @@ export async function PATCH(
     const rows = authors.filter((a) => a.author_name || a.author_code).map((a) => ({ ...a, work_id: id }));
     if (rows.length > 0) {
       const { error: insErr } = await auth.adminClient.from('work_authors').insert(rows);
-      if (insErr) return NextResponse.json({ error: insErr.message }, { status: 500 });
+      if (insErr) return dbError('저작물 수정 API 오류', insErr);
     }
     if (oldIds.length > 0) {
       await auth.adminClient.from('work_authors').delete().in('id', oldIds);
@@ -103,8 +105,7 @@ export async function PATCH(
 
     return NextResponse.json({ ok: true, warning });
   } catch (err) {
-    console.error('저작물 수정 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('저작물 수정 API 오류', err);
   }
 }
 
@@ -121,12 +122,11 @@ export async function DELETE(
     const { error } = await auth.adminClient.from('works').delete().eq('id', id);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('저작물 삭제 API 오류', error);
     }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('저작물 삭제 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('저작물 삭제 API 오류', err);
   }
 }

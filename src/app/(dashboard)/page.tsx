@@ -9,8 +9,8 @@ import type {
   PriceItem,
   Writer,
   Client,
-  ServiceSettlement,
 } from '@/types/invoice';
+import type { SettlementRow } from '@/lib/settlement/serviceRows';
 import {
   aggregateRevenue,
   buildCategorySlices,
@@ -26,13 +26,14 @@ import { PageHeader } from '@/components/layout/PageHeader';
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
-  const [paidInvoices, setPaidInvoices] = useState<Invoice[]>([]);
+  // 전체 청구서(상태 무관) — 올해 청구건/입금완료 산출용. 매출집계는 paid만 필터해 사용.
+  const [allInvoices, setAllInvoices] = useState<Invoice[]>([]);
   const [priceItems, setPriceItems] = useState<PriceItem[]>([]);
   const [writers, setWriters] = useState<Writer[]>([]);
   // 전체 관리 저작물 수(작품 단위). /api/works/writers의 total — 자사작가 참여합과 다름
   const [worksTotal, setWorksTotal] = useState(0);
   const [clients, setClients] = useState<Client[]>([]);
-  const [serviceSettlements, setServiceSettlements] = useState<ServiceSettlement[]>([]);
+  const [settlementRows, setSettlementRows] = useState<SettlementRow[]>([]);
 
   // 연도: 장기 실행 stale 방지를 위해 컴포넌트 내부에서 산출
   const year = new Date().getFullYear();
@@ -42,7 +43,7 @@ export default function HomePage() {
     (async () => {
       try {
         const [invRes, priceRes, writerRes, worksRes, clientRes, settleRes] = await Promise.all([
-          fetch('/api/invoices?status=paid'),
+          fetch('/api/invoices'),
           fetch('/api/price-items?all=1'),
           fetch('/api/writers'),
           fetch('/api/works/writers'),
@@ -56,15 +57,15 @@ export default function HomePage() {
           writerRes.ok ? writerRes.json() : Promise.resolve({ writers: [] }),
           worksRes.ok ? worksRes.json() : Promise.resolve({ writers: [] }),
           clientRes.ok ? clientRes.json() : Promise.resolve({ clients: [] }),
-          settleRes.ok ? settleRes.json() : Promise.resolve({ settlements: [] }),
+          settleRes.ok ? settleRes.json() : Promise.resolve({ rows: [] }),
         ]);
 
-        setPaidInvoices(invJson.invoices ?? []);
+        setAllInvoices(invJson.invoices ?? []);
         setPriceItems(priceJson.priceItems ?? []);
         setWriters(writerJson.writers ?? []);
         setWorksTotal(worksJson.total ?? 0);
         setClients(clientJson.clients ?? []);
-        setServiceSettlements(settleJson.settlements ?? []);
+        setSettlementRows(settleJson.rows ?? []);
       } catch {
         // fetch 실패 시 0/빈 상태로 자연 렌더
       } finally {
@@ -73,8 +74,11 @@ export default function HomePage() {
     })();
   }, []);
 
-  // 집계 — aggregateRevenue(paid 청구서, 프라이스 테이블) 기반
+  // 집계 — 매출은 paid 청구서만, 퍼널 수치는 전체/입금완료/정산완료로 구분
   const home = useMemo(() => {
+    // 매출집계 입력은 paid 청구서만(기존 동작 유지 — 회귀 방지)
+    const paidInvoices = allInvoices.filter((inv) => inv.status === 'paid');
+
     const data = aggregateRevenue(paidInvoices, priceItems);
     const total = data.byYear[year] ?? 0;
     const prevTotal = data.byYear[year - 1] ?? 0;
@@ -83,14 +87,23 @@ export default function HomePage() {
     // 도넛: 실제 매출 카테고리(귀속금액) — 합계는 히어로 누적수입과 일치
     const slices = buildCategorySlices(data.byCategory, year);
 
-    // 올해 paid 청구서 건수
-    const paidThisYear = paidInvoices.filter(
-      (inv) => new Date(inv.invoice_date ?? '').getFullYear() === year,
-    );
-    const settledCount = paidThisYear.length;
+    // 퍼널: 올해 청구건(발행 전체) → 입금완료(paid_at 올해) → 정산완료(상태 행, paid_at 올해)
+    const billedCount = allInvoices.filter(
+      (inv) => inv.invoice_date?.slice(0, 4) === String(year),
+    ).length;
+    const paidCount = paidInvoices.filter(
+      (inv) => inv.paid_at?.slice(0, 4) === String(year),
+    ).length;
+    const settledCount = settlementRows.filter(
+      (r) => r.status === 'settled' && r.paid_at?.slice(0, 4) === String(year),
+    ).length;
 
-    // 순위 위젯: 작가별 올해 정산(용역정산 기준), 상위 거래처 매출(귀속금액 기준)
-    const writerRanking = buildWriterRanking(serviceSettlements, year);
+    // 작가 구분 분류
+    const exclusiveCount = writers.filter((w) => w.writer_type === '전속작가').length;
+    const generalCount = writers.filter((w) => w.writer_type === '일반작가').length;
+
+    // 순위 위젯: 작가별 올해 정산(용역정산 행 기준), 상위 거래처 매출(귀속금액 기준)
+    const writerRanking = buildWriterRanking(settlementRows, year);
     const clientRanking = buildClientRanking(paidInvoices, year);
 
     return {
@@ -98,13 +111,17 @@ export default function HomePage() {
       prevTotal,
       monthly,
       slices,
+      billedCount,
+      paidCount,
       settledCount,
+      exclusiveCount,
+      generalCount,
       byDay: data.byDay,
       years: data.years,
       writerRanking,
       clientRanking,
     };
-  }, [paidInvoices, priceItems, serviceSettlements, year]);
+  }, [allInvoices, priceItems, settlementRows, writers, year]);
 
   // 관리 저작물 수 = 전체 작품 수(중복 제거된 작품 단위)
   const worksCount = worksTotal;
@@ -137,11 +154,13 @@ export default function HomePage() {
           monthly={home.monthly}
         />
         <OverviewKpis
+          billedCount={home.billedCount}
+          paidCount={home.paidCount}
           settledCount={home.settledCount}
+          exclusiveCount={home.exclusiveCount}
+          generalCount={home.generalCount}
           worksCount={worksCount}
-          writersCount={writers.length}
           clientsCount={clients.length}
-          clientsDelta={0}
         />
       </div>
 
@@ -149,9 +168,9 @@ export default function HomePage() {
       <div className="grid flex-1 grid-cols-1 gap-3 lg:grid-cols-2">
         <RankingList
           title="작가별 올해 정산"
-          subtitle="전속작가 정산액(용역정산) 순"
+          subtitle="정산완료 처리된 용역정산 합계 순"
           items={home.writerRanking}
-          emptyText="올해 정산 내역이 없습니다."
+          emptyText="정산완료된 내역이 없습니다."
         />
         <RankingList
           title="상위 거래처 매출"

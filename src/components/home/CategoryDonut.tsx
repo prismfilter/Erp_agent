@@ -41,6 +41,9 @@ const CIRC = 100;
 export function CategoryDonut({ slices }: CategoryDonutProps) {
   const total = slices.reduce((s, b) => s + b.amount, 0);
 
+  // 비율 높은 순(금액 내림차순)으로 정렬 — 도넛 세그먼트·범례 모두 동일 순서 사용
+  const ordered = [...slices].sort((a, b) => b.amount - a.amount);
+
   // 세그먼트 offset 누적: 12시 방향 시작(offset=25)
   let offset = 25;
 
@@ -55,11 +58,11 @@ export function CategoryDonut({ slices }: CategoryDonutProps) {
       {/* 도넛(위) + 범례(아래 전체폭) — 좁고 긴 카드의 세로 여백을 채우도록 세로 중앙 정렬 */}
       <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 py-3">
         {/* SVG 도넛 — stroke-dasharray 방식, 반지름 R로 둘레 100 정규화 */}
-        <svg width="124" height="124" viewBox="0 0 42 42" className="flex-none">
+        <svg width="150" height="150" viewBox="0 0 42 42" className="flex-none">
           {/* 카테고리별 그라데이션 정의 — 세그먼트마다 밝은→진한 */}
           {total > 0 && (
             <defs>
-              {slices.map((b, i) => {
+              {ordered.map((b, i) => {
                 const [from, to] = CATEGORY_GRADIENTS[b.category] ?? FALLBACK_GRADIENT;
                 return (
                   <linearGradient key={i} id={`donut-grad-${i}`} x1="0" y1="0" x2="1" y2="1">
@@ -82,7 +85,7 @@ export function CategoryDonut({ slices }: CategoryDonutProps) {
 
           {/* 데이터 세그먼트 — 합계 0이면 렌더 생략(0 division 방지) */}
           {total > 0 &&
-            slices.map((b, i) => {
+            ordered.map((b, i) => {
               const pct = (b.amount / total) * CIRC;
               const dash = `${pct} ${CIRC - pct}`;
               // offset은 현재 시작 위치, 렌더 후 다음 세그먼트 위해 감소
@@ -103,31 +106,23 @@ export function CategoryDonut({ slices }: CategoryDonutProps) {
               return seg;
             })}
 
-          {/* 중앙 합계 — 히어로 누적 수입과 일치 */}
+          {/* 중앙 합계 — 히어로 누적 수입과 일치 (캡션 없이 금액만, 세로 중앙) */}
           <text
             x="21"
-            y="20"
+            y="21"
             textAnchor="middle"
-            fontSize="4.4"
+            dominantBaseline="central"
+            fontSize="3.9"
             fontWeight="800"
             fill="var(--foreground)"
           >
             {formatCompactWon(total)}
           </text>
-          <text
-            x="21"
-            y="25.5"
-            textAnchor="middle"
-            fontSize="2.5"
-            fill="var(--muted-foreground)"
-          >
-            올해 매출
-          </text>
         </svg>
 
         {/* 범례 — 도넛 아래 전체 폭 행. 항목명(좌)↔금액(우, ml-auto)이 양 끝으로 최대 분리 */}
         <div className="flex w-full flex-col gap-2.5 text-[13px]">
-          {slices.map((b) => {
+          {ordered.map((b) => {
             const color = CATEGORY_COLORS[b.category] ?? FALLBACK_COLOR;
             return (
               <div key={b.category} className="flex items-center gap-2.5">

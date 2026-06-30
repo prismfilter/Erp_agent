@@ -3,7 +3,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
-import { parseBody } from '@/lib/validation/parse';
+import { serverError, dbError } from '@/lib/api/respond';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { workCreateSchema } from '@/lib/validation/schemas';
 
 // 목록은 작품(works) 컬럼만 — 원작자는 상세에서 조회
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
         .from('work_authors')
         .select('work_id')
         .eq('author_code', code);
-      if (waErr) return NextResponse.json({ error: waErr.message }, { status: 500 });
+      if (waErr) return dbError('저작물 목록 API 오류', waErr);
       const ids = [...new Set((waRows ?? []).map((r) => r.work_id))];
       if (ids.length === 0) return NextResponse.json({ works: [], total: 0 });
 
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
         .select(SELECT)
         .in('id', ids)
         .order('no', { ascending: true });
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      if (error) return dbError('저작물 목록 API 오류', error);
       return NextResponse.json({ works: data, total: data?.length ?? 0 });
     }
 
@@ -55,11 +56,10 @@ export async function GET(request: NextRequest) {
       .select(SELECT, { count: 'exact' })
       .order('no', { ascending: true })
       .range(offset, offset + limit - 1);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return dbError('저작물 목록 API 오류', error);
     return NextResponse.json({ works: data, total: count ?? 0 });
   } catch (err) {
-    console.error('저작물 목록 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('저작물 목록 API 오류', err);
   }
 }
 
@@ -69,7 +69,9 @@ export async function POST(request: NextRequest) {
     const auth = await requireStaff(true);
     if (isErrorResponse(auth)) return auth;
 
-    const parsed = parseBody(workCreateSchema, await request.json());
+    const body = await readJson(request);
+    if (!body.success) return body.response;
+    const parsed = parseBody(workCreateSchema, body.data);
     if (!parsed.success) return parsed.response;
 
     const { authors, ...workFields } = parsed.data;
@@ -98,7 +100,7 @@ export async function POST(request: NextRequest) {
       if (error.code === '23505') {
         return NextResponse.json({ error: '이미 존재하는 NO.입니다.' }, { status: 409 });
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('저작물 등록 API 오류', error);
     }
 
     // 2) 원작자 삽입 (실패 시 작품 롤백)
@@ -107,13 +109,12 @@ export async function POST(request: NextRequest) {
       const { error: aErr } = await auth.adminClient.from('work_authors').insert(rows);
       if (aErr) {
         await auth.adminClient.from('works').delete().eq('id', work.id);
-        return NextResponse.json({ error: aErr.message }, { status: 500 });
+        return dbError('저작물 등록 API 오류', aErr);
       }
     }
 
     return NextResponse.json({ id: work.id, warning }, { status: 201 });
   } catch (err) {
-    console.error('저작물 등록 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('저작물 등록 API 오류', err);
   }
 }

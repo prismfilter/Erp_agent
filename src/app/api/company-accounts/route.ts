@@ -2,7 +2,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
-import { parseBody } from '@/lib/validation/parse';
+import { serverError, dbError } from '@/lib/api/respond';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { companyAccountCreateSchema } from '@/lib/validation/schemas';
 
 export async function GET() {
@@ -16,13 +17,12 @@ export async function GET() {
       .order('is_default', { ascending: false });
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('회사 계좌 API 오류', error);
     }
 
     return NextResponse.json({ accounts: data });
   } catch (err) {
-    console.error('회사 계좌 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('회사 계좌 API 오류', err);
   }
 }
 
@@ -32,7 +32,9 @@ export async function POST(request: NextRequest) {
     const auth = await requireStaff();
     if (isErrorResponse(auth)) return auth;
 
-    const parsed = parseBody(companyAccountCreateSchema, await request.json());
+    const body = await readJson(request);
+    if (!body.success) return body.response;
+    const parsed = parseBody(companyAccountCreateSchema, body.data);
     if (!parsed.success) return parsed.response;
     const bank_name = parsed.data.bank_name.trim();
     const account_number = parsed.data.account_number.trim();
@@ -56,12 +58,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('회사 계좌 등록 API 오류', error);
     }
 
     return NextResponse.json({ account: data }, { status: 201 });
   } catch (err) {
-    console.error('회사 계좌 등록 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('회사 계좌 등록 API 오류', err);
   }
 }

@@ -2,9 +2,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
+import { serverError, dbError } from '@/lib/api/respond';
 import { insertItems } from '@/lib/invoice/itemsRepo';
-import { parseBody } from '@/lib/validation/parse';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { invoiceUpdateSchema } from '@/lib/validation/schemas';
+import { assignDocNumber, DOC_TYPE_INVOICE } from '@/lib/document/docNumber';
 
 // GET /api/invoices/[id]
 export async function GET(
@@ -23,7 +25,7 @@ export async function GET(
       .maybeSingle();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('청구서 상세 API 오류', error);
     }
     if (!data) {
       return NextResponse.json({ error: '청구서를 찾을 수 없습니다.' }, { status: 404 });
@@ -34,10 +36,15 @@ export async function GET(
       data.items.sort((a: { no: number }, b: { no: number }) => a.no - b.no);
     }
 
+    // 문서번호 채번(멱등) — 청구서/지급서가 공유. 연도=청구일.
+    const year = parseInt((data.invoice_date as string).slice(0, 4), 10);
+    if (!Number.isNaN(year)) {
+      data.doc_number = await assignDocNumber(auth.adminClient, DOC_TYPE_INVOICE, year, id);
+    }
+
     return NextResponse.json({ invoice: data });
   } catch (err) {
-    console.error('청구서 상세 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('청구서 상세 API 오류', err);
   }
 }
 
@@ -51,7 +58,9 @@ export async function PATCH(
     if (isErrorResponse(auth)) return auth;
 
     const { id } = await params;
-    const parsed = parseBody(invoiceUpdateSchema, await request.json());
+    const body = await readJson(request);
+    if (!body.success) return body.response;
+    const parsed = parseBody(invoiceUpdateSchema, body.data);
     if (!parsed.success) return parsed.response;
     const { invoice_date, client_id, title, account_id, status, memo, items } = parsed.data;
 
@@ -73,7 +82,7 @@ export async function PATCH(
       .eq('id', id);
 
     if (upErr) {
-      return NextResponse.json({ error: upErr.message }, { status: 500 });
+      return dbError('청구서 수정 API 오류', upErr);
     }
 
     // items가 전달되면 전체 교체 (delete-and-insert)
@@ -83,7 +92,7 @@ export async function PATCH(
         .delete()
         .eq('invoice_id', id);
       if (delErr) {
-        return NextResponse.json({ error: delErr.message }, { status: 500 });
+        return dbError('청구서 수정 API 오류', delErr);
       }
 
       const insertErr = await insertItems(auth.adminClient, id, items);
@@ -94,8 +103,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('청구서 수정 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('청구서 수정 API 오류', err);
   }
 }
 
@@ -115,12 +123,11 @@ export async function DELETE(
       .eq('id', id);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('청구서 삭제 API 오류', error);
     }
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('청구서 삭제 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('청구서 삭제 API 오류', err);
   }
 }

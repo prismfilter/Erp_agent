@@ -1,10 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import type { Invoice, InvoiceItem, ServiceSettlement, Client } from '@/types/invoice';
+import type { Invoice, InvoiceItem, Client } from '@/types/invoice';
+import type { SettlementRow } from '@/lib/settlement/serviceRows';
 import { buildWriterRanking, buildClientRanking } from './rankings';
 
-// 최소 픽스처 — 테스트에 필요한 필드만 채우고 캐스팅
-function settlement(writer: string, periodStart: string, amount: number): ServiceSettlement {
-  return { writer_name: writer, period_start: periodStart, total_amount: amount } as unknown as ServiceSettlement;
+// 최소 픽스처 — 테스트에 필요한 필드만 채우고 캐스팅 (paid_at 연도·writer_pay·status 기준)
+// status 기본값 'settled' — 순위는 정산완료 건만 집계하므로 별도 지정 없으면 정산완료로 본다.
+function settlement(
+  writer: string,
+  paidAt: string,
+  amount: number,
+  status: 'settled' | 'unsettled' = 'settled',
+): SettlementRow {
+  return { writer_name: writer, paid_at: paidAt, writer_pay: amount, status } as unknown as SettlementRow;
 }
 
 function invoice(date: string, clientName: string | null, items: { supply: number; rate: number }[]): Invoice {
@@ -39,6 +46,14 @@ describe('buildWriterRanking', () => {
   it('0/빈 입력은 빈 배열', () => {
     expect(buildWriterRanking([], 2026)).toEqual([]);
     expect(buildWriterRanking([settlement('김작가', '2026-01-01', 0)], 2026)).toEqual([]);
+  });
+  it('정산완료(settled)가 아닌 행은 제외', () => {
+    const list = [
+      settlement('김작가', '2026-03-01', 500, 'settled'),
+      settlement('이작가', '2026-06-01', 900, 'unsettled'), // 미정산 → 제외
+      settlement('김작가', '2026-09-01', 300, 'unsettled'), // 미정산 → 제외
+    ];
+    expect(buildWriterRanking(list, 2026)).toEqual([{ name: '김작가', amount: 500 }]);
   });
 });
 

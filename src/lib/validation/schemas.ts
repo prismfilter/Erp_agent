@@ -140,6 +140,13 @@ export const serviceSettlementCreateSchema = z.object({
   period_end: z.string().min(1, '종료일은 필수입니다.'),
 });
 
+// 용역 정산 상태 토글 — (invoice_id, writer_name) 행을 정산완료/미정산으로 전환
+export const serviceSettlementStatusSchema = z.object({
+  invoice_id: z.string().uuid('잘못된 청구서 식별자입니다.'),
+  writer_name: z.string().trim().min(1, '작가명은 필수입니다.'),
+  settled: z.boolean(),
+});
+
 // ── 거래처 ────────────────────────────────────────────────────────────────
 export const clientCreateSchema = z.object({
   name: z.string().trim().min(1, '거래처명은 필수입니다.'),

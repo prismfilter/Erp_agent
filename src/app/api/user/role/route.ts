@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthedUser, isErrorResponse, canSelfAssignRole } from '@/lib/auth/apiAuth';
-import { parseBody } from '@/lib/validation/parse';
+import { serverError, dbError } from '@/lib/api/respond';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { userRoleSchema } from '@/lib/validation/schemas';
 
 export async function PATCH(req: NextRequest) {
   try {
-    const parsed = parseBody(userRoleSchema, await req.json());
+    const body = await readJson(req);
+    if (!body.success) return body.response;
+    const parsed = parseBody(userRoleSchema, body.data);
     if (!parsed.success) return parsed.response;
     const { role } = parsed.data;
 
@@ -26,13 +29,11 @@ export async function PATCH(req: NextRequest) {
       .upsert({ user_id: authed.userId, role }, { onConflict: 'user_id' });
 
     if (error) {
-      console.error('역할 저장 오류:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('역할 저장 오류', error);
     }
 
     return NextResponse.json({ success: true, role });
   } catch (err) {
-    console.error('API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('API 오류', err);
   }
 }

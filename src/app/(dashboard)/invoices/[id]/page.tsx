@@ -5,7 +5,7 @@
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { SquarePen, FileSpreadsheet, Printer, ReceiptText, Wallet, type LucideIcon } from 'lucide-react';
+import { SquarePen, FileSpreadsheet, Printer, ReceiptText, Wallet, List, type LucideIcon } from 'lucide-react';
 import type { Invoice } from '@/types/invoice';
 import { InvoicePreview } from '@/components/invoice/InvoicePreview';
 import { exportInvoiceExcel } from '@/lib/invoice/excelExport';
@@ -90,6 +90,12 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
         description={`${invoice.client?.name ?? '거래처 미지정'} · ${invoice.invoice_date}`}
         actions={
           <>
+            <Link
+              href="/invoices"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition"
+            >
+              <List className="w-3.5 h-3.5" /> 목록
+            </Link>
             <Link
               href={`/invoices/${id}/edit`}
               className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-lg text-foreground hover:bg-muted transition"
