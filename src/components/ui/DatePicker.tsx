@@ -96,7 +96,7 @@ function displayLabel(s: string, placeholder: string): string {
 
 export function DatePicker({ value, onChange, className, maxDate, placeholder = '날짜 선택', centerText = false, startYear = 2020, openClassName }: DatePickerProps) {
   const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const [pos, setPos] = useState<{ left: number; top: number; bottom: number; openUp: boolean; maxHeight: number } | null>(null);
   const [mounted, setMounted] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
@@ -108,9 +108,20 @@ export function DatePicker({ value, onChange, className, maxDate, placeholder = 
     const b = btnRef.current;
     if (!b) return;
     const r = b.getBoundingClientRect();
-    // 화면 우측/하단 밖으로 넘치지 않도록 보정
+    // 화면 우측 밖으로 넘치지 않도록 보정
     const left = Math.min(r.left, window.innerWidth - 320);
-    setPos({ left: Math.max(8, left), top: r.bottom + 4 });
+    // 위/아래 중 더 넓은 쪽으로 열고, 그 쪽 공간을 넘으면 maxHeight로 제한(잘림 방지 → 스크롤)
+    const margin = 8;
+    const spaceBelow = window.innerHeight - r.bottom - margin;
+    const spaceAbove = r.top - margin;
+    const openUp = spaceAbove > spaceBelow;
+    setPos({
+      left: Math.max(8, left),
+      top: r.bottom + 4,
+      bottom: window.innerHeight - r.top + 4,
+      openUp,
+      maxHeight: Math.max(200, openUp ? spaceAbove : spaceBelow),
+    });
   }, []);
 
   const toggle = () => {
@@ -146,8 +157,14 @@ export function DatePicker({ value, onChange, className, maxDate, placeholder = 
   const popover = open && pos && (
     <div
       ref={popRef}
-      style={{ position: 'fixed', left: pos.left, top: pos.top, zIndex: 300 }}
-      className="rdp-popover bg-card border border-border rounded-xl shadow-2xl p-2"
+      style={{
+        position: 'fixed',
+        left: pos.left,
+        ...(pos.openUp ? { bottom: pos.bottom } : { top: pos.top }),
+        maxHeight: pos.maxHeight,
+        zIndex: 300,
+      }}
+      className="rdp-popover overflow-y-auto gradient-scroll bg-card border border-border rounded-xl shadow-2xl p-2"
     >
       <DayPicker
         mode="single"

@@ -134,7 +134,7 @@ export default function WriterMasterPage() {
     permanent_rate: (w) => w.permanent_rate,
     general_rate: (w) => w.general_rate,
     fee_rate: (w) => w.fee_rate,
-    recontract_date: (w) => w.recontract_date,
+    contract_start: (w) => w.contract_start,
     status: (w) => w.status,
   }, 'pf_sort_writers');
 

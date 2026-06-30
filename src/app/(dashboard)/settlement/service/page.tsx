@@ -405,16 +405,16 @@ export default function ServiceSettlementPage() {
         ) : (
           // table-fixed + colgroup 고정폭 — 데이터(작가/거래명 길이)와 무관하게 컬럼 폭 고정(흔들림 방지)
           <table className="w-full text-sm table-fixed">
-            {/* 문서번호·작가명·지급액·날짜·상세·상태는 고정폭, 거래처·거래명은 남은 폭을 균등 분배(잘림 방지+안정) */}
+            {/* table-fixed + 내용량 비례 % 폭(합 100%) — 여백을 고르게 분배해 균형 있게(데이터 무관 안정) */}
             <colgroup>
-              <col className="w-24" />
-              <col className="w-20" />
-              <col />
-              <col />
-              <col className="w-28" />
-              <col className="w-28" />
-              <col className="w-24" />
-              <col className="w-24" />
+              <col className="w-[11%]" />
+              <col className="w-[9%]" />
+              <col className="w-[17%]" />
+              <col className="w-[19%]" />
+              <col className="w-[13%]" />
+              <col className="w-[12%]" />
+              <col className="w-[10%]" />
+              <col className="w-[9%]" />
             </colgroup>
             <thead>
               <tr className="border-b border-border text-xs uppercase text-muted-foreground">

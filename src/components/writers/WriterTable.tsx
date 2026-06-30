@@ -413,7 +413,7 @@ export function WriterTable({
               <SortableHeader label="영구 저작물(%)" sortKey="permanent_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
               <SortableHeader label="일반 저작물(%)" sortKey="general_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
               <SortableHeader label="용역 요율(%)" sortKey="fee_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
-              <SortableHeader label="재계약일" sortKey="recontract_date" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
+              <SortableHeader label="계약기간" sortKey="contract_start" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
               {/* 정렬 불가 — 보기 버튼만 있는 열 */}
               <th className="px-6 py-2.5 text-center font-bold text-foreground text-xs uppercase">상세정보</th>
               <SortableHeader label="계약 상태" sortKey="status" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
@@ -444,7 +444,13 @@ export function WriterTable({
                   <FeeRateCell value={w.fee_rate} editable={isAdmin} onSave={(v) => onPatch(w.id, { fee_rate: v })} />
                 </td>
                 <td className="px-6 py-2.5 text-center">
-                  <DateCell value={w.recontract_date} editable={isAdmin} onSave={(v) => onPatch(w.id, { recontract_date: v })} />
+                  {w.contract_start || w.contract_end ? (
+                    <span className="tabular-nums text-foreground text-xs whitespace-nowrap">
+                      {w.contract_start ?? '…'} ~ {w.contract_end ?? '…'}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">-</span>
+                  )}
                 </td>
                 <td className="px-6 py-2.5 text-center">
                   <Link
