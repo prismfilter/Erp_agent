@@ -3,6 +3,7 @@
 
 import { NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
+import { serverError, dbError } from '@/lib/api/respond';
 
 // GET /api/works/next-no — { nextNo }
 export async function GET() {
@@ -17,10 +18,9 @@ export async function GET() {
       .limit(1)
       .maybeSingle();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return dbError('다음 NO. API 오류', error);
     return NextResponse.json({ nextNo: (data?.no ?? 0) + 1 });
   } catch (err) {
-    console.error('다음 NO. API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('다음 NO. API 오류', err);
   }
 }

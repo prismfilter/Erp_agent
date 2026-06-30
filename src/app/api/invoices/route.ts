@@ -2,8 +2,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
+import { serverError, dbError } from '@/lib/api/respond';
 import { insertItems } from '@/lib/invoice/itemsRepo';
-import { parseBody } from '@/lib/validation/parse';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { invoiceCreateSchema } from '@/lib/validation/schemas';
 
 // GET /api/invoices?client_id=&status=&from=&to=&q=
@@ -33,13 +34,12 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await query;
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('청구서 목록 API 오류', error);
     }
 
     return NextResponse.json({ invoices: data });
   } catch (err) {
-    console.error('청구서 목록 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('청구서 목록 API 오류', err);
   }
 }
 
@@ -49,7 +49,9 @@ export async function POST(request: NextRequest) {
     const auth = await requireStaff();
     if (isErrorResponse(auth)) return auth;
 
-    const parsed = parseBody(invoiceCreateSchema, await request.json());
+    const body = await readJson(request);
+    if (!body.success) return body.response;
+    const parsed = parseBody(invoiceCreateSchema, body.data);
     if (!parsed.success) return parsed.response;
     const { invoice_date, client_id, title, account_id, status, memo, items } = parsed.data;
 
@@ -68,7 +70,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (invErr || !invoice) {
-      return NextResponse.json({ error: invErr?.message || '청구서 생성 실패' }, { status: 500 });
+      return dbError('청구서 생성 API 오류', invErr);
     }
 
     if (Array.isArray(items) && items.length > 0) {
@@ -80,7 +82,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ invoice }, { status: 201 });
   } catch (err) {
-    console.error('청구서 생성 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('청구서 생성 API 오류', err);
   }
 }

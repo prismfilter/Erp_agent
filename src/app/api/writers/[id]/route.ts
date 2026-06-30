@@ -2,7 +2,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
-import { parseBody } from '@/lib/validation/parse';
+import { serverError, dbError } from '@/lib/api/respond';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { writerUpdateSchema } from '@/lib/validation/schemas';
 import { needsRecode, nextWriterCode } from '@/lib/writers/writerCode';
 
@@ -26,13 +27,12 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: '작가를 찾을 수 없습니다.' }, { status: 404 });
     }
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('작가 상세 조회 API 오류', error);
     }
 
     return NextResponse.json({ writer: data });
   } catch (err) {
-    console.error('작가 상세 조회 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('작가 상세 조회 API 오류', err);
   }
 }
 
@@ -45,7 +45,9 @@ export async function PATCH(
     if (isErrorResponse(auth)) return auth;
 
     const { id } = await params;
-    const parsed = parseBody(writerUpdateSchema, await request.json());
+    const body = await readJson(request);
+    if (!body.success) return body.response;
+    const parsed = parseBody(writerUpdateSchema, body.data);
     if (!parsed.success) return parsed.response;
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -84,13 +86,12 @@ export async function PATCH(
       if (error.code === '23505') {
         return NextResponse.json({ error: '이미 등록된 작가명입니다.' }, { status: 409 });
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('작가 마스터 수정 API 오류', error);
     }
 
     return NextResponse.json({ writer: data });
   } catch (err) {
-    console.error('작가 마스터 수정 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('작가 마스터 수정 API 오류', err);
   }
 }
 
@@ -107,12 +108,11 @@ export async function DELETE(
     const { error } = await auth.adminClient.from('writers').delete().eq('id', id);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('작가 마스터 삭제 API 오류', error);
     }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('작가 마스터 삭제 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('작가 마스터 삭제 API 오류', err);
   }
 }

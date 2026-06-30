@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
+import { serverError, dbError } from '@/lib/api/respond';
 
 // POST /api/price-items/empty-trash
 export async function POST() {
@@ -16,12 +17,11 @@ export async function POST() {
       .not('deleted_at', 'is', null);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('휴지통 비우기 API 오류', error);
     }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('휴지통 비우기 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('휴지통 비우기 API 오류', err);
   }
 }

@@ -6,6 +6,7 @@
 
 import { NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
+import { serverError, dbError } from '@/lib/api/respond';
 import type { WorkWriterGroup } from '@/types/invoice';
 
 // GET /api/works/writers — { writers: [{writer_name, count}], total }
@@ -22,14 +23,13 @@ export async function GET() {
       auth.adminClient.from('works').select('id', { count: 'exact', head: true }),
     ]);
 
-    if (countsRes.error) return NextResponse.json({ error: countsRes.error.message }, { status: 500 });
+    if (countsRes.error) return dbError('저작물 작가 목록 API 오류', countsRes.error);
 
     const writers: WorkWriterGroup[] = ((countsRes.data ?? []) as { writer_name: string; count: number }[])
       .map((r) => ({ writer_name: r.writer_name, count: Number(r.count) }));
 
     return NextResponse.json({ writers, total: totalRes.count ?? 0 });
   } catch (err) {
-    console.error('저작물 작가 목록 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('저작물 작가 목록 API 오류', err);
   }
 }

@@ -2,7 +2,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
-import { parseBody } from '@/lib/validation/parse';
+import { serverError, dbError } from '@/lib/api/respond';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { clientUpdateSchema } from '@/lib/validation/schemas';
 
 // PATCH로 갱신 가능한 컬럼 화이트리스트(스키마와 1:1). 전송된 값만 부분 갱신.
@@ -42,13 +43,12 @@ export async function GET(
       if (error.code === 'PGRST116') {
         return NextResponse.json({ error: '거래처를 찾을 수 없습니다.' }, { status: 404 });
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('거래처 단일 조회 API 오류', error);
     }
 
     return NextResponse.json({ client: data });
   } catch (err) {
-    console.error('거래처 단일 조회 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('거래처 단일 조회 API 오류', err);
   }
 }
 
@@ -61,7 +61,9 @@ export async function PATCH(
     if (isErrorResponse(auth)) return auth;
 
     const { id } = await params;
-    const parsed = parseBody(clientUpdateSchema, await req.json());
+    const body = await readJson(req);
+    if (!body.success) return body.response;
+    const parsed = parseBody(clientUpdateSchema, body.data);
     if (!parsed.success) return parsed.response;
 
     // 전송된 필드만 부분 갱신 (undefined 제외, null은 클리어 의미로 반영)
@@ -85,13 +87,12 @@ export async function PATCH(
       if (error.code === '23505') {
         return NextResponse.json({ error: '이미 존재하는 거래처명입니다.' }, { status: 409 });
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('거래처 수정 API 오류', error);
     }
 
     return NextResponse.json({ client: updated });
   } catch (err) {
-    console.error('거래처 수정 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('거래처 수정 API 오류', err);
   }
 }
 
@@ -115,12 +116,11 @@ export async function DELETE(
           { status: 409 }
         );
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('거래처 삭제 API 오류', error);
     }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('거래처 삭제 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('거래처 삭제 API 오류', err);
   }
 }

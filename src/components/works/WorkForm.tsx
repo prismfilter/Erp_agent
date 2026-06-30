@@ -190,15 +190,15 @@ export function WorkForm({ initial, submitLabel, submittingLabel, cancelHref, cl
 
   useEffect(() => {
     const iswc = form.iswc.trim();
-    if (!iswc) { setIswcWarning(null); return; }
     const timer = setTimeout(async () => {
+      // 빈 값이면 경고 해제 (effect 본문의 동기 setState를 피해 타이머 콜백에서 처리)
+      if (!iswc) { setIswcWarning(null); return; }
       try {
         const params = new URLSearchParams({ iswc });
         if (excludeId) params.set('excludeId', excludeId);
         const res = await fetch(`/api/works/check-iswc?${params.toString()}`);
         if (!res.ok) return;
         const json = await res.json();
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch 콜백
         setIswcWarning(
           json.duplicate
             ? `이미 사용된 ISWC입니다${json.work ? ` (NO.${json.work.no} ${json.work.song_title})` : ''}. 동일 곡 중복 발매면 정상일 수 있습니다.`

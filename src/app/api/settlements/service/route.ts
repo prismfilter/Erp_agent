@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
+import { serverError, dbError } from '@/lib/api/respond';
 import { parseBody, readJson } from '@/lib/validation/parse';
 import { serviceSettlementCreateSchema } from '@/lib/validation/schemas';
 import { getInternalItems, calcItemBreakdown } from '@/lib/invoice/calculator';
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
       .order('paid_at', { ascending: true });
 
     if (invErr) {
-      return NextResponse.json({ error: invErr.message }, { status: 500 });
+      return dbError('용역 정산 계산 API 오류', invErr);
     }
 
     const invoices = (invoicesData ?? []) as Invoice[];
@@ -87,7 +88,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ settlement });
   } catch (err) {
-    console.error('용역 정산 계산 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('용역 정산 계산 API 오류', err);
   }
 }

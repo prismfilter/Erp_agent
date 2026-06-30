@@ -2,7 +2,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
-import { parseBody } from '@/lib/validation/parse';
+import { serverError, dbError } from '@/lib/api/respond';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { clientCreateSchema } from '@/lib/validation/schemas';
 import { nextClientCode } from '@/lib/clients/clientCode';
 
@@ -24,13 +25,12 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await query;
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('거래처 API 오류', error);
     }
 
     return NextResponse.json({ clients: data });
   } catch (err) {
-    console.error('거래처 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('거래처 API 오류', err);
   }
 }
 
@@ -40,7 +40,9 @@ export async function POST(request: NextRequest) {
     const auth = await requireStaff();
     if (isErrorResponse(auth)) return auth;
 
-    const parsed = parseBody(clientCreateSchema, await request.json());
+    const body = await readJson(request);
+    if (!body.success) return body.response;
+    const parsed = parseBody(clientCreateSchema, body.data);
     if (!parsed.success) return parsed.response;
     const name = parsed.data.name; // 스키마에서 trim 적용됨
 
@@ -79,11 +81,10 @@ export async function POST(request: NextRequest) {
       if (error.code === '23505') {
         return NextResponse.json({ error: '이미 등록된 거래처명입니다.' }, { status: 409 });
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('거래처 추가 API 오류', error);
     }
     return NextResponse.json({ error: lastMessage }, { status: 500 });
   } catch (err) {
-    console.error('거래처 추가 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('거래처 추가 API 오류', err);
   }
 }

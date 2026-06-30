@@ -2,7 +2,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
-import { parseBody } from '@/lib/validation/parse';
+import { serverError, dbError } from '@/lib/api/respond';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { priceItemUpdateSchema } from '@/lib/validation/schemas';
 
 export async function PATCH(
@@ -14,7 +15,9 @@ export async function PATCH(
     if (isErrorResponse(auth)) return auth;
 
     const { id } = await params;
-    const parsed = parseBody(priceItemUpdateSchema, await request.json());
+    const body = await readJson(request);
+    if (!body.success) return body.response;
+    const parsed = parseBody(priceItemUpdateSchema, body.data);
     if (!parsed.success) return parsed.response;
 
     // 검증된 필드만 반영 (undefined 제외)
@@ -31,13 +34,12 @@ export async function PATCH(
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('프라이스 테이블 수정 API 오류', error);
     }
 
     return NextResponse.json({ priceItem: data });
   } catch (err) {
-    console.error('프라이스 테이블 수정 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('프라이스 테이블 수정 API 오류', err);
   }
 }
 
@@ -59,7 +61,7 @@ export async function DELETE(
       // 영구 삭제 (FK는 ON DELETE SET NULL — 과거 청구서 데이터는 보존)
       const { error } = await auth.adminClient.from('price_items').delete().eq('id', id);
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return dbError('프라이스 테이블 삭제 API 오류', error);
       }
     } else {
       // 휴지통으로 이동 (soft delete)
@@ -68,13 +70,12 @@ export async function DELETE(
         .update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
         .eq('id', id);
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return dbError('프라이스 테이블 삭제 API 오류', error);
       }
     }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('프라이스 테이블 삭제 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('프라이스 테이블 삭제 API 오류', err);
   }
 }

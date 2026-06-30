@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
+import { serverError, dbError } from '@/lib/api/respond';
 
 // GET /api/works/check-iswc?iswc=...&excludeId=... → { duplicate, work? }
 export async function GET(request: NextRequest) {
@@ -18,14 +19,13 @@ export async function GET(request: NextRequest) {
     let query = auth.adminClient.from('works').select('id, no, song_title').eq('iswc', iswc);
     if (excludeId) query = query.neq('id', excludeId);
     const { data, error } = await query.limit(1).maybeSingle();
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return dbError('ISWC 중복확인 API 오류', error);
 
     return NextResponse.json({
       duplicate: !!data,
       work: data ? { no: data.no, song_title: data.song_title } : null,
     });
   } catch (err) {
-    console.error('ISWC 중복확인 API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('ISWC 중복확인 API 오류', err);
   }
 }

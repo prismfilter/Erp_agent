@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStaff, isErrorResponse } from '@/lib/auth/apiAuth';
-import { parseBody } from '@/lib/validation/parse';
+import { serverError, dbError } from '@/lib/api/respond';
+import { parseBody, readJson } from '@/lib/validation/parse';
 import { adminUserUpdateSchema } from '@/lib/validation/schemas';
 
 export async function PATCH(
@@ -9,7 +10,9 @@ export async function PATCH(
 ) {
   try {
     const { userId } = await params;
-    const parsed = parseBody(adminUserUpdateSchema, await req.json());
+    const body = await readJson(req);
+    if (!body.success) return body.response;
+    const parsed = parseBody(adminUserUpdateSchema, body.data);
     if (!parsed.success) return parsed.response;
     const { name, role, contract_date } = parsed.data;
 
@@ -33,13 +36,11 @@ export async function PATCH(
       .eq('user_id', userId);
 
     if (error) {
-      console.error('사용자 업데이트 오류:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dbError('사용자 업데이트 오류', error);
     }
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('API 오류:', err);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return serverError('API 오류', err);
   }
 }
