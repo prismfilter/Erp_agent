@@ -1,6 +1,6 @@
 'use client';
 
-// 작가 포지션 다중 선택 — A(작사)/C(작곡)/AR(편곡) 체크박스 드롭다운.
+// 작가 포지션 다중 선택 — 프로듀서/트랙메이커/탑라이너/싱어송라이터/작사가/실연자 체크박스 드롭다운.
 // 선택 없음 = (미정). shadcn DropdownMenu 체크박스 아이템 사용.
 
 import {
@@ -61,7 +61,7 @@ export function PositionSelect({
             onCheckedChange={(checked) => toggle(code, Boolean(checked))}
             className="text-foreground cursor-pointer"
           >
-            {POSITION_LABELS[code]} ({code})
+            {POSITION_LABELS[code]}
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>

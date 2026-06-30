@@ -28,10 +28,13 @@ export interface Writer {
   permanent_rate: number | null;  // 영구 저작물 요율(%) 0~100, null=미지정
   general_rate: number | null;    // 일반 저작물 요율(%) 0~100, null=미지정
   recontract_date: string | null; // 전속작가 재계약일 (YYYY-MM-DD), null=미지정
+  contract_start: string | null;  // 계약 시작일 (YYYY-MM-DD), null=미지정
+  contract_end: string | null;    // 계약 종료일 (YYYY-MM-DD), null=미지정
   english_name: string | null;    // 영문명
   stage_name: string | null;      // 활동명
   stage_name_en: string | null;   // 활동명(영문)
-  position: string[];             // 포지션 ['A'|'C'|'AR'], 빈 배열=미정
+  position: string[];             // 포지션(프로듀서/트랙메이커/탑라이너/싱어송라이터/작사가/실연자), 빈 배열=미정
+  playlist_urls: string[];        // 플레이리스트 URL(스포티파이 등), 최대 3개, 빈 배열=미등록
   original_writer_code: string | null; // 원작자 코드(실제 저작물 작가코드)
   status: string;
   created_at: string;

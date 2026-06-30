@@ -77,7 +77,14 @@ export const priceItemUpdateSchema = z.object({
 // ── 작가 마스터 ───────────────────────────────────────────────────────────
 const WRITER_TYPE = z.enum(['전속작가', '일반작가']);
 // 포지션 코드: A=작사, C=작곡, AR=편곡
-const WRITER_POSITION = z.enum(['A', 'C', 'AR']);
+const WRITER_POSITION = z.enum([
+  '프로듀서',
+  '트랙메이커',
+  '탑라이너',
+  '싱어송라이터',
+  '작사가',
+  '실연자',
+]);
 
 export const writerCreateSchema = z.object({
   name: z.string().trim().min(1, '작가명은 필수입니다.'),
@@ -86,10 +93,13 @@ export const writerCreateSchema = z.object({
   permanent_rate: z.number().min(0).max(100).nullable().optional(), // 영구 저작물 요율(%), null=미지정
   general_rate: z.number().min(0).max(100).nullable().optional(),   // 일반 저작물 요율(%), null=미지정
   recontract_date: z.string().nullable().optional(),                // 재계약일(YYYY-MM-DD), null=미지정
+  contract_start: z.string().nullable().optional(),                 // 계약 시작일(YYYY-MM-DD), null=미지정
+  contract_end: z.string().nullable().optional(),                   // 계약 종료일(YYYY-MM-DD), null=미지정
   english_name: z.string().trim().nullable().optional(),            // 영문명
   stage_name: z.string().trim().nullable().optional(),              // 예명
   stage_name_en: z.string().trim().nullable().optional(),           // 활동명(영문)
-  position: z.array(WRITER_POSITION).optional(),                   // 포지션(A/C/AR 복수 허용)
+  position: z.array(WRITER_POSITION).optional(),                   // 포지션(복수 허용)
+  playlist_urls: z.array(z.url()).max(3).optional(),                // 플레이리스트 URL(최대 3개)
   original_writer_code: z.string().trim().nullable().optional(),    // 원본 작가 코드(마이그레이션용)
 });
 
@@ -100,12 +110,15 @@ export const writerUpdateSchema = z.object({
   permanent_rate: z.number().min(0).max(100).nullable().optional(),
   general_rate: z.number().min(0).max(100).nullable().optional(),
   recontract_date: z.string().nullable().optional(),
+  contract_start: z.string().nullable().optional(),
+  contract_end: z.string().nullable().optional(),
   // 계약 상태(활성화/해지). writer_code는 직접 수정 불가하므로 스키마에 포함하지 않는다.
   status: z.enum(['active', 'terminated']).optional(),
   english_name: z.string().trim().nullable().optional(),
   stage_name: z.string().trim().nullable().optional(),
   stage_name_en: z.string().trim().nullable().optional(),
   position: z.array(WRITER_POSITION).optional(),
+  playlist_urls: z.array(z.url()).max(3).optional(),
   original_writer_code: z.string().trim().nullable().optional(),
 });
 

@@ -18,6 +18,8 @@ import {
   ContractStatusCell,
 } from '@/components/writers/WriterTable';
 import { PositionSelect } from '@/components/writers/PositionSelect';
+import { PlaylistLinks } from '@/components/writers/PlaylistLinks';
+import { DatePicker } from '@/components/ui/DatePicker';
 import type { PositionCode } from '@/lib/writers/position';
 
 // 섹션 카드 = 색 채운 제목 바 + 항목/내용 2열 표(거래처 상세와 동일).
@@ -53,6 +55,53 @@ function DetailRow({ label, children }: { label: string; children: ReactNode }) 
       </th>
       <td className="px-4 py-3 text-center align-middle">{children}</td>
     </tr>
+  );
+}
+
+// 계약 기간 — 계약시작 ~ 계약종료 (재계약일 DateCell과 동일한 native date 톤). 변경 즉시 PATCH.
+function ContractPeriodCell({
+  start,
+  end,
+  editable,
+  onSave,
+}: {
+  start: string | null;
+  end: string | null;
+  editable: boolean;
+  onSave: (field: 'contract_start' | 'contract_end', v: string | null) => void;
+}) {
+  if (!editable) {
+    const has = Boolean(start || end);
+    return (
+      <span className={has ? 'tabular-nums text-foreground' : 'text-muted-foreground text-xs'}>
+        {has ? `${start ?? '…'} ~ ${end ?? '…'}` : '-'}
+      </span>
+    );
+  }
+  // 커스텀 DatePicker — 빈 값일 때 '계약시작'/'계약종료' placeholder, 텍스트 가운데 정렬.
+  // 배경과 어우러지는 투명 박스 + 작은 글씨/블록(이전 native 입력칸 톤).
+  // pl 작게 / pr 크게 → centerText 텍스트가 살짝 좌측으로(아이콘 공간 확보), 달력 아이콘은 우측 고정 → 시각적 중앙
+  const triggerCls =
+    'w-32 flex items-center pl-2 pr-7 py-1 text-xs bg-transparent border border-border rounded-md hover:border-primary transition cursor-pointer text-foreground';
+  return (
+    <div className="flex items-center justify-center gap-2">
+      <DatePicker
+        value={start ?? ''}
+        onChange={(v) => onSave('contract_start', v || null)}
+        maxDate={end ?? undefined}
+        placeholder="계약시작"
+        centerText
+        className={triggerCls}
+      />
+      <span className="text-muted-foreground">~</span>
+      <DatePicker
+        value={end ?? ''}
+        onChange={(v) => onSave('contract_end', v || null)}
+        placeholder="계약종료"
+        centerText
+        className={triggerCls}
+      />
+    </div>
   );
 }
 
@@ -175,6 +224,13 @@ export default function WriterDetailPage() {
             <DetailRow label="원작자 코드">
               <EditableField apiPath={`/api/writers/${id}`} field="original_writer_code" label="원작자 코드" value={writer.original_writer_code ?? null} editable={isAdmin} onSaved={handleSaved} />
             </DetailRow>
+            <DetailRow label="URL">
+              <PlaylistLinks
+                urls={writer.playlist_urls ?? []}
+                editable={isAdmin}
+                onChange={(next) => { patchField('playlist_urls', next); }}
+              />
+            </DetailRow>
             <DetailRow label="등록일">
               <span className="text-foreground">
                 {writer.created_at ? new Date(writer.created_at).toLocaleDateString('ko-KR') : '-'}
@@ -201,6 +257,14 @@ export default function WriterDetailPage() {
         {/* 계약정보 */}
         <SectionCard title="계약정보">
           <SectionTableBody>
+            <DetailRow label="계약기간">
+              <ContractPeriodCell
+                start={writer.contract_start}
+                end={writer.contract_end}
+                editable={isAdmin}
+                onSave={(field, v) => { patchField(field, v); }}
+              />
+            </DetailRow>
             <DetailRow label="재계약일">
               <DateCell value={writer.recontract_date} editable={isAdmin} onSave={(v) => patchField('recontract_date', v)} />
             </DetailRow>
