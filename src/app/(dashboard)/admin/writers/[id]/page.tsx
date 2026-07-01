@@ -105,6 +105,61 @@ function ContractPeriodCell({
   );
 }
 
+// OP/SP 퍼블리셔 입력 셀 — 계약기간 날짜 블럭과 같은 투명 박스 양식(테두리·rounded·작은 패딩).
+// 텍스트 크기는 재계약일 날짜 텍스트와 동일(text-sm). 클릭→입력, Enter/blur 저장, Esc 취소.
+function PublisherCell({
+  value,
+  editable,
+  placeholder,
+  onSave,
+}: {
+  value: string | null;
+  editable: boolean;
+  placeholder: string;
+  onSave: (v: string | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value ?? '');
+
+  if (!editable) {
+    return value
+      ? <span className="text-sm text-foreground">{value}</span>
+      : <span className="text-muted-foreground text-xs">-</span>;
+  }
+
+  const boxCls =
+    'w-32 px-2 py-1 text-sm text-center bg-transparent border border-border rounded-md hover:border-primary transition cursor-pointer';
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') { onSave(draft.trim() || null); setEditing(false); }
+          if (e.key === 'Escape') { setDraft(value ?? ''); setEditing(false); }
+        }}
+        onBlur={() => { onSave(draft.trim() || null); setEditing(false); }}
+        placeholder={placeholder}
+        maxLength={60}
+        className={`${boxCls} outline-none text-foreground`}
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => { setDraft(value ?? ''); setEditing(true); }}
+      className={`${boxCls} ${value ? 'text-foreground' : 'text-muted-foreground'}`}
+      title="클릭하여 수정"
+    >
+      {value || placeholder}
+    </button>
+  );
+}
+
 export default function WriterDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -267,6 +322,13 @@ export default function WriterDetailPage() {
             </DetailRow>
             <DetailRow label="재계약일">
               <DateCell value={writer.recontract_date} editable={isAdmin} onSave={(v) => patchField('recontract_date', v)} />
+            </DetailRow>
+            <DetailRow label="OP / SP">
+              <div className="flex items-center justify-center gap-2">
+                <PublisherCell value={writer.op} editable={isAdmin} placeholder="OP 등록" onSave={(v) => { patchField('op', v); }} />
+                <span className="text-muted-foreground">/</span>
+                <PublisherCell value={writer.sp} editable={isAdmin} placeholder="SP 등록" onSave={(v) => { patchField('sp', v); }} />
+              </div>
             </DetailRow>
             <DetailRow label="계약 상태">
               <ContractStatusCell value={writer.status} editable={isAdmin} onSave={(v) => patchField('status', v)} />

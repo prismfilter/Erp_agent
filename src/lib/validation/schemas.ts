@@ -101,6 +101,8 @@ export const writerCreateSchema = z.object({
   position: z.array(WRITER_POSITION).optional(),                   // 포지션(복수 허용)
   playlist_urls: z.array(z.url()).max(3).optional(),                // 플레이리스트 URL(최대 3개)
   original_writer_code: z.string().trim().nullable().optional(),    // 원본 작가 코드(마이그레이션용)
+  op: z.string().trim().nullable().optional(),                      // 오리지널 퍼블리셔(OP)
+  sp: z.string().trim().nullable().optional(),                      // 서브 퍼블리셔(SP)
 });
 
 export const writerUpdateSchema = z.object({
@@ -120,6 +122,8 @@ export const writerUpdateSchema = z.object({
   position: z.array(WRITER_POSITION).optional(),
   playlist_urls: z.array(z.url()).max(3).optional(),
   original_writer_code: z.string().trim().nullable().optional(),
+  op: z.string().trim().nullable().optional(),                      // 오리지널 퍼블리셔(OP)
+  sp: z.string().trim().nullable().optional(),                      // 서브 퍼블리셔(SP)
 });
 
 // ── 저작물 DB (works + 원작자 다건) ───────────────────────────────────────
