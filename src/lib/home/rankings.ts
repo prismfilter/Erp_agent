@@ -1,5 +1,5 @@
 // 홈 피드 순위 위젯용 순수 헬퍼
-// - 작가별 정산 순위: 용역정산 total_amount(작가지급액)를 작가별 합산
+// - 작가별 매출 기여 순위: 용역정산 항목의 귀속금액(회사 매출)을 작가별 합산
 // - 거래처별 매출 순위: paid 청구서 귀속금액(내부항목 기준)을 거래처별 합산
 import type { Invoice } from '@/types/invoice';
 import type { SettlementRow } from '@/lib/settlement/serviceRows';
@@ -10,17 +10,20 @@ export interface RankingItem {
   amount: number;
 }
 
-// 작가별 올해 정산 순위 — '정산완료'로 마킹된 행만, paid_at 연도가 year인 writer_pay를 작가별 합산(내림차순, 0 제외)
-// 정산완료(status==='settled') 처리한 건만 반영 — 입금완료만으로는 집계하지 않는다(용역정산 페이지에서 정산완료 버튼을 눌러야 반영).
+// 작가별 올해 매출 기여 순위 — invoice_date 연도가 year인 용역정산 행에서
+// 항목 귀속금액(attribution = 공급가액 − 작가지급액 = 회사 매출)을 작가별로 합산(내림차순, 0 제외).
+// 작가 수수료(writer_pay)가 아니라 회사 매출 기여 기준이며, 입금완료(paid) 청구서에서 파생된
+// 모든 행을 반영한다(정산완료 마킹 여부와 무관 — 매출은 입금 시점에 실현되므로).
 export function buildWriterRanking(
   rows: SettlementRow[],
   year: number,
 ): RankingItem[] {
   const byWriter = new Map<string, number>();
   for (const r of rows) {
-    if (r.status !== 'settled') continue;
-    if (!r.paid_at || parseInt(r.paid_at.slice(0, 4), 10) !== year) continue;
-    byWriter.set(r.writer_name, (byWriter.get(r.writer_name) ?? 0) + (r.writer_pay ?? 0));
+    if (!r.invoice_date || parseInt(r.invoice_date.slice(0, 4), 10) !== year) continue;
+    // 회사 매출 = 항목 귀속금액 합(작가지급액 제외분)
+    const revenue = r.items.reduce((sum, it) => sum + it.attribution, 0);
+    byWriter.set(r.writer_name, (byWriter.get(r.writer_name) ?? 0) + revenue);
   }
   return [...byWriter.entries()]
     .map(([name, amount]) => ({ name, amount }))
