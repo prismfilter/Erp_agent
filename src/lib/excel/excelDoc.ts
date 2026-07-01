@@ -149,22 +149,44 @@ export function tableHead(ws: Worksheet, row: number, headers: HeadCol[]): void 
 
 export type CellAlign = 'left' | 'center' | 'right';
 
+// 문자열 표시 폭 추정(한글·전각=2, 그 외=1) — 줄바꿈 줄 수 계산용
+function displayWidth(s: string): number {
+  let w = 0;
+  for (const ch of s) {
+    w += /[ᄀ-ᇿ⺀-꓏가-힣豈-﫿︰-｠￠-￦]/.test(ch) ? 2 : 1;
+  }
+  return w;
+}
+
+const ROW_LINE_PT = 15; // 줄바꿈 한 줄당 높이(pt) — 맑은고딕 size 10 기준 여유
+const ROW_PAD_PT = 8;   // 셀 상하 여백(pt) — 글자가 위아래로 붙지 않게
+
 // 표 데이터 한 행 (값 + 통화서식 + 하단 가로선)
-// 디자인 확정: 금액 포함 모든 셀 가운데 정렬. align 인자는 상세/내용 열(줄바꿈 허용) 판별용으로만 사용.
+// 디자인 확정: 금액 포함 모든 셀 가운데 정렬(작업 내용만 좌측). 문자열 셀은 줄바꿈 허용.
+// 열 너비 대비 표시 폭으로 필요한 줄 수를 추정해 행 높이를 자동 산출 → 긴 텍스트가 잘리지 않게 한다.
 export function tableRow(
   ws: Worksheet,
   row: number,
   cells: { value: string | number; align?: CellAlign; won?: boolean }[]
 ): void {
+  let maxLines = 1;
   cells.forEach((c, i) => {
     const cell = ws.getCell(row, i + 1);
     cell.value = c.value;
     cell.font = { name: FONT, size: 10, color: { argb: C.ink } };
-    cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: c.align === 'left' };
+    const isText = typeof c.value === 'string';
+    cell.alignment = { horizontal: c.align ?? 'center', vertical: 'middle', wrapText: isText };
     cell.border = hLine;
     if (c.won) cell.numFmt = WON;
+    // 문자열 셀은 열 너비 대비 표시 폭으로 필요한 줄 수를 추정(숫자·금액은 줄바꿈 없음)
+    if (isText) {
+      const colWidth = Number(ws.getColumn(i + 1).width) || 10;
+      const capacity = Math.max(4, colWidth - 1); // 셀 여백 감안
+      const lines = Math.max(1, Math.ceil(displayWidth(c.value as string) / capacity));
+      if (lines > maxLines) maxLines = lines;
+    }
   });
-  ws.getRow(row).height = 20;
+  ws.getRow(row).height = maxLines * ROW_LINE_PT + ROW_PAD_PT;
 }
 
 // 합계 한 줄 — PDF 미리보기처럼 우측 컴팩트 박스(라벨/값만 우측 2열에). emph면 진한 배경 흰 글씨.
@@ -184,7 +206,7 @@ export function totalRow(
   const v = ws.getCell(row, cols);
   v.value = amount;
   v.numFmt = WON;
-  v.alignment = { horizontal: 'center', vertical: 'middle' };
+  v.alignment = { horizontal: 'right', vertical: 'middle' };
   if (emph) {
     l.font = { name: FONT, bold: true, size: 12, color: { argb: C.white } };
     v.font = { name: FONT, bold: true, size: 12, color: { argb: C.white } };
