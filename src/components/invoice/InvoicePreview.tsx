@@ -50,11 +50,11 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
 
   return (
     <div className="invoice-print-area relative mx-auto w-full max-w-[794px] min-h-[1123px] bg-white text-black border border-gray-200 shadow-lg p-12 flex flex-col print:max-w-none print:shadow-none print:border-0">
-      {/* 문서번호 — A4 좌측 상단 모서리 끝.
-          인쇄도 @page margin=0이라 인쇄영역이 종이 모서리에 위치 → top-3 left-4가
-          미리보기와 동일하게 종이 모서리(~3~4mm)에 표시된다(별도 인쇄 오프셋 불필요). */}
+      {/* 문서번호 — A4 좌측 상단 모서리.
+          물리 프린터는 종이 가장자리 ~5~6mm를 인쇄 못 하므로(unprintable margin),
+          인쇄 시에만 top 7mm·left 4.7mm로 살짝 내리고 우측으로 옮겨 상/좌 잘림 방지. 미리보기는 그대로. */}
       {invoice.doc_number && (
-        <p className="absolute top-3 left-4 text-[10px] text-slate-400">문서번호 {invoice.doc_number}</p>
+        <p className="absolute top-3 left-4 text-[10px] text-slate-400 print:top-[7mm] print:left-[4.7mm]">문서번호 {invoice.doc_number}</p>
       )}
 
       {/* ===== 헤더: 좌측 로고/브랜드 · 우측 타이틀 ===== */}
