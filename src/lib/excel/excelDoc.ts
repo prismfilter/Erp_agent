@@ -179,10 +179,13 @@ export function tableRow(
     cell.border = hLine;
     if (c.won) cell.numFmt = WON;
     // 문자열 셀은 열 너비 대비 표시 폭으로 필요한 줄 수를 추정(숫자·금액은 줄바꿈 없음)
+    // 명시적 줄바꿈(\n)은 각 조각을 개별 줄로 계산하고, 조각별 자동 줄바꿈도 합산한다.
     if (isText) {
       const colWidth = Number(ws.getColumn(i + 1).width) || 10;
       const capacity = Math.max(4, colWidth - 1); // 셀 여백 감안
-      const lines = Math.max(1, Math.ceil(displayWidth(c.value as string) / capacity));
+      const lines = String(c.value)
+        .split('\n')
+        .reduce((sum, seg) => sum + Math.max(1, Math.ceil(displayWidth(seg) / capacity)), 0);
       if (lines > maxLines) maxLines = lines;
     }
   });

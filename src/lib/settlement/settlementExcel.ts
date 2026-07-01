@@ -2,7 +2,7 @@
 // 공용 모듈(excelDoc)을 사용해 청구서 엑셀과 디자인 통일. exceljs는 동적 import.
 
 import { calculateSettlement, calcSettlementBreakdown } from '@/lib/settlement/calculator';
-import { stripTitlePrefix } from '@/lib/invoice/calculator';
+import { stripTitlePrefix, parseWorkContent } from '@/lib/invoice/calculator';
 import type { ServiceSettlement } from '@/types/invoice';
 import {
   loadLogo,
@@ -42,9 +42,9 @@ export async function exportSettlementExcel(settlement: ServiceSettlement): Prom
 
   const ws = wb.addWorksheet('용역 정산서');
   setupSheet(ws);
-  const cols = 5;
-  // No.·입금일·거래처·작업내용·작가지급액 — 거래처는 업체명 한 줄 표기 위해 넉넉히
-  [6, 14, 22, 46, 18].forEach((w, i) => (ws.getColumn(i + 1).width = w));
+  const cols = 6;
+  // No.·입금일·거래처·작업내용·공급가액·작가지급액 — 금액 2열을 위해 폭 재분배
+  [6, 13, 18, 40, 16, 16].forEach((w, i) => (ws.getColumn(i + 1).width = w));
 
   let r = drawHeader(wb, ws, logo, { title: '용 역 정 산 서', subtitle: 'SETTLEMENT', cols });
   r += 1;
@@ -64,15 +64,20 @@ export async function exportSettlementExcel(settlement: ServiceSettlement): Prom
     { text: '입금일' },
     { text: '거래처' },
     { text: '작업 내용', align: 'left' },
+    { text: '공급가액', align: 'right' },
     { text: '작가 지급액', align: 'right' },
   ]);
   r += 1;
   detail.forEach((d, idx) => {
+    // 작업 내용: 거래명 / [섹션] / 본문을 각 줄로 분리 (미리보기와 동일 형식)
+    const { category, body } = parseWorkContent(stripTitlePrefix(d.description, d.title));
+    const workContent = [d.title, ...(category ? [`[${category}]`] : []), body].join('\n');
     tableRow(ws, r, [
       { value: idx + 1 },
       { value: fmtDate(d.paid_at) },
       { value: d.client_name || '-' },
-      { value: `${d.title} · ${stripTitlePrefix(d.description, d.title)}`, align: 'left' },
+      { value: workContent, align: 'left' },
+      { value: d.supply ?? 0, align: 'right', won: true },
       { value: d.writer_pay, align: 'right', won: true },
     ]);
     r += 1;

@@ -86,7 +86,17 @@ export async function PATCH(
     }
 
     // items가 전달되면 전체 교체 (delete-and-insert)
+    // Supabase JS는 다중문 트랜잭션을 지원하지 않으므로, 삭제 전 스냅샷을 확보해
+    // 삽입이 실패하면 기존 항목을 복구한다(부분 실패로 인한 영구 데이터 유실 방지).
     if (Array.isArray(items)) {
+      const { data: prevItems, error: snapErr } = await auth.adminClient
+        .from('invoice_items')
+        .select('*')
+        .eq('invoice_id', id);
+      if (snapErr) {
+        return dbError('청구서 수정 API 오류', snapErr);
+      }
+
       const { error: delErr } = await auth.adminClient
         .from('invoice_items')
         .delete()
@@ -97,6 +107,11 @@ export async function PATCH(
 
       const insertErr = await insertItems(auth.adminClient, id, items);
       if (insertErr) {
+        // 삽입 실패 — 부분 삽입분을 제거하고 기존 항목을 원상 복구한다.
+        await auth.adminClient.from('invoice_items').delete().eq('invoice_id', id);
+        if (prevItems && prevItems.length > 0) {
+          await auth.adminClient.from('invoice_items').insert(prevItems);
+        }
         return NextResponse.json({ error: insertErr }, { status: 500 });
       }
     }

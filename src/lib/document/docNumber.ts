@@ -14,21 +14,24 @@ export function formatDocNumber(year: number, seq: number): string {
 }
 
 // 한 엔티티의 기존 번호 조회 (없으면 null)
+// doc_year는 최초 채번 시점에 고정되는 불변값 — 반드시 저장된 연도로 포맷해야
+// 청구일(invoice_date) 연도가 바뀌어도 번호가 다른 연도로 재표기·중복되지 않는다.
 async function lookupSeq(
   client: SupabaseClient,
   docType: string,
   entityKey: string,
-): Promise<number | null> {
+): Promise<{ seq: number; docYear: number } | null> {
   const { data } = await client
     .from('document_numbers')
-    .select('seq')
+    .select('seq, doc_year')
     .eq('doc_type', docType)
     .eq('entity_key', entityKey)
     .maybeSingle();
-  return data ? (data.seq as number) : null;
+  return data ? { seq: data.seq as number, docYear: data.doc_year as number } : null;
 }
 
 // 단건 채번 — 기존 있으면 재사용(멱등), 없으면 (타입,연도) 다음 seq 부여.
+// year 인자는 신규 채번에만 사용하고, 기존 번호는 저장된 doc_year로 포맷한다.
 export async function assignDocNumber(
   client: SupabaseClient,
   docType: string,
@@ -36,7 +39,7 @@ export async function assignDocNumber(
   entityKey: string,
 ): Promise<string | null> {
   const existing = await lookupSeq(client, docType, entityKey);
-  if (existing != null) return formatDocNumber(year, existing);
+  if (existing != null) return formatDocNumber(existing.docYear, existing.seq);
 
   for (let attempt = 0; attempt < 6; attempt++) {
     const { data: maxRow } = await client
@@ -56,7 +59,7 @@ export async function assignDocNumber(
 
     // 충돌 — 엔티티 키 충돌이면 다른 곳에서 부여된 것이라 재read, seq 충돌이면 재시도
     const again = await lookupSeq(client, docType, entityKey);
-    if (again != null) return formatDocNumber(year, again);
+    if (again != null) return formatDocNumber(again.docYear, again.seq);
   }
   return null;
 }
@@ -98,11 +101,11 @@ export async function assignSettlementNumbers(
       assigned.set(key, { year, seq: next });
       maxByYear.set(year, next);
     } else {
-      // 경합 — 이미 부여됐을 수 있으니 재read
+      // 경합 — 이미 부여됐을 수 있으니 재read (저장된 doc_year 기준으로 반영)
       const got = await lookupSeq(client, DOC_TYPE_SETTLEMENT, key);
       if (got != null) {
-        assigned.set(key, { year, seq: got });
-        maxByYear.set(year, Math.max(maxByYear.get(year) ?? 0, got));
+        assigned.set(key, { year: got.docYear, seq: got.seq });
+        maxByYear.set(got.docYear, Math.max(maxByYear.get(got.docYear) ?? 0, got.seq));
       }
     }
   }
