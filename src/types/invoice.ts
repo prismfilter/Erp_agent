@@ -36,6 +36,7 @@ export interface Writer {
   position: string[];             // 포지션(프로듀서/트랙메이커/탑라이너/싱어송라이터/작사가/실연자), 빈 배열=미정
   playlist_urls: string[];        // 플레이리스트 URL(스포티파이 등), 최대 3개, 빈 배열=미등록
   original_writer_code: string | null; // 원작자 코드(실제 저작물 작가코드)
+  email: string | null;           // 이메일([id]@[도메인]), null=미등록
   op: string | null;              // 오리지널 퍼블리셔(Original Publisher), null=미지정
   sp: string | null;              // 서브 퍼블리셔(Sub Publisher), null=미지정
   status: string;
