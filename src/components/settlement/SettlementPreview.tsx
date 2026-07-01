@@ -61,9 +61,11 @@ export function SettlementPreview({
         return (
           <div
             key={pageIdx}
-            className="settlement-page relative mx-auto w-full max-w-[794px] min-h-[1123px] bg-white text-black border border-gray-200 shadow-lg p-12 flex flex-col print:max-w-none print:min-h-[265mm] print:shadow-none print:border-0 print:p-0"
+            className="settlement-page relative mx-auto w-full max-w-[794px] min-h-[1123px] bg-white text-black border border-gray-200 shadow-lg p-12 flex flex-col print:max-w-none print:shadow-none print:border-0"
           >
-            {/* 문서번호 — A4 좌측 상단 모서리 끝 */}
+            {/* 문서번호 — A4 좌측 상단 모서리 끝.
+                인쇄도 @page margin=0이라 .settlement-page가 종이 모서리에 위치 → top-3 left-4가
+                미리보기와 동일하게 종이 모서리(~3~4mm)에 표시된다(별도 인쇄 오프셋 불필요). */}
             {docNumber && (
               <p className="absolute top-3 left-4 text-[10px] text-slate-400">문서번호 {docNumber}</p>
             )}
@@ -109,44 +111,47 @@ export function SettlementPreview({
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-800 text-white">
-                  <th className="px-3 py-2.5 text-center w-10 font-bold first:rounded-tl-md">No.</th>
-                  <th className="px-3 py-2.5 text-center w-24 font-bold">입금일</th>
-                  <th className="px-3 py-2.5 text-center font-bold whitespace-nowrap">거래처</th>
-                  <th className="px-3 py-2.5 text-center font-bold">작업 내용</th>
-                  <th className="px-3 py-2.5 text-center w-32 font-bold last:rounded-tr-md">작가 지급액</th>
+                  <th className="px-2 py-2.5 text-center w-8 font-bold first:rounded-tl-md">No.</th>
+                  <th className="px-2 py-2.5 text-center w-[74px] font-bold whitespace-nowrap">입금일</th>
+                  <th className="px-2 py-2.5 text-center font-bold whitespace-nowrap">거래처</th>
+                  <th className="px-2 py-2.5 text-center font-bold">작업 내용</th>
+                  <th className="px-2 py-2.5 text-center w-[92px] font-bold whitespace-nowrap">공급가액</th>
+                  <th className="px-2 py-2.5 text-center w-[92px] font-bold last:rounded-tr-md whitespace-nowrap">작가 지급액</th>
                 </tr>
               </thead>
               <tbody>
                 {pageItems.map((d, idx) => (
-                  <tr key={`${pageIdx}-${idx}`} className="border-b border-gray-200">
-                    <td className="px-3 py-2 text-center tabular-nums text-slate-600">{startNo + idx + 1}</td>
-                    <td className="px-3 py-2 text-center text-slate-600 whitespace-nowrap">{fmtDate(d.paid_at)}</td>
-                    <td className="px-3 py-2 text-center text-slate-900 whitespace-nowrap">{d.client_name || '-'}</td>
-                    <td className="px-3 py-2 text-center text-slate-900 break-keep">
+                  <tr key={`${pageIdx}-${idx}`} className="border-b border-gray-300">
+                    <td className="px-2 py-2 text-center tabular-nums text-slate-600">{startNo + idx + 1}</td>
+                    <td className="px-2 py-2 text-center text-[11px] text-slate-600 whitespace-nowrap">{fmtDate(d.paid_at)}</td>
+                    <td className="px-2 py-2 text-center text-slate-900 whitespace-nowrap">{d.client_name || '-'}</td>
+                    <td className="px-2 py-2 text-center text-slate-900 break-keep">
                       {(() => {
-                        // 거래명은 윗줄, "[섹션] 내용"은 아랫줄(가운데 정렬)
+                        // 거래명 / [섹션] / 본문을 각각 독립된 줄로 분리 —
+                        // 한 줄에 붙여 두면 본문이 어중간하게 잘려 줄바꿈되므로 3단으로 나눈다.
                         const { category, body } = parseWorkContent(stripTitlePrefix(d.description, d.title));
                         return (
                           <>
                             <span className="block text-slate-500">{d.title}</span>
-                            <span className="block">
-                              {category && <span className="text-slate-500">[{category}] </span>}
-                              {body}
-                            </span>
+                            {category && <span className="block text-slate-500">[{category}]</span>}
+                            <span className="block break-keep">{body}</span>
                           </>
                         );
                       })()}
                     </td>
-                    <td className="px-3 py-2 text-center tabular-nums text-slate-900 whitespace-nowrap">
+                    <td className="px-2 py-2 text-center text-[11px] tabular-nums text-slate-700 whitespace-nowrap">
+                      {formatWon(d.supply ?? 0)}
+                    </td>
+                    <td className="px-2 py-2 text-center text-[11px] tabular-nums font-medium text-slate-900 whitespace-nowrap">
                       {formatWon(d.writer_pay)}
                     </td>
                   </tr>
                 ))}
                 {/* 빈 행 — A4 채우기 */}
                 {Array.from({ length: emptyCount }).map((_, i) => (
-                  <tr key={`empty-${pageIdx}-${i}`} className="border-b border-gray-100 h-8">
-                    {Array.from({ length: 5 }).map((__, c) => (
-                      <td key={c} className="px-3 py-2">&nbsp;</td>
+                  <tr key={`empty-${pageIdx}-${i}`} className="border-b border-gray-200 h-8">
+                    {Array.from({ length: 6 }).map((__, c) => (
+                      <td key={c} className="px-2 py-2">&nbsp;</td>
                     ))}
                   </tr>
                 ))}
@@ -169,7 +174,7 @@ export function SettlementPreview({
                     <span>소득세 (3%)</span>
                     <span className="tabular-nums">- {formatWon(result.incomeTax)}</span>
                   </div>
-                  <div className="flex justify-between py-1.5 text-xs text-slate-600 border-b border-gray-200">
+                  <div className="flex justify-between py-1.5 text-xs text-slate-600 border-b border-gray-300">
                     <span>지방소득세 (0.3%)</span>
                     <span className="tabular-nums">- {formatWon(result.localIncomeTax)}</span>
                   </div>
@@ -184,7 +189,7 @@ export function SettlementPreview({
 
             {/* ===== 푸터 — 마지막 페이지는 합계 바로 아래, 그 외 페이지는 맨 밑 ===== */}
             <div className={`pt-8 ${isLast ? '' : 'mt-auto'}`}>
-              <div className="flex justify-between items-end text-[11px] border-t border-gray-200 pt-4">
+              <div className="flex justify-between items-end text-[11px] border-t border-gray-300 pt-4">
                 <div className="text-slate-600">
                   <p className="font-bold text-black">{COMPANY.name}</p>
                   <p>{COMPANY.address}</p>

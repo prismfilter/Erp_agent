@@ -348,7 +348,9 @@ input[type='number'],
 @media print {
   @page {
     size: A4 portrait;
-    margin: 14mm;
+    /* 문서번호를 종이 모서리에 붙이려면 @page 여백이 0이어야 함(여백 영역은 잘림).
+       본문 여백은 인쇄 루트의 padding(14mm)으로 확보한다. */
+    margin: 0;
   }
 
   body * {
@@ -373,10 +375,12 @@ input[type='number'],
     background: #ffffff !important;
   }
 
-  /* A4 한 장(인쇄영역 269mm 중 안전 여유)으로 채워 mt-auto 푸터를 페이지 하단에 고정 */
+  /* 인쇄를 미리보기와 동일하게: @page margin=0이라 종이 전체(297mm)가 캔버스가 되므로
+     본문 여백은 미리보기와 같은 p-12를 그대로 쓰고(별도 padding 오버라이드 금지),
+     높이만 A4(297mm)보다 살짝 작은 296mm로 고정해 빈 2페이지를 방지하면서 푸터를 하단에 붙인다. */
   .invoice-print-area,
   .settlement-page {
-    min-height: 265mm !important;
+    min-height: 296mm !important;
   }
 
   /* 표 헤더·합계 박스의 진한 배경색을 인쇄 시에도 유지 */

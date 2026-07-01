@@ -49,8 +49,10 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
     : '-';
 
   return (
-    <div className="invoice-print-area relative mx-auto w-full max-w-[794px] min-h-[1123px] bg-white text-black border border-gray-200 shadow-lg p-12 flex flex-col print:max-w-none print:min-h-[265mm] print:shadow-none print:border-0 print:p-0">
-      {/* 문서번호 — A4 좌측 상단 모서리 끝 */}
+    <div className="invoice-print-area relative mx-auto w-full max-w-[794px] min-h-[1123px] bg-white text-black border border-gray-200 shadow-lg p-12 flex flex-col print:max-w-none print:shadow-none print:border-0">
+      {/* 문서번호 — A4 좌측 상단 모서리 끝.
+          인쇄도 @page margin=0이라 인쇄영역이 종이 모서리에 위치 → top-3 left-4가
+          미리보기와 동일하게 종이 모서리(~3~4mm)에 표시된다(별도 인쇄 오프셋 불필요). */}
       {invoice.doc_number && (
         <p className="absolute top-3 left-4 text-[10px] text-slate-400">문서번호 {invoice.doc_number}</p>
       )}
@@ -119,7 +121,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
           {displayItems.map((it, idx) => {
             const bd = calcItemBreakdown(it);
             return (
-            <tr key={it.id ?? idx} className="border-b border-gray-200">
+            <tr key={it.id ?? idx} className="border-b border-gray-300">
               <td className="px-3 py-2 text-center tabular-nums text-slate-600">{idx + 1}</td>
               <td className="px-3 py-2 text-center text-slate-900">
                 {it.writer_names || '-'}
@@ -175,7 +177,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
           })}
           {/* 빈 행 — A4 한 장 채우기 (가로줄만) */}
           {Array.from({ length: emptyRowCount }).map((_, i) => (
-            <tr key={`empty-${i}`} className="border-b border-gray-100 h-8">
+            <tr key={`empty-${i}`} className="border-b border-gray-200 h-8">
               {Array.from({ length: colCount }).map((__, c) => (
                 <td key={c} className="px-3 py-2">&nbsp;</td>
               ))}
@@ -193,7 +195,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
                 <span>총 공급가액</span>
                 <span className="tabular-nums">{formatWon(totals.supplyTotal)}</span>
               </div>
-              <div className="flex justify-between py-1.5 text-xs text-slate-600 border-b border-gray-200">
+              <div className="flex justify-between py-1.5 text-xs text-slate-600 border-b border-gray-300">
                 <span>총 세액</span>
                 <span className="tabular-nums">{formatWon(totals.taxA)}</span>
               </div>
@@ -212,7 +214,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
                 <span>총 작가지급액 (B)</span>
                 <span className="tabular-nums">{formatWon(totals.writerPayTotal)}</span>
               </div>
-              <div className="flex justify-between py-1.5 text-xs text-slate-600 border-b border-gray-200">
+              <div className="flex justify-between py-1.5 text-xs text-slate-600 border-b border-gray-300">
                 <span>총 회사 수수료 (C)</span>
                 <span className="tabular-nums">{formatWon(totals.attributionTotal)}</span>
               </div>
@@ -237,7 +239,7 @@ export function InvoicePreview({ invoice, mode, showNegotiatedNote = true }: Inv
 
       {/* ===== 푸터: 회사 정보 (합계 바로 아래) ===== */}
       <div className="pt-8">
-        <div className="flex justify-between items-end text-[11px] border-t border-gray-200 pt-4">
+        <div className="flex justify-between items-end text-[11px] border-t border-gray-300 pt-4">
           <div className="text-slate-600">
             <p className="font-bold text-black">{COMPANY.name}</p>
             <p>{COMPANY.address}</p>
