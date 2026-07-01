@@ -8,7 +8,7 @@ import { writerUpdateSchema } from '@/lib/validation/schemas';
 import { needsRecode, nextWriterCode } from '@/lib/writers/writerCode';
 
 const WRITER_SELECT =
-  'id, writer_code, name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, contract_start, contract_end, english_name, stage_name, stage_name_en, position, playlist_urls, original_writer_code, op, sp, status, created_at';
+  'id, writer_code, name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, contract_start, contract_end, english_name, stage_name, stage_name_en, position, playlist_urls, original_writer_code, email, op, sp, status, created_at';
 
 // GET /api/writers/[id] — 작가 단건 조회 (STAFF↑)
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

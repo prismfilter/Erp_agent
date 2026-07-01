@@ -9,7 +9,7 @@ import { nextWriterCode } from '@/lib/writers/writerCode';
 
 // 응답·조회 공통 컬럼(작가 코드 포함)
 const WRITER_SELECT =
-  'id, writer_code, name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, contract_start, contract_end, english_name, stage_name, stage_name_en, position, playlist_urls, original_writer_code, op, sp, status, created_at';
+  'id, writer_code, name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, contract_start, contract_end, english_name, stage_name, stage_name_en, position, playlist_urls, original_writer_code, email, op, sp, status, created_at';
 
 // GET /api/writers — 목록 (ADMIN/STAFF 조회)
 export async function GET() {
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     if (!body.success) return body.response;
     const parsed = parseBody(writerCreateSchema, body.data);
     if (!parsed.success) return parsed.response;
-    const { name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, contract_start, contract_end, english_name, stage_name, stage_name_en, position, playlist_urls, original_writer_code, op, sp } = parsed.data;
+    const { name, writer_type, fee_rate, permanent_rate, general_rate, recontract_date, contract_start, contract_end, english_name, stage_name, stage_name_en, position, playlist_urls, original_writer_code, email, op, sp } = parsed.data;
 
     // 동시 등록으로 코드가 겹치는 희박한 경우 대비 1회 재시도(UNIQUE 제약이 최종 방어선)
     let lastMessage = '작가 코드 생성에 실패했습니다.';
@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
           position: position ?? [],
           playlist_urls: playlist_urls ?? [],
           original_writer_code: original_writer_code ?? null,
+          email: email ?? null,
           op: op ?? null,
           sp: sp ?? null,
         })

@@ -3,9 +3,9 @@
 // 작가 상세 — 거래처 상세와 동일 양식. 섹션 카드(기본정보·저작물 요율·계약정보)를 세로 나열.
 // 조회: ADMIN/STAFF · 수정: ADMIN only. 필드별 즉시 저장(PATCH /api/writers/[id]).
 
-import { useEffect, useState, useCallback, type ReactNode } from 'react';
+import { useEffect, useState, useCallback, useRef, type ReactNode } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Copy, Check } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useBreadcrumbStore } from '@/store/breadcrumbStore';
 import type { Writer } from '@/types/invoice';
@@ -20,6 +20,7 @@ import {
 import { PositionSelect } from '@/components/writers/PositionSelect';
 import { PlaylistLinks } from '@/components/writers/PlaylistLinks';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { SelectMenu, type SelectOption } from '@/components/ui/SelectMenu';
 import type { PositionCode } from '@/lib/writers/position';
 
 // 섹션 카드 = 색 채운 제목 바 + 항목/내용 2열 표(거래처 상세와 동일).
@@ -160,6 +161,219 @@ function PublisherCell({
   );
 }
 
+// 이메일 셀 — [id]@[도메인] 형식. 도메인은 커스텀 SelectMenu(직접입력/프리셋)에서 선택하거나
+// '직접입력' 선택 시 도메인을 직접 타이핑. ADMIN만 편집, 등록된 이메일은 누구나 복사 가능.
+// 조회(완성된 이메일 텍스트)와 편집(3분할 입력)을 분리 — 클릭으로 편집 진입, Enter 또는 바깥
+// 클릭 시 저장하고 조회로 복귀. 편집 진입 시에만 입력칸이 마운트되므로 페이지 재방문 시
+// 커서가 저절로 깜빡이는 문제(불필요한 autoFocus 마운트)도 함께 해소된다.
+const EMAIL_CUSTOM = '__custom__';
+const DOMAIN_OPTIONS: SelectOption[] = [
+  { value: EMAIL_CUSTOM, label: '직접입력' },
+  { value: 'prism-filter.com', label: 'prism-filter.com' },
+  { value: 'gmail.com', label: 'gmail.com' },
+  { value: 'naver.com', label: 'naver.com' },
+  { value: 'daum.net', label: 'daum.net' },
+];
+const DOMAIN_PRESETS = DOMAIN_OPTIONS.filter((o) => o.value !== EMAIL_CUSTOM).map((o) => o.value);
+
+// "id@domain" → 편집 상태 초기값(id·도메인 원문·SelectMenu 선택값)
+function parseEmail(value: string | null) {
+  const at = (value ?? '').indexOf('@');
+  const id = at >= 0 ? (value ?? '').slice(0, at) : (value ?? '');
+  const domain = at >= 0 ? (value ?? '').slice(at + 1) : '';
+  const select = DOMAIN_PRESETS.includes(domain) ? domain : domain ? EMAIL_CUSTOM : '';
+  return { id, domain, select };
+}
+
+// 기본적인 이메일 형식 검증(로컬파트@도메인.최상위도메인) — 관리자 입력 실수 방지용, RFC 완전 준수는 아님.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// 복사 버튼 — 다른 이메일 셀(components/admin/EmailCell.tsx)과 동일하게 텍스트에 마우스를
+// 올렸을 때만 우측에 살짝 나타난다(group-hover). 클릭 시 클립보드 복사 + 체크 아이콘 피드백.
+function CopyEmailButton({ email }: { email: string }) {
+  const [copied, setCopied] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(email).then(() => {
+          setCopied(true);
+          if (timerRef.current) clearTimeout(timerRef.current);
+          timerRef.current = setTimeout(() => setCopied(false), 1500);
+        });
+      }}
+      className="absolute left-full top-1/2 -translate-y-1/2 ml-1 opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition rounded hover:bg-primary/10 cursor-pointer"
+      title="이메일 복사"
+    >
+      {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+    </button>
+  );
+}
+
+function WriterEmailCell({
+  value,
+  editable,
+  onSave,
+}: {
+  value: string | null;
+  editable: boolean;
+  onSave: (v: string | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [id, setId] = useState('');
+  const [domainSelect, setDomainSelect] = useState('');
+  const [customDomain, setCustomDomain] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const startEdit = () => {
+    const p = parseEmail(value);
+    setId(p.id);
+    setDomainSelect(p.select);
+    setCustomDomain(p.select === EMAIL_CUSTOM ? p.domain : '');
+    setError(null);
+    setEditing(true);
+  };
+
+  // 유효성 검사 후 저장:
+  // - 아이디·도메인 둘 다 비면 → 등록 해제(null)
+  // - 도메인만 있고 아이디가 없으면 → "아이디를 입력해주세요" (형식 오류와 구분되는 안내)
+  // - 아이디는 있는데 조합이 이메일 형식에 안 맞으면(도메인 누락·오타 등) → 형식 오류 경고, 저장하지 않음
+  const trySave = useCallback((curId: string, curDomain: string): boolean => {
+    const i = curId.trim();
+    const d = curDomain.trim();
+    if (!i && !d) { setError(null); onSave(null); return true; }
+    if (!i) { setError('아이디를 입력해주세요.'); return false; }
+    const composed = `${i}@${d}`;
+    if (!EMAIL_RE.test(composed)) {
+      setError('이메일 형식이 올바르지 않습니다.');
+      return false;
+    }
+    setError(null);
+    onSave(composed);
+    return true;
+  }, [onSave]);
+
+  // 편집 종료 — 직접입력을 선택해 놓고 도메인만 비워둔 채 아이디는 남아 있다면(도메인 입력만
+  // 포기한 의도) 원래 도메인으로 되돌려 저장. 단, 아이디까지 함께 비웠다면(전체 삭제 의도)
+  // 되돌리지 않고 그대로 진행해 완전히 등록 해제되도록 한다. 저장이 유효성 검사를 통과했을
+  // 때만 조회 모드로 돌아간다(형식이 잘못되면 편집을 유지해 고칠 수 있게).
+  const finishEdit = useCallback((curId: string, curDomainSelect: string, curCustomDomain: string) => {
+    let domain = curDomainSelect === EMAIL_CUSTOM ? curCustomDomain : curDomainSelect;
+    if (curDomainSelect === EMAIL_CUSTOM && !curCustomDomain.trim() && curId.trim()) {
+      const original = parseEmail(value);
+      domain = original.domain;
+      setDomainSelect(original.select);
+      setCustomDomain(original.select === EMAIL_CUSTOM ? original.domain : '');
+    }
+    if (trySave(curId, domain)) setEditing(false);
+  }, [trySave, value]);
+
+  // 바깥 클릭 시 편집 종료 — 도메인 드롭다운은 Portal로 렌더되고 항목 선택 시 base-ui가
+  // 동기적으로 메뉴를 닫으며 DOM을 제거하므로, 클릭 시점의 target만으로 안/밖을 판단하면
+  // 레이스가 생겨 편집이 즉시 닫히거나 메뉴가 어중간하게 남는다. 한 틱(setTimeout) 뒤
+  // 실제 포커스 위치(document.activeElement)로 재확인해 이 경합을 없앤다.
+  useEffect(() => {
+    if (!editing) return;
+    const handlePointerDown = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (containerRef.current?.contains(target)) return;
+      setTimeout(() => {
+        const active = document.activeElement;
+        if (containerRef.current?.contains(active)) return; // 예: 새로 열린 직접입력 입력칸으로 포커스 이동
+        if (active instanceof Element && active.closest('[data-slot="dropdown-menu-content"]')) return; // 드롭다운이 아직 열려 있음
+        finishEdit(id, domainSelect, customDomain);
+      }, 0);
+    };
+    document.addEventListener('mousedown', handlePointerDown);
+    return () => document.removeEventListener('mousedown', handlePointerDown);
+  }, [editing, id, domainSelect, customDomain, finishEdit]);
+
+  if (!editable) {
+    return value ? (
+      <span className="relative inline-block group">
+        <span className="text-sm text-foreground break-all">{value}</span>
+        <CopyEmailButton email={value} />
+      </span>
+    ) : (
+      <span className="text-muted-foreground text-xs">-</span>
+    );
+  }
+
+  if (!editing) {
+    return value ? (
+      <span className="relative inline-block group">
+        <button
+          type="button"
+          onClick={startEdit}
+          className="text-sm text-foreground hover:underline cursor-pointer"
+          title="클릭하여 수정"
+        >
+          {value}
+        </button>
+        <CopyEmailButton email={value} />
+      </span>
+    ) : (
+      <button
+        type="button"
+        onClick={startEdit}
+        className="px-2 py-1 text-sm text-muted-foreground border border-border rounded-md hover:border-primary transition cursor-pointer"
+      >
+        이메일 등록
+      </button>
+    );
+  }
+
+  // OP/SP 셀과 동일 톤(투명 배경·py-1·text-sm·rounded-md). 도메인 select도 같은 스킨으로 통일.
+  const boxCls =
+    'px-2 py-1 text-sm text-center bg-transparent border border-border rounded-md hover:border-primary transition text-foreground outline-none';
+  const domainTriggerSkin =
+    'px-2 py-1 rounded-md text-foreground border border-border bg-transparent hover:border-primary';
+
+  return (
+    <div ref={containerRef} className="flex flex-col items-center gap-1">
+      <div className="flex flex-wrap items-center justify-center gap-1.5">
+        <input
+          value={id}
+          onChange={(e) => { setId(e.target.value); setError(null); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') finishEdit(id, domainSelect, customDomain); }}
+          placeholder="아이디"
+          maxLength={64}
+          className={`${boxCls} w-28`}
+        />
+        <span className="text-muted-foreground">@</span>
+        <SelectMenu
+          value={domainSelect}
+          onChange={(v) => {
+            setDomainSelect(v);
+            setError(null);
+            if (v !== EMAIL_CUSTOM) trySave(id, v); // 프리셋 선택은 즉시 저장(편집 상태는 유지)
+          }}
+          options={DOMAIN_OPTIONS}
+          placeholder="도메인"
+          triggerClassName={domainTriggerSkin}
+          className="w-40"
+        />
+        {domainSelect === EMAIL_CUSTOM && (
+          <input
+            autoFocus
+            value={customDomain}
+            onChange={(e) => { setCustomDomain(e.target.value); setError(null); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') finishEdit(id, domainSelect, customDomain); }}
+            placeholder="도메인 직접입력"
+            maxLength={64}
+            className={`${boxCls} w-36`}
+          />
+        )}
+      </div>
+      {error && <p className="text-red-400 text-xs">{error}</p>}
+    </div>
+  );
+}
+
 export default function WriterDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -278,6 +492,9 @@ export default function WriterDetailPage() {
             </DetailRow>
             <DetailRow label="원작자 코드">
               <EditableField apiPath={`/api/writers/${id}`} field="original_writer_code" label="원작자 코드" value={writer.original_writer_code ?? null} editable={isAdmin} onSaved={handleSaved} />
+            </DetailRow>
+            <DetailRow label="이메일">
+              <WriterEmailCell value={writer.email} editable={isAdmin} onSave={(v) => { patchField('email', v); }} />
             </DetailRow>
             <DetailRow label="URL">
               <PlaylistLinks
