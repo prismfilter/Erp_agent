@@ -10,6 +10,7 @@ import type { Writer } from '@/types/invoice';
 import { WRITER_TYPE_META } from '@/lib/ui/roleMeta';
 import { SortableHeader } from '@/components/ui/SortableHeader';
 import { NumberInput } from '@/components/ui/NumberInput';
+import { PlaylistLinks } from '@/components/writers/PlaylistLinks';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -49,7 +50,7 @@ export function WriterTypeSelect({
     <DropdownMenu>
       <DropdownMenuTrigger
         title="구분 변경"
-        className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-foreground text-sm border border-border hover:border-primary transition cursor-pointer ${triggerClassName ?? ''}`}
+        className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 text-foreground text-sm border border-border hover:border-primary transition cursor-pointer ${triggerClassName ?? ''}`}
       >
         {typeBadge(value)}
         <span className="text-[10px] opacity-70" aria-hidden="true">▾</span>
@@ -358,7 +359,15 @@ export function ContractStatusCell({
   );
 }
 
+// 읽기전용 텍스트 셀 — 값 있으면 foreground, 없으면 '-'(muted). 표는 조회 전용(수정은 상세 페이지에서).
+function ReadOnlyText({ value }: { value: string | null | undefined }) {
+  return value
+    ? <span className="text-foreground">{value}</span>
+    : <span className="text-muted-foreground text-xs">-</span>;
+}
+
 // 작가 마스터 테이블 — 탭별 섹션(전속/일반/해지)에서 재사용
+// 표는 조회 전용: 필드 수정은 상세 페이지에서만 가능. 표에는 삭제(액션)만 노출(ADMIN).
 export function WriterTable({
   title,
   writers,
@@ -366,7 +375,6 @@ export function WriterTable({
   sortKey,
   dir,
   toggle,
-  onPatch,
   onDelete,
   focusId,
 }: {
@@ -376,7 +384,6 @@ export function WriterTable({
   sortKey: string | null;
   dir: 'asc' | 'desc';
   toggle: (key: string) => void;
-  onPatch: (id: string, patch: Partial<Writer>) => Promise<void>;
   onDelete: (id: string) => void;
   focusId?: string | null;
 }) {
@@ -410,13 +417,14 @@ export function WriterTable({
             <tr>
               <SortableHeader label="작가 코드" sortKey="writer_code" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
               <SortableHeader label="작가명" sortKey="name" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
-              <SortableHeader label="영구 저작물(%)" sortKey="permanent_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
-              <SortableHeader label="일반 저작물(%)" sortKey="general_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
-              <SortableHeader label="용역 요율(%)" sortKey="fee_rate" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
+              <SortableHeader label="활동명" sortKey="stage_name" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
+              <SortableHeader label="원작자 코드" sortKey="original_writer_code" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
               <SortableHeader label="계약기간" sortKey="contract_start" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
               {/* 정렬 불가 — 보기 버튼만 있는 열 */}
               <th className="px-6 py-2.5 text-center font-bold text-foreground text-xs uppercase">상세정보</th>
               <SortableHeader label="계약 상태" sortKey="status" activeKey={sortKey} dir={dir} onSort={toggle} align="center" className="px-6 py-2.5 text-xs uppercase" />
+              {/* 정렬 불가 — URL 열 */}
+              <th className="px-6 py-2.5 text-center font-bold text-foreground text-xs uppercase">URL</th>
               {/* 정렬 불가 — 액션 열 */}
               {isAdmin && <th className="px-6 py-2.5 text-center font-bold text-foreground text-xs uppercase w-24">액션</th>}
             </tr>
@@ -432,16 +440,13 @@ export function WriterTable({
                   <span className="font-mono text-xs tabular-nums text-foreground">{w.writer_code}</span>
                 </td>
                 <td className="px-6 py-2.5 text-center">
-                  <NameCell value={w.name} editable={isAdmin} onSave={(v) => onPatch(w.id, { name: v })} />
+                  <ReadOnlyText value={w.name} />
                 </td>
                 <td className="px-6 py-2.5 text-center">
-                  <NullableRateCell value={w.permanent_rate} editable={isAdmin} onSave={(v) => onPatch(w.id, { permanent_rate: v })} />
+                  <ReadOnlyText value={w.stage_name} />
                 </td>
                 <td className="px-6 py-2.5 text-center">
-                  <NullableRateCell value={w.general_rate} editable={isAdmin} onSave={(v) => onPatch(w.id, { general_rate: v })} />
-                </td>
-                <td className="px-6 py-2.5 text-center">
-                  <FeeRateCell value={w.fee_rate} editable={isAdmin} onSave={(v) => onPatch(w.id, { fee_rate: v })} />
+                  <ReadOnlyText value={w.original_writer_code} />
                 </td>
                 <td className="px-6 py-2.5 text-center">
                   {w.contract_start || w.contract_end ? (
@@ -461,7 +466,10 @@ export function WriterTable({
                   </Link>
                 </td>
                 <td className="px-6 py-2.5 text-center">
-                  <ContractStatusCell value={w.status} editable={isAdmin} onSave={(v) => onPatch(w.id, { status: v })} />
+                  <ContractStatusCell value={w.status} editable={false} onSave={async () => {}} />
+                </td>
+                <td className="px-6 py-2.5 text-center">
+                  <PlaylistLinks urls={w.playlist_urls ?? []} editable={false} onChange={() => {}} />
                 </td>
                 {isAdmin && (
                   <td className="px-6 py-2.5 text-center">
