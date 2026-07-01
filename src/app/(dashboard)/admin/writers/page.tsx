@@ -10,7 +10,6 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { useRowFocus } from '@/hooks/useRowFocus';
 import { nextWriterCode } from '@/lib/writers/writerCode';
 import { WriterTable, WriterTypeSelect, WRITER_TYPES, type WriterType } from '@/components/writers/WriterTable';
-import { NumberInput } from '@/components/ui/NumberInput';
 import { PageHeader } from '@/components/layout/PageHeader';
 
 const TERMINATED_TAB = '계약 해지' as const;
@@ -26,14 +25,12 @@ export default function WriterMasterPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<WriterTab>('전체');
 
-  // 등록 폼
+  // 등록 폼 — 기본 식별정보만 입력(요율·계약정보는 상세 페이지에서 설정)
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [newType, setNewType] = useState<WriterType>('전속작가');
-  const [newFee, setNewFee] = useState('70');
-  const [newPermanent, setNewPermanent] = useState(''); // 영구 저작물 요율(%) — 빈값=미지정
-  const [newGeneral, setNewGeneral] = useState('');     // 일반 저작물 요율(%) — 빈값=미지정
-  const [newRecontract, setNewRecontract] = useState(''); // 재계약일 — 빈값=미지정
+  const [newStageName, setNewStageName] = useState('');       // 활동명 — 빈값=미지정
+  const [newOriginalCode, setNewOriginalCode] = useState(''); // 원작자 코드 — 빈값=미지정
   // 작가명 입력 방식: 저작물 DB 작가 선택(select) / 직접 입력(manual)
   const [worksWriters, setWorksWriters] = useState<string[]>([]);
   const [nameMode, setNameMode] = useState<'select' | 'manual'>('select');
@@ -73,45 +70,32 @@ export default function WriterMasterPage() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch
   useEffect(() => { fetchWorksWriters(); }, [fetchWorksWriters]);
 
+  // 등록 폼 초기화 — 추가/취소 공용
+  const resetAddForm = () => {
+    setNewName(''); setNewType('전속작가');
+    setNewStageName(''); setNewOriginalCode(''); setNameMode('select');
+  };
+
   const handleAdd = async () => {
     if (!newName.trim()) { showToast('작가명을 입력하세요'); return; }
-    const toRate = (s: string) => (s.trim() === '' ? null : Math.min(100, Math.max(0, Number(s) || 0)));
     const res = await fetch('/api/writers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: newName.trim(),
         writer_type: newType,
-        fee_rate: Math.min(100, Math.max(0, Number(newFee) || 0)),
-        permanent_rate: toRate(newPermanent),
-        general_rate: toRate(newGeneral),
-        recontract_date: newRecontract || null,
+        fee_rate: 0, // 요율은 상세 페이지 '저작물 요율' 섹션에서 설정(등록 시 미설정)
+        stage_name: newStageName.trim() || null,
+        original_writer_code: newOriginalCode.trim() || null,
       }),
     });
     if (res.ok) {
       setAdding(false);
-      setNewName(''); setNewType('전속작가'); setNewFee('70');
-      setNewPermanent(''); setNewGeneral(''); setNewRecontract(''); setNameMode('select');
+      resetAddForm();
       fetchWriters();
       showToast('작가 등록 완료');
     } else {
       showToast((await res.json()).error || '등록 실패');
-    }
-  };
-
-  // 단일 패치 핸들러 — WriterTable의 onPatch로 전달
-  const handlePatch = async (id: string, patch: Partial<Writer>) => {
-    const res = await fetch(`/api/writers/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(patch),
-    });
-    if (res.ok) {
-      const { writer } = await res.json() as { writer: Writer };
-      setWriters((prev) => prev.map((w) => (w.id === id ? writer : w)));
-      showToast('저장 완료');
-    } else {
-      showToast((await res.json()).error || '저장 실패');
     }
   };
 
@@ -126,14 +110,12 @@ export default function WriterMasterPage() {
     }
   };
 
-  // 정렬: 작가명·구분·수수료율
+  // 정렬: 표 컬럼(작가코드·작가명·활동명·원작자코드·계약기간·계약상태) 기준
   const { sortKey, dir, toggle, sortRows } = useTableSort<Writer>({
     writer_code: (w) => w.writer_code,
     name: (w) => w.name,
-    writer_type: (w) => w.writer_type,
-    permanent_rate: (w) => w.permanent_rate,
-    general_rate: (w) => w.general_rate,
-    fee_rate: (w) => w.fee_rate,
+    stage_name: (w) => w.stage_name,
+    original_writer_code: (w) => w.original_writer_code,
     contract_start: (w) => w.contract_start,
     status: (w) => w.status,
   }, 'pf_sort_writers');
@@ -186,7 +168,7 @@ export default function WriterMasterPage() {
           isAdmin && (
             <button
               onClick={() => {
-                if (!adding) { setNewName(''); setNameMode('select'); }
+                if (!adding) resetAddForm();
                 setAdding((v) => !v);
               }}
               className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium cursor-pointer"
@@ -208,6 +190,10 @@ export default function WriterMasterPage() {
             >
               {previewCode}
             </div>
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1 text-center">구분</label>
+            <WriterTypeSelect value={newType} onChange={setNewType} />
           </div>
           <div className="w-64">
             <label className="block text-xs text-muted-foreground mb-1 text-center">작가명</label>
@@ -253,48 +239,27 @@ export default function WriterMasterPage() {
             )}
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1 text-center">구분</label>
-            <WriterTypeSelect value={newType} onChange={setNewType} />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1 text-center">영구 저작물(%)</label>
-            <NumberInput
-              min={0}
-              max={100}
-              value={newPermanent}
-              onChange={(v) => setNewPermanent(v)}
-              placeholder="미지정"
-              className="w-32 mx-auto"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1 text-center">일반 저작물(%)</label>
-            <NumberInput
-              min={0}
-              max={100}
-              value={newGeneral}
-              onChange={(v) => setNewGeneral(v)}
-              placeholder="미지정"
-              className="w-32 mx-auto"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1 text-center">용역 요율(%)</label>
-            <NumberInput
-              min={0}
-              max={100}
-              value={newFee}
-              onChange={(v) => setNewFee(v)}
-              className="w-32 mx-auto"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1 text-center">재계약일</label>
+            <label className="block text-xs text-muted-foreground mb-1 text-center">활동명</label>
             <input
-              type="date"
-              value={newRecontract}
-              onChange={(e) => setNewRecontract(e.target.value)}
-              className="w-40 px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground tabular-nums"
+              type="text"
+              value={newStageName}
+              onChange={(e) => setNewStageName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
+              placeholder="활동명 입력"
+              maxLength={30}
+              className="w-40 px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1 text-center">원작자 코드</label>
+            <input
+              type="text"
+              value={newOriginalCode}
+              onChange={(e) => setNewOriginalCode(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
+              placeholder="원작자 코드 입력"
+              maxLength={30}
+              className="w-40 px-3 py-2 text-sm text-center bg-background border border-border rounded-lg outline-none focus:border-primary text-foreground"
             />
           </div>
           <button
@@ -302,6 +267,12 @@ export default function WriterMasterPage() {
             className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition cursor-pointer"
           >
             추가
+          </button>
+          <button
+            onClick={() => { setAdding(false); resetAddForm(); }}
+            className="px-4 py-2 text-sm border border-border text-muted-foreground rounded-lg hover:bg-primary/10 hover:text-foreground transition cursor-pointer"
+          >
+            취소
           </button>
         </div>
       )}
@@ -346,7 +317,6 @@ export default function WriterMasterPage() {
           sortKey={sortKey}
           dir={dir}
           toggle={toggle}
-          onPatch={handlePatch}
           onDelete={handleDelete}
           focusId={focusId}
         />
@@ -361,7 +331,6 @@ export default function WriterMasterPage() {
               sortKey={sortKey}
               dir={dir}
               toggle={toggle}
-              onPatch={handlePatch}
               onDelete={handleDelete}
               focusId={focusId}
             />
@@ -374,7 +343,6 @@ export default function WriterMasterPage() {
               sortKey={sortKey}
               dir={dir}
               toggle={toggle}
-              onPatch={handlePatch}
               onDelete={handleDelete}
               focusId={focusId}
             />
