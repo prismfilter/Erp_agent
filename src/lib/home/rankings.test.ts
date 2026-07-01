@@ -3,15 +3,14 @@ import type { Invoice, InvoiceItem, Client } from '@/types/invoice';
 import type { SettlementRow } from '@/lib/settlement/serviceRows';
 import { buildWriterRanking, buildClientRanking } from './rankings';
 
-// 최소 픽스처 — 테스트에 필요한 필드만 채우고 캐스팅 (paid_at 연도·writer_pay·status 기준)
-// status 기본값 'settled' — 순위는 정산완료 건만 집계하므로 별도 지정 없으면 정산완료로 본다.
-function settlement(
-  writer: string,
-  paidAt: string,
-  amount: number,
-  status: 'settled' | 'unsettled' = 'settled',
-): SettlementRow {
-  return { writer_name: writer, paid_at: paidAt, writer_pay: amount, status } as unknown as SettlementRow;
+// 최소 픽스처 — 테스트에 필요한 필드만 채우고 캐스팅 (invoice_date 연도·항목 귀속금액 기준)
+// amount = 회사 매출(귀속금액). 순위는 items[].attribution 합을 집계하므로 단일 항목으로 표현한다.
+function settlement(writer: string, invoiceDate: string, amount: number): SettlementRow {
+  return {
+    writer_name: writer,
+    invoice_date: invoiceDate,
+    items: [{ description: '', writer_pay: 0, supply: amount, attribution: amount }],
+  } as unknown as SettlementRow;
 }
 
 function invoice(date: string, clientName: string | null, items: { supply: number; rate: number }[]): Invoice {
@@ -31,7 +30,7 @@ function invoice(date: string, clientName: string | null, items: { supply: numbe
 }
 
 describe('buildWriterRanking', () => {
-  it('연도 일치 정산만 작가별 합산·내림차순', () => {
+  it('연도(invoice_date) 일치 행의 귀속금액을 작가별 합산·내림차순', () => {
     const list = [
       settlement('김작가', '2026-03-01', 500),
       settlement('이작가', '2026-06-01', 900),
@@ -43,17 +42,31 @@ describe('buildWriterRanking', () => {
       { name: '김작가', amount: 800 },
     ]);
   });
+  it('한 행에 여러 항목이면 귀속금액을 모두 합산', () => {
+    const row = {
+      writer_name: '김작가',
+      invoice_date: '2026-03-01',
+      items: [
+        { description: '', writer_pay: 0, supply: 300, attribution: 300 },
+        { description: '', writer_pay: 0, supply: 200, attribution: 200 },
+      ],
+    } as unknown as SettlementRow;
+    expect(buildWriterRanking([row], 2026)).toEqual([{ name: '김작가', amount: 500 }]);
+  });
+  it('정산완료 마킹과 무관하게 paid 파생 행 전부 집계(수수료 아닌 매출 기준)', () => {
+    // status 필드가 없어도(또는 unsettled여도) invoice_date 연도만 맞으면 집계된다.
+    const list = [
+      settlement('김작가', '2026-03-01', 500),
+      settlement('이작가', '2026-06-01', 900),
+    ];
+    expect(buildWriterRanking(list, 2026)).toEqual([
+      { name: '이작가', amount: 900 },
+      { name: '김작가', amount: 500 },
+    ]);
+  });
   it('0/빈 입력은 빈 배열', () => {
     expect(buildWriterRanking([], 2026)).toEqual([]);
     expect(buildWriterRanking([settlement('김작가', '2026-01-01', 0)], 2026)).toEqual([]);
-  });
-  it('정산완료(settled)가 아닌 행은 제외', () => {
-    const list = [
-      settlement('김작가', '2026-03-01', 500, 'settled'),
-      settlement('이작가', '2026-06-01', 900, 'unsettled'), // 미정산 → 제외
-      settlement('김작가', '2026-09-01', 300, 'unsettled'), // 미정산 → 제외
-    ];
-    expect(buildWriterRanking(list, 2026)).toEqual([{ name: '김작가', amount: 500 }]);
   });
 });
 
