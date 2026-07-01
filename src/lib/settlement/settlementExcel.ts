@@ -43,7 +43,8 @@ export async function exportSettlementExcel(settlement: ServiceSettlement): Prom
   const ws = wb.addWorksheet('용역 정산서');
   setupSheet(ws);
   const cols = 5;
-  [6, 14, 18, 46, 18].forEach((w, i) => (ws.getColumn(i + 1).width = w));
+  // No.·입금일·거래처·작업내용·작가지급액 — 거래처는 업체명 한 줄 표기 위해 넉넉히
+  [6, 14, 22, 46, 18].forEach((w, i) => (ws.getColumn(i + 1).width = w));
 
   let r = drawHeader(wb, ws, logo, { title: '용 역 정 산 서', subtitle: 'SETTLEMENT', cols });
   r += 1;
